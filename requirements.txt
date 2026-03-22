@@ -8,5 +8,5 @@ pillow
 imagehash
 opencv-python-headless
 scikit-image
-
-
+SQLAlchemy
+psycopg[binary]

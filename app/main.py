@@ -19,6 +19,10 @@ from app.utils.audit_log import log_audit_event
 from core.batch_scan import scan_folder
 from core.compare_files import compare_two_files, compare_against_case, compare_against_all_cases
 from core.copyright_lookup import build_copyright_search_link
+from sqlalchemy.orm import Session
+
+from app.db import SessionLocal, engine
+from app.models import Base, Case, EvidenceItem
 
 
 # =========================================================
@@ -43,6 +47,7 @@ REPORTS_DIR.mkdir(exist_ok=True)
 UPLOADS_DIR.mkdir(exist_ok=True)
 
 app = FastAPI()
+Base.metadata.create_all(bind=engine)   
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 if STATIC_DIR.exists():
@@ -78,15 +83,23 @@ SERVICE_MAP = {
 # =========================================================
 
 def load_cases():
-    if not CASES_FILE.exists():
-        return {"cases": []}
-    with CASES_FILE.open("r", encoding="utf-8") as f:
-        return json.load(f)
+    db = SessionLocal()
+    try:
+        cases = db.query(Case).order_by(Case.id.asc()).all()
+        return {
+            "cases": [
+                {
+                    "case_id": c.case_id,
+                    "case_name": c.case_name,
+                    "description": c.description or "",
+                    "created_at": c.created_at.strftime("%Y-%m-%d %H:%M:%S") if c.created_at else "",
+                }
+                for c in cases
+            ]
+        }
+    finally:
+        db.close()
 
-
-def save_cases(data):
-    DATA_DIR.mkdir(exist_ok=True)
-    with CASES_FILE.open("w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
 
@@ -94,21 +107,39 @@ def generate_case_id(existing_cases):
     next_number = len(existing_cases) + 1
     return f"CASE-{next_number:04d}"
 
+@app.post("/create-case", response_class=HTMLResponse)
+async def create_case(
+    request: Request,
+    case_name: str = Form(...),
+    description: str = Form(""),
+):
+    db = SessionLocal()
+    try:
+        existing_cases = db.query(Case).order_by(Case.id.asc()).all()
+        case_id = generate_case_id(existing_cases)
 
-def create_case_folder(case_id: str):
-    case_dir = CASES_DIR / case_id
-    (case_dir / "uploads").mkdir(parents=True, exist_ok=True)
-    (case_dir / "reports").mkdir(parents=True, exist_ok=True)
-    (case_dir / "comparisons").mkdir(parents=True, exist_ok=True)
-    (case_dir / "audit").mkdir(parents=True, exist_ok=True)
+        new_case = Case(
+            case_id=case_id,
+            case_name=case_name,
+            description=description,
+        )
+        db.add(new_case)
+        db.commit()
 
-    evidence_index_path = case_dir / "evidence_index.json"
-    if not evidence_index_path.exists():
-        with evidence_index_path.open("w", encoding="utf-8") as f:
-            json.dump([], f, indent=2)
+        create_case_folder(case_id)
 
-    return case_dir
+        updated_data = load_cases()
 
+        return templates.TemplateResponse(
+            "upload.html",
+            {
+                "request": request,
+                "cases": updated_data["cases"],
+                "message": f"Case created successfully: {case_id}",
+            },
+        )
+    finally:
+        db.close()
 
 def safe_slug(text: str) -> str:
     cleaned = "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in text.strip())
@@ -227,34 +258,55 @@ def reports_page(request: Request):
         },
     )
 
-
 @app.get("/cases/{case_id}", response_class=HTMLResponse)
 async def case_detail(request: Request, case_id: str):
     uploaded = request.query_params.get("uploaded")
-    data = load_cases()
-    case_record = next((c for c in data["cases"] if c["case_id"] == case_id), None)
 
-    if not case_record:
-        return HTMLResponse(f"<h1>Case {case_id} not found</h1>", status_code=404)
+    db = SessionLocal()
+    try:
+        case_obj = db.query(Case).filter(Case.case_id == case_id).first()
 
-    evidence_index_path = CASES_DIR / case_id / "evidence_index.json"
+        if not case_obj:
+            return HTMLResponse(f"<h1>Case {case_id} not found</h1>", status_code=404)
 
-    if evidence_index_path.exists():
-        with evidence_index_path.open("r", encoding="utf-8") as f:
-            evidence_items = json.load(f)
-    else:
-        evidence_items = []
+        case_record = {
+            "case_id": case_obj.case_id,
+            "case_name": case_obj.case_name,
+            "description": case_obj.description or "",
+            "created_at": case_obj.created_at.strftime("%Y-%m-%d %H:%M:%S") if case_obj.created_at else "",
+        }
 
-    return templates.TemplateResponse(
-        "case_detail.html",
-        {
-            "request": request,
-            "case": case_record,
-            "evidence_items": evidence_items,
-            "uploaded": uploaded,
-        },
-    )
+        evidence_rows = (
+            db.query(EvidenceItem)
+            .filter(EvidenceItem.case_id == case_id)
+            .order_by(EvidenceItem.id.asc())
+            .all()
+        )
 
+        evidence_items = [
+            {
+                "evidence_id": e.evidence_id,
+                "file_name": e.file_name,
+                "sha256": e.sha256,
+                "phash": e.phash,
+                "analysis_date": e.analysis_date,
+                "json_report": e.json_report,
+                "pdf_report": e.pdf_report,
+            }
+            for e in evidence_rows
+        ]
+
+        return templates.TemplateResponse(
+            "case_detail.html",
+            {
+                "request": request,
+                "case": case_record,
+                "evidence_items": evidence_items,
+                "uploaded": uploaded,
+            },
+        )
+    finally:
+        db.close()
 
 @app.post("/analyze")
 async def analyze_file_route(

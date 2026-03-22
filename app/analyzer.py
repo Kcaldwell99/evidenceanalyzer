@@ -13,6 +13,8 @@ from app.utils.image_fingerprint import generate_phash
 from app.utils.hash_compare import hamming_distance
 
 from core.fingerprint_index import add_fingerprint, search_similar
+from app.db import SessionLocal
+from app.models import EvidenceItem
 
 
 def _wrap_text(text, width=95):
@@ -31,7 +33,6 @@ def _draw_wrapped_lines(c, lines, x, y, line_height=12, bottom_margin=50):
         y -= line_height
     return y
 
-
 def analyze_file(file_path, case_dir=None):
     file_hash = sha256_file(file_path)
     file_size = os.path.getsize(file_path)
@@ -49,15 +50,22 @@ def analyze_file(file_path, case_dir=None):
 
     os.makedirs(case_path, exist_ok=True)
 
-    evidence_index = []
     evidence_id = None
+    case_id_value = None
 
     if case_dir:
-        evidence_index_path = os.path.join(case_dir, "evidence_index.json")
-        if os.path.exists(evidence_index_path):
-            with open(evidence_index_path, "r", encoding="utf-8") as f:
-                evidence_index = json.load(f)
-        evidence_id = f"E-{len(evidence_index) + 1:03d}"
+        case_id_value = os.path.basename(case_dir)
+
+        db = SessionLocal()
+        try:
+            existing_count = (
+                db.query(EvidenceItem)
+                .filter(EvidenceItem.case_id == case_id_value)
+                .count()
+            )
+            evidence_id = f"E-{existing_count + 1:03d}"
+        finally:
+            db.close()
 
     similar_matches = search_similar(
         phash,
@@ -121,7 +129,9 @@ def analyze_file(file_path, case_dir=None):
             f"{best_match.get('match_level')}."
         )
     else:
-        report["comparison_summary"] = "No prior similar image match was identified within the configured threshold."
+        report["comparison_summary"] = (
+            "No prior similar image match was identified within the configured threshold."
+        )
 
     json_path = os.path.join(case_path, "analysis_report.json")
     with open(json_path, "w", encoding="utf-8") as f:
@@ -234,30 +244,35 @@ def analyze_file(file_path, case_dir=None):
     y -= 15
 
     c.setFont("Helvetica", 10)
-    y = _draw_wrapped_lines(c, _wrap_text(f"Finding: {report.get('finding', 'No finding available')}"), 60, y)
+    y = _draw_wrapped_lines(
+        c,
+        _wrap_text(f"Finding: {report.get('finding', 'No finding available')}"),
+        60,
+        y,
+    )
 
     c.save()
 
-    if case_dir:
-        evidence_index_path = os.path.join(case_dir, "evidence_index.json")
-
-        evidence_index.append(
-            {
-                "evidence_id": evidence_id,
-                "file_name": os.path.basename(file_path),
-                "sha256": file_hash,
-                "phash": phash,
-                "analysis_date": report["analysis_date"],
-                "json_report": json_path,
-                "pdf_report": pdf_path,
-            }
-        )
-
-        with open(evidence_index_path, "w", encoding="utf-8") as f:
-            json.dump(evidence_index, f, indent=2)
+    if case_dir and case_id_value and evidence_id:
+        db = SessionLocal()
+        try:
+            db_item = EvidenceItem(
+                case_id=case_id_value,
+                evidence_id=evidence_id,
+                file_name=os.path.basename(file_path),
+                sha256=file_hash,
+                phash=phash,
+                analysis_date=report["analysis_date"],
+                json_report=json_path,
+                pdf_report=pdf_path,
+            )
+            db.add(db_item)
+            db.commit()
+        finally:
+            db.close()
 
         add_fingerprint(
-            os.path.basename(case_dir),
+            case_id_value,
             evidence_id,
             os.path.basename(file_path),
             phash,
