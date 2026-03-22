@@ -1,0 +1,9 @@
+__pycache__/
+.venv/
+cases/
+reports/
+uploads/
+*.jpg
+*.png
+*.pdf
+*.json
