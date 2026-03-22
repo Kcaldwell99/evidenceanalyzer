@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-import zipfile
 import hashlib
 from datetime import datetime
 from pathlib import Path
@@ -15,14 +14,12 @@ from fastapi.templating import Jinja2Templates
 
 from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
+from app.db import SessionLocal, engine
+from app.models import Base, Case, EvidenceItem
 
 from core.batch_scan import scan_folder
 from core.compare_files import compare_two_files, compare_against_case, compare_against_all_cases
 from core.copyright_lookup import build_copyright_search_link
-from sqlalchemy.orm import Session
-
-from app.db import SessionLocal, engine
-from app.models import Base, Case, EvidenceItem
 
 
 # =========================================================
@@ -39,15 +36,13 @@ UPLOADS_DIR = PROJECT_ROOT / "uploads"
 TEMPLATES_DIR = APP_DIR / "templates"
 STATIC_DIR = APP_DIR / "static"
 
-CASES_FILE = DATA_DIR / "cases.json"
-
 DATA_DIR.mkdir(exist_ok=True)
 CASES_DIR.mkdir(exist_ok=True)
 REPORTS_DIR.mkdir(exist_ok=True)
 UPLOADS_DIR.mkdir(exist_ok=True)
 
 app = FastAPI()
-Base.metadata.create_all(bind=engine)   
+Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 if STATIC_DIR.exists():
@@ -100,46 +95,20 @@ def load_cases():
     finally:
         db.close()
 
-        json.dump(data, f, indent=2)
-
 
 def generate_case_id(existing_cases):
     next_number = len(existing_cases) + 1
     return f"CASE-{next_number:04d}"
 
-@app.post("/create-case", response_class=HTMLResponse)
-async def create_case(
-    request: Request,
-    case_name: str = Form(...),
-    description: str = Form(""),
-):
-    db = SessionLocal()
-    try:
-        existing_cases = db.query(Case).order_by(Case.id.asc()).all()
-        case_id = generate_case_id(existing_cases)
 
-        new_case = Case(
-            case_id=case_id,
-            case_name=case_name,
-            description=description,
-        )
-        db.add(new_case)
-        db.commit()
+def create_case_folder(case_id: str):
+    case_dir = CASES_DIR / case_id
+    (case_dir / "uploads").mkdir(parents=True, exist_ok=True)
+    (case_dir / "reports").mkdir(parents=True, exist_ok=True)
+    (case_dir / "comparisons").mkdir(parents=True, exist_ok=True)
+    (case_dir / "audit").mkdir(parents=True, exist_ok=True)
+    return case_dir
 
-        create_case_folder(case_id)
-
-        updated_data = load_cases()
-
-        return templates.TemplateResponse(
-            "upload.html",
-            {
-                "request": request,
-                "cases": updated_data["cases"],
-                "message": f"Case created successfully: {case_id}",
-            },
-        )
-    finally:
-        db.close()
 
 def safe_slug(text: str) -> str:
     cleaned = "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in text.strip())
@@ -196,67 +165,69 @@ async def create_case(
     case_name: str = Form(...),
     description: str = Form(""),
 ):
-    data = load_cases()
-    case_id = generate_case_id(data["cases"])
+    db = SessionLocal()
+    try:
+        existing_cases = db.query(Case).order_by(Case.id.asc()).all()
+        case_id = generate_case_id(existing_cases)
 
-    new_case = {
-        "case_id": case_id,
-        "case_name": case_name,
-        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "description": description,
-    }
+        new_case = Case(
+            case_id=case_id,
+            case_name=case_name,
+            description=description,
+        )
+        db.add(new_case)
+        db.commit()
 
-    data["cases"].append(new_case)
-    save_cases(data)
-    create_case_folder(case_id)
+        create_case_folder(case_id)
 
-    updated_data = load_cases()
+        updated_data = load_cases()
 
-    return templates.TemplateResponse(
-        "upload.html",
-        {
-            "request": request,
-            "cases": updated_data["cases"],
-            "message": f"Case created successfully: {case_id}",
-        },
-    )
+        return templates.TemplateResponse(
+            "upload.html",
+            {
+                "request": request,
+                "cases": updated_data["cases"],
+                "message": f"Case created successfully: {case_id}",
+            },
+        )
+    finally:
+        db.close()
 
 
 @app.get("/reports", response_class=HTMLResponse)
 def reports_page(request: Request):
-    data = load_cases()
-    items = []
+    db = SessionLocal()
+    try:
+        cases = db.query(Case).order_by(Case.id.asc()).all()
+        items = []
 
-    for case in data["cases"]:
-        case_id = case["case_id"]
-        evidence_index_path = CASES_DIR / case_id / "evidence_index.json"
+        for case in cases:
+            file_count = (
+                db.query(EvidenceItem)
+                .filter(EvidenceItem.case_id == case.case_id)
+                .count()
+            )
 
-        if evidence_index_path.exists():
-            try:
-                with evidence_index_path.open("r", encoding="utf-8") as f:
-                    evidence_items = json.load(f)
-            except Exception:
-                evidence_items = []
-        else:
-            evidence_items = []
+            items.append(
+                {
+                    "case_id": case.case_id,
+                    "case_name": case.case_name,
+                    "description": case.description or "",
+                    "created_at": case.created_at.strftime("%Y-%m-%d %H:%M:%S") if case.created_at else "",
+                    "file_count": file_count,
+                }
+            )
 
-        items.append(
+        return templates.TemplateResponse(
+            "reports.html",
             {
-                "case_id": case_id,
-                "case_name": case.get("case_name", case_id),
-                "description": case.get("description", ""),
-                "created_at": case.get("created_at", ""),
-                "file_count": len(evidence_items),
-            }
+                "request": request,
+                "items": items,
+            },
         )
+    finally:
+        db.close()
 
-    return templates.TemplateResponse(
-        "reports.html",
-        {
-            "request": request,
-            "items": items,
-        },
-    )
 
 @app.get("/cases/{case_id}", response_class=HTMLResponse)
 async def case_detail(request: Request, case_id: str):
@@ -307,6 +278,7 @@ async def case_detail(request: Request, case_id: str):
         )
     finally:
         db.close()
+
 
 @app.post("/analyze")
 async def analyze_file_route(
