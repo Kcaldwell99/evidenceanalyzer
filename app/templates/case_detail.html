@@ -217,22 +217,6 @@
 </tbody>
 
 
-
-
-</tbody>
-
-     {% if m.pdf_report %}
-    <a href="/cases/{{ case.case_id }}">{{ case.case_id }}</a>
-           
-</td>
-<td>
-   
-    <a href="/case-files/{{ m.pdf_report.replace('\\','/').replace('cases/','') }}" target="_blank">
-        PDF
-    </a>
-    {% endif %}
-</td>
-<td>
     {% if m.similarity >= 90 %}
         <strong style="color:red">{{ m.similarity }}%</strong>
     {% elif m.similarity >= 70 %}
