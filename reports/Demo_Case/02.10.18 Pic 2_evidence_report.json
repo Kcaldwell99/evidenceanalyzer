@@ -1,0 +1,30 @@
+{
+    "file_name": "02.10.18 Pic 2.jpg",
+    "file_path": "C:\\Users\\kcald\\c2pa-evidence-mvp\\reports\\Demo_Case\\02.10.18 Pic 2.jpg",
+    "sha256": "ee3a0f10f2e7f57c1738c6a9703f1da980001f3792a86e3738de1c4fa4b3ee22",
+    "size_bytes": 3665636,
+    "analyzed_at": "2026-03-13T15:45:38.639270Z",
+    "image_metadata": {
+        "format": "JPEG",
+        "width": 2400,
+        "height": 3000,
+        "mode": "RGB",
+        "exif": {
+            "ExifOffset": "28"
+        }
+    },
+    "c2pa": {
+        "has_c2pa": false,
+        "validation_status": "unknown",
+        "notes": "Placeholder detector only."
+    },
+    "copyright_search": {
+        "title": "",
+        "author": "",
+        "claimant": "",
+        "registration_number": "",
+        "year": "",
+        "search_link": "",
+        "note": "Public records may indicate registration or recorded transfer information, but do not conclusively establish present ownership."
+    }
+}

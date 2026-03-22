@@ -1,0 +1,44 @@
+{
+    "file_name": "05 bw.jpg",
+    "file_path": "C:\\Users\\kcald\\c2pa-evidence-mvp\\reports\\batchscan_20260311_132916\\extracted\\05 bw.jpg",
+    "sha256": "44729a53564b954d4c37a87360e00fd039bf4e1aa31c2a8d81db253d8e94a2ff",
+    "size_bytes": 3440955,
+    "analyzed_at": "2026-03-11T13:29:41.953654Z",
+    "image_metadata": {
+        "format": "JPEG",
+        "width": 2156,
+        "height": 3234,
+        "mode": "RGB",
+        "exif": {
+            "ImageWidth": "2156",
+            "ImageLength": "3234",
+            "BitsPerSample": "(8, 8, 8)",
+            "PhotometricInterpretation": "2",
+            "ResolutionUnit": "2",
+            "ExifOffset": "312",
+            "Make": "Canon",
+            "Model": "Canon EOS-1D X",
+            "Software": "Adobe Photoshop CC 2019 (Windows)",
+            "Orientation": "1",
+            "DateTime": "2018:11:20 15:15:44",
+            "YResolution": "300.0",
+            "SamplesPerPixel": "3",
+            "XResolution": "300.0",
+            "Artist": "Christina Lundeen"
+        }
+    },
+    "c2pa": {
+        "has_c2pa": false,
+        "validation_status": "unknown",
+        "notes": "Placeholder detector only."
+    },
+    "copyright_search": {
+        "title": "",
+        "author": "",
+        "claimant": "",
+        "registration_number": "",
+        "year": "",
+        "search_link": "",
+        "note": "Public records may indicate registration or recorded transfer information, but do not conclusively establish present ownership."
+    }
+}

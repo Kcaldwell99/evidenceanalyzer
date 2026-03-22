@@ -1,0 +1,7 @@
+{
+  "event": "intake_submitted",
+  "utc": "2026-03-21T14:01:58.426326",
+  "stripe_session_id": "test",
+  "service": "single",
+  "file_count": 1
+}

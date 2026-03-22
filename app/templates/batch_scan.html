@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Batch Scan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px auto;
+            max-width: 1000px;
+            background: #f9fafb;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        h1, h2 {
+            color: #1f2937;
+        }
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: bold;
+        }
+        input[type="file"] {
+            margin-top: 6px;
+        }
+        button {
+            margin-top: 18px;
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #f3f4f6;
+        }
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .action-link {
+            display: inline-block;
+            padding: 6px 10px;
+            border: 1px solid #2563eb;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Batch Scan</h1>
+
+    <div class="section">
+        <h2>Scan ZIP for Similar Images</h2>
+
+        <form action="/batch-scan" method="post" enctype="multipart/form-data">
+            <label for="original_file">Original File</label>
+            <input type="file" id="original_file" name="original_file" required>
+
+            <label for="suspect_zip">Suspect Images ZIP</label>
+            <input type="file" id="suspect_zip" name="suspect_zip" accept=".zip" required>
+
+            <button type="submit">Run Batch Scan</button>
+        </form>
+    </div>
+
+    {% if results is defined %}
+    <div class="section">
+        <h2>Results</h2>
+
+        {% if results %}
+        <table>
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Similarity Score</th>
+                    <th>pHash Distance</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in results %}
+                <tr>
+                    <td>{{ item.file_name }}</td>
+                    <td>{{ item.similarity_score }}%</td>
+                    <td>{{ item.phash_distance }}</td>
+                    <td>
+                        <a class="action-link" 
+                        href="/compare-direct?original={{ original_path | urlencode }}&suspect={{ item.file_path | urlencode }}">
+                            Compare
+                        </a>
+                                                
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No comparable files found.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="section">
+        <a href="/">Back to Upload</a>
+    </div>
+</body>
+</html>

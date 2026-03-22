@@ -1,0 +1,19 @@
+{
+  "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+  "file_size": 108063,
+  "sha256": "8daf197e88de713733fa6a4807ab18d74e31d50823b811b37b29d8774169bbd5",
+  "phash": "da61659619d2c72d",
+  "metadata": {},
+  "c2pa": {
+    "present": false,
+    "details": "C2PA detection not yet implemented."
+  },
+  "analysis_date": "2026-03-21T13:23:51.131107",
+  "finding": "Limited metadata available; no manipulation indicators identified from file-level review",
+  "rights_info": {
+    "Original Copyirght Owner": "Information Not Available in this Report",
+    "Copyright Registration": "Information Not Available in this Report",
+    "Copyright Contact": "Information Not Available in this Report",
+    "Copyright Assignments": "Information Not Available in this Report"
+  }
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Global Match Results</title>
+</head>
+<body>
+
+<h1>Global Match Results</h1>
+
+<p><strong>Suspect File:</strong> {{ suspect_file }}</p>
+<p><strong>pHash:</strong> {{ suspect_phash }}</p>
+
+<table border="1" cellpadding="8">
+<tr>
+    <th>Case</th>
+    <th>Evidence</th>
+    <th>File</th>
+    <th>Similarity</th>
+</tr>
+
+{% for m in matches %}
+<tr>
+    <td>{{ m.case_id }}</td>
+    <td>{{ m.evidence_id }}</td>
+    <td>{{ m.file_name }}</td>
+    <td>{{ m.similarity }}%</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+[
+  {
+    "evidence_id": "E-001",
+    "file_name": "05 bw web res.jpg",
+    "sha256": "1533c17af01d72fd882f2d27d4ceb6b37b2df6ffcf640cc76a1ab8ac1c0e142d",
+    "phash": "b8e1a7125be6a315",
+    "analysis_date": "2026-03-19T13:07:48.908033",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-130748_t\\reports\\20260319_080748\\analysis_report.json",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-130748_t\\reports\\20260319_080748\\analysis_report.pdf"
+  }
+]

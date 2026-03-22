@@ -1,0 +1,21 @@
+{
+    "file_name": "02.10.18 Pic 3.jpg",
+    "file_path": "C:\\Users\\kcald\\c2pa-evidence-mvp\\02.10.18 Pic 3.jpg",
+    "sha256": "f4d84e0e19204213cc8672e1f73d0ce7efdd360cc08cc1d946f96df3f1b087d2",
+    "size_bytes": 3887217,
+    "analyzed_at": "2026-03-06T23:48:18.322657Z",
+    "image_metadata": {
+        "format": "JPEG",
+        "width": 2400,
+        "height": 3000,
+        "mode": "RGB",
+        "exif": {
+            "ExifOffset": "28"
+        }
+    },
+    "c2pa": {
+        "has_c2pa": false,
+        "validation_status": "unknown",
+        "notes": "Placeholder detector only."
+    }
+}

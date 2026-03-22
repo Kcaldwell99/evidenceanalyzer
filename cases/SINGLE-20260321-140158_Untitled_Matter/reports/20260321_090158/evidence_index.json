@@ -1,0 +1,20 @@
+[
+  {
+    "evidence_id": "E-001",
+    "file_name": "a9e5a0a2-7dd3-4c7a-87b8-3cde42afee03.jpg",
+    "sha256": "e67fdb9f3b38c67792771ec3c35c8f04d92b4915bfb931610ff304ce351be11b",
+    "phash": "dbe2b4d928c83792",
+    "analysis_date": "2026-03-21T14:01:58.440386",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140158_Untitled_Matter\\reports\\20260321_090158\\analysis_report.json",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140158_Untitled_Matter\\reports\\20260321_090158\\analysis_report.pdf"
+  },
+  {
+    "evidence_id": "E-002",
+    "file_name": "a9e5a0a2-7dd3-4c7a-87b8-3cde42afee03.jpg",
+    "sha256": "e67fdb9f3b38c67792771ec3c35c8f04d92b4915bfb931610ff304ce351be11b",
+    "phash": "dbe2b4d928c83792",
+    "analysis_date": "2026-03-21T14:01:58.479717",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140158_Untitled_Matter\\reports\\20260321_090158\\analysis_report.json",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140158_Untitled_Matter\\reports\\20260321_090158\\analysis_report.pdf"
+  }
+]

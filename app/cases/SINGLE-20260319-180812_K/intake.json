@@ -1,0 +1,31 @@
+{
+  "case_id": "SINGLE-20260319-180812",
+  "created_utc": "2026-03-19T18:08:12.411288",
+  "service": "single",
+  "service_name": "Single Image Analysis",
+  "stripe_session_id": "test",
+  "stripe_customer_email": "test@example.com",
+  "stripe_amount_total": null,
+  "stripe_currency": null,
+  "client": {
+    "name": "K",
+    "email": "test@example.com",
+    "company_name": "K"
+  },
+  "matter": {
+    "matter_name": "K",
+    "case_reference": "K",
+    "narrative": "K"
+  },
+  "files": [
+    {
+      "filename": "156490_Emergency Shingle Roof Replacement Completed in Rosenberg, TX Driven Roofing.jpg",
+      "stored_path": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-180812_K\\uploads\\156490_Emergency Shingle Roof Replacement Completed in Rosenberg, TX Driven Roofing.jpg",
+      "content_type": "image/jpeg",
+      "size_bytes": 277088,
+      "sha256": "49bd1c4968e5a9c55f223c1b36374d4415c62094f2ec8d23f74207a4a132a03b"
+    }
+  ],
+  "rights_followup_requested": false,
+  "status": "intake_received"
+}

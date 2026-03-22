@@ -1,0 +1,98 @@
+[
+  {
+    "event_id": "A-0001",
+    "timestamp": "2026-03-20T00:26:20.555091+00:00",
+    "case_id": "intake_submitted",
+    "evidence_id": {
+      "case_id": "CASE-0007",
+      "email": "kc99mail@yahoo.com",
+      "service": "single",
+      "file_count": 1
+    },
+    "event_type": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0007",
+    "file_name": null,
+    "sha256": null,
+    "user": "system",
+    "notes": null
+  },
+  {
+    "event_id": "A-0002",
+    "timestamp": "2026-03-20T12:48:45.279033+00:00",
+    "case_id": "intake_submitted",
+    "evidence_id": {
+      "case_id": "CASE-0008",
+      "email": "kc99mail@yahoo.com",
+      "service": "single",
+      "file_count": 1
+    },
+    "event_type": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0008",
+    "file_name": null,
+    "sha256": null,
+    "user": "system",
+    "notes": null
+  },
+  {
+    "event_id": "A-0003",
+    "timestamp": "2026-03-20T12:58:55.241775+00:00",
+    "case_id": "intake_submitted",
+    "evidence_id": {
+      "case_id": "CASE-0009",
+      "email": "kc99mail@yahoo.com",
+      "service": "single",
+      "file_count": 1
+    },
+    "event_type": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0009",
+    "file_name": null,
+    "sha256": null,
+    "user": "system",
+    "notes": null
+  },
+  {
+    "event_id": "A-0004",
+    "timestamp": "2026-03-20T13:08:50.296769+00:00",
+    "case_id": "intake_submitted",
+    "evidence_id": {
+      "case_id": "CASE-0010",
+      "email": "kc99mail@yahoo.com",
+      "service": "single",
+      "file_count": 1
+    },
+    "event_type": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0010",
+    "file_name": null,
+    "sha256": null,
+    "user": "system",
+    "notes": null
+  },
+  {
+    "event_id": "A-0005",
+    "timestamp": "2026-03-20T13:09:13.793571+00:00",
+    "case_id": "intake_submitted",
+    "evidence_id": {
+      "case_id": "CASE-0011",
+      "email": "kc99mail@yahoo.com",
+      "service": "single",
+      "file_count": 1
+    },
+    "event_type": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0011",
+    "file_name": null,
+    "sha256": null,
+    "user": "system",
+    "notes": null
+  },
+  {
+    "event_id": "A-0006",
+    "timestamp": "2026-03-20T16:56:12.968355+00:00",
+    "case_id": "intake_submitted",
+    "evidence_id": {
+      "case_id": "CASE-0012",
+      "email": "kc99mail@yahoo.com",
+      "service": "single",
+      "file_count": 1
+    },
+    "event_type": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0012",
+    "file_name": null,
+    "sha256": null,
+    "user": "system",
+    "notes": null
+  }
+]

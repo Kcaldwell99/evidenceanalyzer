@@ -1,0 +1,30 @@
+{
+    "file_name": "02.10.18 Pic 1.jpg",
+    "file_path": "C:\\Users\\kcald\\c2pa-evidence-mvp\\reports\\Hashmani_v._MTN\\02.10.18 Pic 1.jpg",
+    "sha256": "451335f3ef08d39d92ee63c874320f2f0a3dcddf228ec5ba59a8e1ecfdc3d6e5",
+    "size_bytes": 3153275,
+    "analyzed_at": "2026-03-13T15:41:56.156487Z",
+    "image_metadata": {
+        "format": "JPEG",
+        "width": 3000,
+        "height": 2400,
+        "mode": "RGB",
+        "exif": {
+            "ExifOffset": "28"
+        }
+    },
+    "c2pa": {
+        "has_c2pa": false,
+        "validation_status": "unknown",
+        "notes": "Placeholder detector only."
+    },
+    "copyright_search": {
+        "title": "",
+        "author": "",
+        "claimant": "",
+        "registration_number": "",
+        "year": "",
+        "search_link": "",
+        "note": "Public records may indicate registration or recorded transfer information, but do not conclusively establish present ownership."
+    }
+}

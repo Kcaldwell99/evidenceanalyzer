@@ -1,0 +1,11 @@
+[
+  {
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 2.jpg",
+    "sha256": "ee3a0f10f2e7f57c1738c6a9703f1da980001f3792a86e3738de1c4fa4b3ee22",
+    "phash": "9be5561be4861b68",
+    "analysis_date": "2026-03-19T12:18:44.983777",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-121844_t\\reports\\20260319_071844\\analysis_report.json",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-121844_t\\reports\\20260319_071844\\analysis_report.pdf"
+  }
+]

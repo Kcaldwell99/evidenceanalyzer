@@ -1,0 +1,20 @@
+[
+  {
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "sha256": "451335f3ef08d39d92ee63c874320f2f0a3dcddf228ec5ba59a8e1ecfdc3d6e5",
+    "phash": "e8957acc934a29c7",
+    "analysis_date": "2026-03-18T17:33:48.751543",
+    "json_report": "cases\\SINGLE-20260318-173348\\reports\\20260318_123348\\analysis_report.json",
+    "pdf_report": "cases\\SINGLE-20260318-173348\\reports\\20260318_123348\\analysis_report.pdf"
+  },
+  {
+    "evidence_id": "E-002",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "sha256": "451335f3ef08d39d92ee63c874320f2f0a3dcddf228ec5ba59a8e1ecfdc3d6e5",
+    "phash": "e8957acc934a29c7",
+    "analysis_date": "2026-03-18T17:33:48.878587",
+    "json_report": "cases\\SINGLE-20260318-173348\\reports\\20260318_123348\\analysis_report.json",
+    "pdf_report": "cases\\SINGLE-20260318-173348\\reports\\20260318_123348\\analysis_report.pdf"
+  }
+]

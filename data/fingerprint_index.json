@@ -1,0 +1,554 @@
+[
+  {
+    "case_id": "CASE-0001",
+    "evidence_id": "E-002",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "phash": "e8957acc934a29c7",
+    "pdf_report": "cases\\CASE-0001\\reports\\20260316_103031\\analysis_report.pdf",
+    "json_report": "cases\\CASE-0001\\reports\\20260316_103031\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0001",
+    "evidence_id": "E-003",
+    "file_name": "02.10.18 Pic 2.jpg",
+    "phash": "9be5561be4861b68",
+    "pdf_report": "cases\\CASE-0001\\reports\\20260316_105238\\analysis_report.pdf",
+    "json_report": "cases\\CASE-0001\\reports\\20260316_105238\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0001",
+    "evidence_id": "E-004",
+    "file_name": "02.10.18 Pic 3.jpg",
+    "phash": "98e5730ee5b24e2c",
+    "pdf_report": "cases\\CASE-0001\\reports\\20260316_113050\\analysis_report.pdf",
+    "json_report": "cases\\CASE-0001\\reports\\20260316_113050\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0003",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 2.jpg",
+    "phash": "9be5561be4861b68",
+    "pdf_report": "cases\\CASE-0003\\reports\\20260316_150847\\analysis_report.pdf",
+    "json_report": "cases\\CASE-0003\\reports\\20260316_150847\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0001",
+    "evidence_id": "E-005",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "phash": "e8957acc934a29c7",
+    "pdf_report": "cases\\CASE-0001\\reports\\20260316_151846\\analysis_report.pdf",
+    "json_report": "cases\\CASE-0001\\reports\\20260316_151846\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0001",
+    "evidence_id": "E-006",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "phash": "e8957acc934a29c7",
+    "pdf_report": "cases\\CASE-0001\\reports\\20260316_151908\\analysis_report.pdf",
+    "json_report": "cases\\CASE-0001\\reports\\20260316_151908\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0001",
+    "evidence_id": "E-007",
+    "file_name": "05 (2).jpg",
+    "phash": "bde211e6a314fb88",
+    "pdf_report": "cases\\CASE-0001\\reports\\20260316_162300\\analysis_report.pdf",
+    "json_report": "cases\\CASE-0001\\reports\\20260316_162300\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260318-173348",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "phash": "e8957acc934a29c7",
+    "pdf_report": "cases\\SINGLE-20260318-173348\\reports\\20260318_123348\\analysis_report.pdf",
+    "json_report": "cases\\SINGLE-20260318-173348\\reports\\20260318_123348\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260318-173348",
+    "evidence_id": "E-002",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "phash": "e8957acc934a29c7",
+    "pdf_report": "cases\\SINGLE-20260318-173348\\reports\\20260318_123348\\analysis_report.pdf",
+    "json_report": "cases\\SINGLE-20260318-173348\\reports\\20260318_123348\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-113813_t",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "phash": "e8957acc934a29c7",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-113813_t\\reports\\20260319_063814\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-113813_t\\reports\\20260319_063814\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-113813",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "phash": "e8957acc934a29c7",
+    "pdf_report": "SINGLE-20260319-113813\\reports\\20260319_063814\\analysis_report.pdf",
+    "json_report": "SINGLE-20260319-113813\\reports\\20260319_063814\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-121844_t",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 2.jpg",
+    "phash": "9be5561be4861b68",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-121844_t\\reports\\20260319_071844\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-121844_t\\reports\\20260319_071844\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-121844",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 2.jpg",
+    "phash": "9be5561be4861b68",
+    "pdf_report": "SINGLE-20260319-121844\\reports\\20260319_071845\\analysis_report.pdf",
+    "json_report": "SINGLE-20260319-121844\\reports\\20260319_071845\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-122932_t",
+    "evidence_id": "E-001",
+    "file_name": "05 (2).jpg",
+    "phash": "bde211e6a314fb88",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-122932_t\\reports\\20260319_072932\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-122932_t\\reports\\20260319_072932\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-122932",
+    "evidence_id": "E-001",
+    "file_name": "05 (2).jpg",
+    "phash": "bde211e6a314fb88",
+    "pdf_report": "SINGLE-20260319-122932\\reports\\20260319_072932\\analysis_report.pdf",
+    "json_report": "SINGLE-20260319-122932\\reports\\20260319_072932\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-124803_t",
+    "evidence_id": "E-001",
+    "file_name": "05 bw.jpg",
+    "phash": "b8e1a7125be6a315",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-124803_t\\reports\\20260319_074803\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-124803_t\\reports\\20260319_074803\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-124803",
+    "evidence_id": "E-001",
+    "file_name": "05 bw.jpg",
+    "phash": "b8e1a7125be6a315",
+    "pdf_report": "SINGLE-20260319-124803\\reports\\20260319_074803\\analysis_report.pdf",
+    "json_report": "SINGLE-20260319-124803\\reports\\20260319_074803\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-130748_t",
+    "evidence_id": "E-001",
+    "file_name": "05 bw web res.jpg",
+    "phash": "b8e1a7125be6a315",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-130748_t\\reports\\20260319_080748\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-130748_t\\reports\\20260319_080748\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-130748",
+    "evidence_id": "E-001",
+    "file_name": "05 bw web res.jpg",
+    "phash": "b8e1a7125be6a315",
+    "pdf_report": "SINGLE-20260319-130748\\reports\\20260319_080748\\analysis_report.pdf",
+    "json_report": "SINGLE-20260319-130748\\reports\\20260319_080748\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-155225_t",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 2.jpg",
+    "phash": "9be5561be4861b68",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-155225_t\\reports\\20260319_105225\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-155225_t\\reports\\20260319_105225\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-155225",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 2.jpg",
+    "phash": "9be5561be4861b68",
+    "pdf_report": "SINGLE-20260319-155225\\reports\\20260319_105225\\analysis_report.pdf",
+    "json_report": "SINGLE-20260319-155225\\reports\\20260319_105225\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-163736_t",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 3.jpg",
+    "phash": "98e5730ee5b24e2c",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-163736_t\\reports\\20260319_113736\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-163736_t\\reports\\20260319_113736\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-163736",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 3.jpg",
+    "phash": "98e5730ee5b24e2c",
+    "pdf_report": "SINGLE-20260319-163736\\reports\\20260319_113736\\analysis_report.pdf",
+    "json_report": "SINGLE-20260319-163736\\reports\\20260319_113736\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-180812_K",
+    "evidence_id": "E-001",
+    "file_name": "156490_Emergency Shingle Roof Replacement Completed in Rosenberg, TX Driven Roofing.jpg",
+    "phash": "eeb43688b1a491d7",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-180812_K\\reports\\20260319_130812\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-180812_K\\reports\\20260319_130812\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-180812",
+    "evidence_id": "E-001",
+    "file_name": "156490_Emergency Shingle Roof Replacement Completed in Rosenberg, TX Driven Roofing.jpg",
+    "phash": "eeb43688b1a491d7",
+    "pdf_report": "SINGLE-20260319-180812\\reports\\20260319_130812\\analysis_report.pdf",
+    "json_report": "SINGLE-20260319-180812\\reports\\20260319_130812\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-181755_K",
+    "evidence_id": "E-001",
+    "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+    "phash": "da61659619d2c72d",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-181755_K\\reports\\20260319_131755\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-181755_K\\reports\\20260319_131755\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-181755",
+    "evidence_id": "E-001",
+    "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+    "phash": "da61659619d2c72d",
+    "pdf_report": "SINGLE-20260319-181755\\reports\\20260319_131755\\analysis_report.pdf",
+    "json_report": "SINGLE-20260319-181755\\reports\\20260319_131755\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-181904_K",
+    "evidence_id": "E-001",
+    "file_name": "a9e5a0a2-7dd3-4c7a-87b8-3cde42afee03.jpg",
+    "phash": "dbe2b4d928c83792",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-181904_K\\reports\\20260319_131904\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260319-181904_K\\reports\\20260319_131904\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260319-181904",
+    "evidence_id": "E-001",
+    "file_name": "a9e5a0a2-7dd3-4c7a-87b8-3cde42afee03.jpg",
+    "phash": "dbe2b4d928c83792",
+    "pdf_report": "SINGLE-20260319-181904\\reports\\20260319_131904\\analysis_report.pdf",
+    "json_report": "SINGLE-20260319-181904\\reports\\20260319_131904\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0007",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 2.jpg",
+    "phash": "9be5561be4861b68",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0007\\reports\\20260319_192620\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0007\\reports\\20260319_192620\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0008",
+    "evidence_id": "E-001",
+    "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+    "phash": "da61659619d2c72d",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0008\\reports\\20260320_074845\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0008\\reports\\20260320_074845\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0009",
+    "evidence_id": "E-001",
+    "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+    "phash": "da61659619d2c72d",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0009\\reports\\20260320_075855\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0009\\reports\\20260320_075855\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0010",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 2.jpg",
+    "phash": "9be5561be4861b68",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0010\\reports\\20260320_080850\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0010\\reports\\20260320_080850\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0011",
+    "evidence_id": "E-001",
+    "file_name": "a9e5a0a2-7dd3-4c7a-87b8-3cde42afee03.jpg",
+    "phash": "dbe2b4d928c83792",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0011\\reports\\20260320_080913\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0011\\reports\\20260320_080913\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0012",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "phash": "e8957acc934a29c7",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0012\\reports\\20260320_115612\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\CASE-0012\\reports\\20260320_115612\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260320-204840_test",
+    "evidence_id": "E-001",
+    "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+    "phash": "da61659619d2c72d",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260320-204840_test\\reports\\20260320_154840\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260320-204840_test\\reports\\20260320_154840\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260320-214313_test",
+    "evidence_id": "E-001",
+    "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+    "phash": "da61659619d2c72d",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260320-214313_test\\reports\\20260320_164313\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260320-214313_test\\reports\\20260320_164313\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260320-220823_test",
+    "evidence_id": "E-001",
+    "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+    "phash": "da61659619d2c72d",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260320-220823_test\\reports\\20260320_170823\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260320-220823_test\\reports\\20260320_170823\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-132350_Untitled_Matter",
+    "evidence_id": "E-001",
+    "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+    "phash": "da61659619d2c72d",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-132350_Untitled_Matter\\reports\\20260321_082351\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-132350_Untitled_Matter\\reports\\20260321_082351\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-132350_Untitled_Matter",
+    "evidence_id": "E-002",
+    "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+    "phash": "da61659619d2c72d",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-132350_Untitled_Matter\\reports\\20260321_082351\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-132350_Untitled_Matter\\reports\\20260321_082351\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-140124_test",
+    "evidence_id": "E-001",
+    "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+    "phash": "da61659619d2c72d",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140124_test\\reports\\20260321_090124\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140124_test\\reports\\20260321_090124\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-140124_test",
+    "evidence_id": "E-002",
+    "file_name": "aeda1c94-ddca-4600-b9ed-5c115b1b3407.jpg",
+    "phash": "da61659619d2c72d",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140124_test\\reports\\20260321_090124\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140124_test\\reports\\20260321_090124\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-140158_Untitled_Matter",
+    "evidence_id": "E-001",
+    "file_name": "a9e5a0a2-7dd3-4c7a-87b8-3cde42afee03.jpg",
+    "phash": "dbe2b4d928c83792",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140158_Untitled_Matter\\reports\\20260321_090158\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140158_Untitled_Matter\\reports\\20260321_090158\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-140158_Untitled_Matter",
+    "evidence_id": "E-002",
+    "file_name": "a9e5a0a2-7dd3-4c7a-87b8-3cde42afee03.jpg",
+    "phash": "dbe2b4d928c83792",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140158_Untitled_Matter\\reports\\20260321_090158\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-140158_Untitled_Matter\\reports\\20260321_090158\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-141145_test",
+    "evidence_id": "E-001",
+    "file_name": "50c35ce0-4656-4aaf-baeb-c84690b8f05f.jpg",
+    "phash": "b095153bc2ad756a",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-141145_test\\reports\\20260321_091145\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-141145_test\\reports\\20260321_091145\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-141145_test",
+    "evidence_id": "E-002",
+    "file_name": "50c35ce0-4656-4aaf-baeb-c84690b8f05f.jpg",
+    "phash": "b095153bc2ad756a",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-141145_test\\reports\\20260321_091145\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-141145_test\\reports\\20260321_091145\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-141813_test",
+    "evidence_id": "E-001",
+    "file_name": "50c35ce0-4656-4aaf-baeb-c84690b8f05f.jpg",
+    "phash": "b095153bc2ad756a",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-141813_test\\reports\\20260321_091813\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-141813_test\\reports\\20260321_091813\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-141813_test",
+    "evidence_id": "E-002",
+    "file_name": "50c35ce0-4656-4aaf-baeb-c84690b8f05f.jpg",
+    "phash": "b095153bc2ad756a",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-141813_test\\reports\\20260321_091813\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-141813_test\\reports\\20260321_091813\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-142413_Untitled_Matter",
+    "evidence_id": "E-001",
+    "file_name": "50c35ce0-4656-4aaf-baeb-c84690b8f05f.jpg",
+    "phash": "b095153bc2ad756a",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-142413_Untitled_Matter\\reports\\20260321_092413\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-142413_Untitled_Matter\\reports\\20260321_092413\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-142413_Untitled_Matter",
+    "evidence_id": "E-002",
+    "file_name": "50c35ce0-4656-4aaf-baeb-c84690b8f05f.jpg",
+    "phash": "b095153bc2ad756a",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-142413_Untitled_Matter\\reports\\20260321_092413\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-142413_Untitled_Matter\\reports\\20260321_092413\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-142857_Untitled_Matter",
+    "evidence_id": "E-001",
+    "file_name": "50c35ce0-4656-4aaf-baeb-c84690b8f05f.jpg",
+    "phash": "b095153bc2ad756a",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-142857_Untitled_Matter\\reports\\20260321_092857\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-142857_Untitled_Matter\\reports\\20260321_092857\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-142857_Untitled_Matter",
+    "evidence_id": "E-002",
+    "file_name": "50c35ce0-4656-4aaf-baeb-c84690b8f05f.jpg",
+    "phash": "b095153bc2ad756a",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-142857_Untitled_Matter\\reports\\20260321_092857\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-142857_Untitled_Matter\\reports\\20260321_092857\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-192829_Untitled_Matter",
+    "evidence_id": "E-001",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-192829_Untitled_Matter\\reports\\20260321_142829\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-192829_Untitled_Matter\\reports\\20260321_142829\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-192829_Untitled_Matter",
+    "evidence_id": "E-002",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-192829_Untitled_Matter\\reports\\20260321_142829\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-192829_Untitled_Matter\\reports\\20260321_142829\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-193308_Untitled_Matter",
+    "evidence_id": "E-001",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-193308_Untitled_Matter\\reports\\20260321_143308\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-193308_Untitled_Matter\\reports\\20260321_143308\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-193308_Untitled_Matter",
+    "evidence_id": "E-002",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-193308_Untitled_Matter\\reports\\20260321_143308\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-193308_Untitled_Matter\\reports\\20260321_143308\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-194017_Untitled_Matter",
+    "evidence_id": "E-001",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194017_Untitled_Matter\\reports\\20260321_144017\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194017_Untitled_Matter\\reports\\20260321_144017\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-194017_Untitled_Matter",
+    "evidence_id": "E-002",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194017_Untitled_Matter\\reports\\20260321_144017\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194017_Untitled_Matter\\reports\\20260321_144017\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-194225_Untitled_Matter",
+    "evidence_id": "E-001",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194225_Untitled_Matter\\reports\\20260321_144225\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194225_Untitled_Matter\\reports\\20260321_144225\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-194225_Untitled_Matter",
+    "evidence_id": "E-002",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194225_Untitled_Matter\\reports\\20260321_144225\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194225_Untitled_Matter\\reports\\20260321_144225\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-194425_Untitled_Matter",
+    "evidence_id": "E-001",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194425_Untitled_Matter\\reports\\20260321_144426\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194425_Untitled_Matter\\reports\\20260321_144426\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-194425_Untitled_Matter",
+    "evidence_id": "E-002",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194425_Untitled_Matter\\reports\\20260321_144426\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194425_Untitled_Matter\\reports\\20260321_144426\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-194807_Untitled_Matter",
+    "evidence_id": "E-001",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194807_Untitled_Matter\\reports\\20260321_144807\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194807_Untitled_Matter\\reports\\20260321_144807\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-194807_Untitled_Matter",
+    "evidence_id": "E-002",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194807_Untitled_Matter\\reports\\20260321_144807\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-194807_Untitled_Matter\\reports\\20260321_144807\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-201827_Untitled_Matter",
+    "evidence_id": "E-001",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-201827_Untitled_Matter\\reports\\20260321_151828\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-201827_Untitled_Matter\\reports\\20260321_151828\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-201827_Untitled_Matter",
+    "evidence_id": "E-002",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-201827_Untitled_Matter\\reports\\20260321_151828\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-201827_Untitled_Matter\\reports\\20260321_151828\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-203216_test",
+    "evidence_id": "E-001",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-203216_test\\reports\\20260321_153217\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-203216_test\\reports\\20260321_153217\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-203216_test",
+    "evidence_id": "E-002",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-203216_test\\reports\\20260321_153217\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-203216_test\\reports\\20260321_153217\\analysis_report.json"
+  },
+  {
+    "case_id": "SINGLE-20260321-221255_test",
+    "evidence_id": "E-001",
+    "file_name": "IMG_5800.JPG",
+    "phash": "ccf5970d15b91989",
+    "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-221255_test\\reports\\20260321_171256\\analysis_report.pdf",
+    "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-221255_test\\reports\\20260321_171256\\analysis_report.json"
+  }
+]

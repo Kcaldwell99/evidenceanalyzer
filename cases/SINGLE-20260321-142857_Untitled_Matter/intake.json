@@ -1,0 +1,31 @@
+{
+  "case_id": "SINGLE-20260321-142857",
+  "created_utc": "2026-03-21T14:28:57.338139",
+  "service": "single",
+  "service_name": "Single Image Analysis",
+  "stripe_session_id": "test",
+  "stripe_customer_email": "test@example.com",
+  "stripe_amount_total": null,
+  "stripe_currency": null,
+  "client": {
+    "name": "test",
+    "email": "kc99mail@yahoo.com",
+    "company_name": "Caldwell Law Firm, P.C."
+  },
+  "matter": {
+    "matter_name": "Untitled Matter",
+    "case_reference": "test",
+    "narrative": "test"
+  },
+  "files": [
+    {
+      "filename": "50c35ce0-4656-4aaf-baeb-c84690b8f05f.jpg",
+      "stored_path": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-142857_Untitled_Matter\\uploads\\50c35ce0-4656-4aaf-baeb-c84690b8f05f.jpg",
+      "content_type": "image/jpeg",
+      "size_bytes": 527103,
+      "sha256": "5ca4e24be9e8ae9cb78cea0e9b8cc99fafa266b05c39403a4256bd16230997e4"
+    }
+  ],
+  "rights_followup_requested": false,
+  "status": "intake_received"
+}

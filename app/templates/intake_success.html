@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Received</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #1f2937;
+            padding: 40px;
+        }
+        .card {
+            max-width: 760px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Submission Received</h1>
+    <p><strong>Case ID:</strong> {{ case_id }}</p>
+    <p><strong>Service:</strong> {{ service_name }}</p>
+    <p><strong>Files Received:</strong> {{ file_count }}</p>
+    <p><strong>Contact Email:</strong> {{ client_email }}</p>
+    <p>Your intake has been recorded and the case folder has been created successfully.</p>
+    <p>Your report is being generated and will be available shortly.</p>
+    {% if rights_followup_requested %}
+    <p><strong>Rights & ownership follow-up requested.</strong></p>
+    {% endif %}
+</div>
+</body>
+</html>

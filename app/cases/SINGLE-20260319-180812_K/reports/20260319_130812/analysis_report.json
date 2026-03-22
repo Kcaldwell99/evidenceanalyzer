@@ -1,0 +1,15 @@
+{
+  "file_name": "156490_Emergency Shingle Roof Replacement Completed in Rosenberg, TX Driven Roofing.jpg",
+  "file_size": 277088,
+  "sha256": "49bd1c4968e5a9c55f223c1b36374d4415c62094f2ec8d23f74207a4a132a03b",
+  "phash": "eeb43688b1a491d7",
+  "metadata": {
+    "Orientation": "1"
+  },
+  "c2pa": {
+    "present": false,
+    "details": "C2PA detection not yet implemented."
+  },
+  "analysis_date": "2026-03-19T18:08:12.575786",
+  "finding": "No indicators of manipulation detected from available metadata and file-level review"
+}

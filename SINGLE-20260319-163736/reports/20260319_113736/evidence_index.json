@@ -1,0 +1,11 @@
+[
+  {
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 3.jpg",
+    "sha256": "f4d84e0e19204213cc8672e1f73d0ce7efdd360cc08cc1d946f96df3f1b087d2",
+    "phash": "98e5730ee5b24e2c",
+    "analysis_date": "2026-03-19T16:37:36.781256",
+    "json_report": "SINGLE-20260319-163736\\reports\\20260319_113736\\analysis_report.json",
+    "pdf_report": "SINGLE-20260319-163736\\reports\\20260319_113736\\analysis_report.pdf"
+  }
+]

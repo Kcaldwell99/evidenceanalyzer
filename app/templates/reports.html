@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Case Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px auto;
+            max-width: 1000px;
+            background: #f9fafb;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        h1, h2 {
+            color: #1f2937;
+        }
+        .case-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 15px;
+            background: #ffffff;
+        }
+        .label {
+            font-weight: bold;
+        }
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .muted {
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="section">
+        <h1>Case Dashboard</h1>
+        <p class="muted">All case-centered evidence workspaces.</p>
+
+        {% if items %}
+            {% for item in items %}
+                <div class="case-card">
+                    <h2>
+                        <a href="/cases/{{ item.case_id }}">{{ item.case_id }} - {{ item.case_name }}</a>
+                    </h2>
+                    <p><span class="label">Created:</span> {{ item.created_at }}</p>
+                    <p><span class="label">Description:</span> {{ item.description or "None" }}</p>
+                    <p><span class="label">Evidence Files:</span> {{ item.file_count }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No cases found.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

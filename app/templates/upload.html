@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C2PA Digital Evidence Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #111827;
+            color: white;
+            padding: 24px 30px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 32px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #d1d5db;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 18px;
+            font-size: 26px;
+            color: #111827;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 18px;
+            font-size: 22px;
+            color: #111827;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            margin-top: 14px;
+        }
+
+        input[type="text"],
+        textarea,
+        select,
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+            box-sizing: border-box;
+            background: white;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        button {
+            margin-top: 18px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 10px;
+            background: #2563eb;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .button:hover {
+            background: #1d4ed8;
+            text-decoration: none;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .case-list {
+            margin-top: 14px;
+            padding-left: 20px;
+        }
+
+        .case-list li {
+            margin-bottom: 8px;
+        }
+
+        .case-list a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .case-list a:hover {
+            text-decoration: underline;
+        }
+
+        .note {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+
+        .section-title {
+            margin-bottom: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        @media (max-width: 850px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>C2PA Digital Evidence Analyzer</h1>
+            <p>Authenticate media, manage case evidence, and compare suspect images for similarity and provenance.</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Create New Case</h2>
+                <form action="/create-case" method="post">
+                    <label for="case_name">Case Name</label>
+                    <input type="text" id="case_name" name="case_name" required>
+
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description"></textarea>
+
+                    <button type="submit">Create Case</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Upload Evidence File</h2>
+                <form action="/analyze" method="post" enctype="multipart/form-data">
+                    <label for="case_id">Select Case</label>
+                    <select id="case_id" name="case_id" required>
+                        <option value="">-- Select a Case --</option>
+                        {% for case in cases %}
+                            <option value="{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="file">Choose File</label>
+                    <input type="file" id="file" name="file" required>
+
+                    <div class="note">Analyze the original or reference image first so it is added to the evidence index.</div>
+
+                    <button type="submit">Analyze File</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Compare Suspect Image Against Case</h2>
+                <form action="/compare-against-case" method="post" enctype="multipart/form-data">
+                    <label for="compare_case_id">Select Case</label>
+                    <select id="compare_case_id" name="case_id" required>
+                        {% for case in cases %}
+                            <option value="{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="suspect_file_case">Choose Suspect Image</label>
+                    <input type="file" id="suspect_file_case" name="suspect_file" required>
+
+                    <div class="note">This compares the suspect image to evidence already analyzed within the selected case.</div>
+
+                    <button type="submit">Compare Against Case</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Compare Suspect Image Across All Cases</h2>
+                <form action="/compare-global" method="post" enctype="multipart/form-data">
+                    <label for="suspect_file_global">Choose Suspect Image</label>
+                    <input type="file" id="suspect_file_global" name="suspect_file" required>
+
+                    <div class="note">This searches across all indexed evidence in all cases using perceptual hash similarity.</div>
+
+                    <button type="submit">Search All Cases</button>
+                </form>
+            </div>
+
+            <div class="card full-width">
+                <h2>Existing Cases</h2>
+                {% if cases %}
+                    <ul class="case-list">
+                        {% for case in cases %}
+                            <li>
+                                <a href="/cases/{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No cases created yet.</p>
+                {% endif %}
+            </div>
+
+            <div class="card full-width">
+                <h2>Investigation Tools</h2>
+                <a class="button" href="/global-matches">Open Global Match Dashboard</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

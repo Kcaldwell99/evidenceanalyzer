@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intake</title>
+</head>
+<body>
+    <h1>Evidence Intake Page</h1>
+    <p>Selected service: {{ service }}</p>
+    <p>Session ID: {{ session_id }}</p>
+<form method="POST" action="/submit-intake" enctype="multipart/form-data">
+    <input type="hidden" name="service" value="{{ service }}">
+    <input type="hidden" name="session_id" value="{{ session_id }}">
+
+    <p>
+        <label>Client Name:</label><br>
+        <input type="text" name="client_name" required>
+    </p>
+
+    <p>
+        <label>Client Email:</label><br>
+        <input type="email" name="client_email" required>
+    </p>
+
+    <p>
+        <label>Company Name:</label><br>
+        <input type="text" name="company_name">
+    </p>
+
+    <p>
+        <label>Matter Name:</label><br>
+        <input type="text" name="matter_name" required>
+    </p>
+
+    <p>
+        <label>Case Reference:</label><br>
+        <input type="text" name="case_reference">
+    </p>
+
+    <p>
+        <label>Narrative:</label><br>
+        <textarea name="narrative" required></textarea>
+    </p>
+
+    <p>
+        <label>
+            <input type="checkbox" name="rights_followup_requested" value="yes">
+            Request rights follow-up
+        </label>
+    </p>
+
+    <p>
+        <label>
+            <input type="checkbox" name="disclaimer_accepted" value="yes" required>
+            I accept the disclaimer
+        </label>
+    </p>
+
+    <p>
+        <label>Upload File(s):</label><br>
+        <input type="file" name="files" multiple required>
+    </p>
+
+    <button type="submit">Submit</button>
+</form>
+</body>
+</html>

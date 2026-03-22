@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analysis Result</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px auto;
+            max-width: 1000px;
+            background: #f9fafb;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        h1, h2 {
+            color: #1f2937;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        a.button {
+            display: inline-block;
+            margin-right: 12px;
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        a.button:hover {
+            background: #1d4ed8;
+        }
+
+        pre {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="section">
+
+    <h1>Analysis Result</h1>
+
+    <p>
+        <span class="label">Case ID:</span>
+        {{ case_id }}
+    </p>
+
+    <p>
+        <span class="label">File Name:</span>
+        {{ report.file_name }}
+    </p>
+
+    <p>
+        <span class="label">File Size:</span>
+        {{ report.file_size }}
+    </p>
+
+    <p>
+        <span class="label">SHA-256:</span>
+        {{ report.sha256 }}
+    </p>
+
+    <p>
+        <span class="label">Analysis Date:</span>
+        {{ report.analysis_date }}
+    </p>
+
+</div>
+
+<div class="section">
+
+    <h2>C2PA Provenance</h2>
+
+    <p>
+        <span class="label">Present:</span>
+        {{ report.c2pa.present }}
+    </p>
+
+    <p>
+        <span class="label">Details:</span>
+        {{ report.c2pa.details }}
+    </p>
+
+</div>
+
+<div class="section">
+
+    <h2>Metadata</h2>
+
+    <pre>{{ report.metadata }}</pre>
+
+</div>
+
+<div class="section">
+
+    <h2>Downloads</h2>
+
+    <a class="button"
+       href="/case-files/{{ json_path.replace('\\','/').replace('cases/','') }}"
+       target="_blank">
+        Download JSON Report
+    </a>
+
+    <a class="button"
+       href="/case-files/{{ pdf_path.replace('\\','/').replace('cases/','') }}"
+       target="_blank">
+        Download PDF Report
+    </a>
+
+</div>
+
+<div class="section">
+
+    <a class="button" href="/cases/{{ case_id }}">
+        View Case Dashboard
+    </a>
+
+    <a class="button" href="/reports">
+        Back to Case Dashboard
+    </a>
+
+    <a class="button" href="/">
+        Upload Another File
+    </a>
+
+</div>
+
+</body>
+</html>

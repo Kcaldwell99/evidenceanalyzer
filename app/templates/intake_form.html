@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evidence Analyzer Intake</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 32px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+        }
+        h1 { margin-top: 0; }
+        .notice {
+            background: #eef6ff;
+            padding: 14px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            margin-top: 16px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        textarea { min-height: 160px; }
+        .checkbox-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+        .checkbox-row input {
+            width: auto;
+            margin-top: 4px;
+        }
+        button {
+            margin-top: 24px;
+            background: #111827;
+            color: white;
+            border: none;
+            padding: 14px 22px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Secure Intake Submission</h1>
+
+    <div class="notice">
+        <strong>Service:</strong> {{ service_info.name }}<br>
+        <strong>Price Paid:</strong> ${{ service_info.price }}<br>
+        <strong>Customer Email:</strong> {{ customer_email or "Not provided by Stripe" }}
+    </div>
+
+    <form action="/submit-intake" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="session_id" value="{{ session_id }}">
+        <input type="hidden" name="service" value="{{ service }}">
+
+        <label>Name</label>
+        <input type="text" name="client_name" required>
+
+        <label>Email</label>
+        <input type="email" name="client_email" value="{{ customer_email }}" required>
+
+        <label>Law Firm / Company</label>
+        <input type="text" name="company_name">
+
+        <label>Matter / Project Name</label>
+        <input type="text" name="matter_name" required>
+
+        <label>Case Reference</label>
+        <input type="text" name="case_reference">
+
+        <label>Describe the issue</label>
+        <textarea name="narrative" required></textarea>
+
+        <label>Upload Image File(s)</label>
+        <input type="file" name="files" multiple required>
+
+        <div class="checkbox-row">
+            <input type="checkbox" name="rights_followup_requested" value="yes">
+            <label style="font-weight: normal;">
+                Request copyright / ownership follow-up review
+            </label>
+        </div>
+
+        <div class="checkbox-row">
+            <input type="checkbox" name="disclaimer_accepted" value="yes" required>
+            <label style="font-weight: normal;">
+                I understand these services do not create an attorney-client relationship and consent to review.
+            </label>
+        </div>
+
+        <button type="submit">Submit Intake</button>
+    </form>
+</div>
+</body>
+</html>

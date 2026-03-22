@@ -1,0 +1,158 @@
+[
+  {
+    "event_id": "A-0001",
+    "timestamp": "2026-03-16T15:30:31.287934+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "file_uploaded",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "sha256": null,
+    "user": "system",
+    "notes": "Evidence file uploaded"
+  },
+  {
+    "event_id": "A-0002",
+    "timestamp": "2026-03-16T15:30:31.799983+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "analysis_completed",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "sha256": "451335f3ef08d39d92ee63c874320f2f0a3dcddf228ec5ba59a8e1ecfdc3d6e5",
+    "user": "system",
+    "notes": "Image analysis and forensic report generated",
+    "extra": {
+      "json_report": "cases\\CASE-0001\\reports\\20260316_103031\\analysis_report.json",
+      "pdf_report": "cases\\CASE-0001\\reports\\20260316_103031\\analysis_report.pdf"
+    }
+  },
+  {
+    "event_id": "A-0003",
+    "timestamp": "2026-03-16T15:52:38.168440+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "file_uploaded",
+    "file_name": "02.10.18 Pic 2.jpg",
+    "sha256": null,
+    "user": "system",
+    "notes": "Evidence file uploaded"
+  },
+  {
+    "event_id": "A-0004",
+    "timestamp": "2026-03-16T15:52:38.387542+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "analysis_completed",
+    "file_name": "02.10.18 Pic 2.jpg",
+    "sha256": "ee3a0f10f2e7f57c1738c6a9703f1da980001f3792a86e3738de1c4fa4b3ee22",
+    "user": "system",
+    "notes": "Image analysis and forensic report generated",
+    "extra": {
+      "json_report": "cases/CASE-0001/reports/20260316_105238/analysis_report.json",
+      "pdf_report": "cases/CASE-0001/reports/20260316_105238/analysis_report.pdf"
+    }
+  },
+  {
+    "event_id": "A-0005",
+    "timestamp": "2026-03-16T16:30:50.382310+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "file_uploaded",
+    "file_name": "02.10.18 Pic 3.jpg",
+    "sha256": null,
+    "user": "system",
+    "notes": "Evidence file uploaded"
+  },
+  {
+    "event_id": "A-0006",
+    "timestamp": "2026-03-16T16:30:50.756442+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "analysis_completed",
+    "file_name": "02.10.18 Pic 3.jpg",
+    "sha256": "f4d84e0e19204213cc8672e1f73d0ce7efdd360cc08cc1d946f96df3f1b087d2",
+    "user": "system",
+    "notes": "Image analysis and forensic report generated",
+    "extra": {
+      "json_report": "cases/CASE-0001/reports/20260316_113050/analysis_report.json",
+      "pdf_report": "cases/CASE-0001/reports/20260316_113050/analysis_report.pdf"
+    }
+  },
+  {
+    "event_id": "A-0007",
+    "timestamp": "2026-03-16T20:18:46.043601+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "file_uploaded",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "sha256": null,
+    "user": "system",
+    "notes": "Evidence file uploaded"
+  },
+  {
+    "event_id": "A-0008",
+    "timestamp": "2026-03-16T20:18:46.288527+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "analysis_completed",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "sha256": "451335f3ef08d39d92ee63c874320f2f0a3dcddf228ec5ba59a8e1ecfdc3d6e5",
+    "user": "system",
+    "notes": "Image analysis and forensic report generated",
+    "extra": {
+      "json_report": "cases/CASE-0001/reports/20260316_151846/analysis_report.json",
+      "pdf_report": "cases/CASE-0001/reports/20260316_151846/analysis_report.pdf"
+    }
+  },
+  {
+    "event_id": "A-0009",
+    "timestamp": "2026-03-16T20:19:08.428147+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "file_uploaded",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "sha256": null,
+    "user": "system",
+    "notes": "Evidence file uploaded"
+  },
+  {
+    "event_id": "A-0010",
+    "timestamp": "2026-03-16T20:19:08.576024+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "analysis_completed",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "sha256": "451335f3ef08d39d92ee63c874320f2f0a3dcddf228ec5ba59a8e1ecfdc3d6e5",
+    "user": "system",
+    "notes": "Image analysis and forensic report generated",
+    "extra": {
+      "json_report": "cases/CASE-0001/reports/20260316_151908/analysis_report.json",
+      "pdf_report": "cases/CASE-0001/reports/20260316_151908/analysis_report.pdf"
+    }
+  },
+  {
+    "event_id": "A-0011",
+    "timestamp": "2026-03-16T21:23:00.733691+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "file_uploaded",
+    "file_name": "05 (2).jpg",
+    "sha256": null,
+    "user": "system",
+    "notes": "Evidence file uploaded"
+  },
+  {
+    "event_id": "A-0012",
+    "timestamp": "2026-03-16T21:23:00.897033+00:00",
+    "case_id": "CASE-0001",
+    "evidence_id": null,
+    "event_type": "analysis_completed",
+    "file_name": "05 (2).jpg",
+    "sha256": "6630a3364be02cf1e708b5539b9ccfa96d8c5fe22890defa43944fd63e674aec",
+    "user": "system",
+    "notes": "Image analysis and forensic report generated",
+    "extra": {
+      "json_report": "cases/CASE-0001/reports/20260316_162300/analysis_report.json",
+      "pdf_report": "cases/CASE-0001/reports/20260316_162300/analysis_report.pdf"
+    }
+  }
+]

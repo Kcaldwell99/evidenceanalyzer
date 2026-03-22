@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Compare Files</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px auto;
+            max-width: 900px;
+            background: #f9fafb;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        h1, h2 {
+            color: #1f2937;
+        }
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: bold;
+        }
+        input[type="file"], input[type="text"] {
+            margin-top: 6px;
+            width: 100%;
+            max-width: 500px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 18px;
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Compare Two Files</h1>
+<form action="/compare" method="post" enctype="multipart/form-data">
+
+<label for="case_name">Case Name</label>
+<input type="text" id="case_name" name="case_name" required>
+
+<label for="client_name">Client Name</label>
+<input type="text" id="client_name" name="client_name">
+
+<label for="case_notes">Notes</label>
+<input type="text" id="case_notes" name="case_notes">
+
+<label for="original_file">Original File</label>
+<input type="file" name="original_file" required>
+
+<label for="suspected_file">Suspected Copy</label>
+<input type="file" name="suspected_file" required>
+
+<button type="submit">Compare Files</button>
+
+</form>
+  
+    <div class="section">
+        <a href="/">Back to Upload</a>
+    </div>
+</body>
+</html>

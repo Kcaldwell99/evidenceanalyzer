@@ -1,0 +1,30 @@
+{
+  "case_id": "SINGLE-20260318-231917",
+  "created_utc": "2026-03-18T23:19:17.126909",
+  "service": "single",
+  "service_name": "Single Image Analysis",
+  "stripe_session_id": "test",
+  "stripe_customer_email": "test@example.com",
+  "stripe_amount_total": null,
+  "stripe_currency": null,
+  "client": {
+    "name": "t",
+    "email": "test@example.com",
+    "company_name": "t"
+  },
+  "matter": {
+    "matter_name": "t",
+    "case_reference": "t",
+    "narrative": "t"
+  },
+  "files": [
+    {
+      "filename": "02.10.18 Pic 1.jpg",
+      "stored_path": "C:\\Users\\kcald\\c2pa-evidence-mvp\\app\\cases\\SINGLE-20260318-231917_t\\uploads\\02.10.18 Pic 1.jpg",
+      "content_type": "image/jpeg",
+      "size_bytes": 3153275,
+      "sha256": "451335f3ef08d39d92ee63c874320f2f0a3dcddf228ec5ba59a8e1ecfdc3d6e5"
+    }
+  ],
+  "status": "intake_received"
+}

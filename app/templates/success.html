@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Complete</title>
+</head>
+<body>
+    <h1>Submission Complete</h1>
+
+    <p><strong>Case ID:</strong> {{ case_id }}</p>
+    <p><strong>Service:</strong> {{ service_name }}</p>
+    <p><strong>Files Uploaded:</strong> {{ file_count }}</p>
+    <p><strong>Email:</strong> {{ client_email }}</p>
+
+    {% if rights_followup_requested %}
+    <p>Rights follow-up was requested.</p>
+    {% endif %}
+
+    {% if latest_pdf %}
+    <p><a href="{{ latest_pdf }}" target="_blank">Open report PDF</a></p>
+    {% else %}
+    <p>No PDF report was found.</p>
+    {% endif %}
+
+    <p><a href="/">Return Home</a></p>
+</body>
+</html>

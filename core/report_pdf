@@ -1,0 +1,70 @@
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+
+def generate_pdf_report(report, pdf_path):
+    c = canvas.Canvas(pdf_path, pagesize=letter)
+    width, height = letter
+    y = height - 50
+
+    def line(text, x=50, step=15):
+        nonlocal y
+        c.drawString(x, y, str(text))
+        y -= step
+
+    line("Evidentix Analysis Report")
+    y -= 5
+
+    line("1. File Information")
+    line(f"File Name: {report.get('file_name', 'Not Available')}", 60)
+    line(f"File Size: {report.get('file_size', 'Not Available')} bytes", 60)
+    line(f"SHA256: {report.get('sha256', 'Not Available')}", 60)
+    line(f"Perceptual Hash (pHash): {report.get('phash', 'Not Available')}", 60)
+
+    y -= 5
+    line("2. Integrity / Provenance Review")
+    c2pa = report.get("c2pa", {})
+    line(f"C2PA Present: {c2pa.get('present', False)}", 60)
+    line(f"Details: {c2pa.get('details', 'Not Available')}", 60)
+
+    y -= 5
+    line("3. Overall Finding")
+    line(report.get("finding", "No finding available"), 60)
+
+    y -= 5
+    line("4. Metadata Review - MARCH21TEST")
+    print("PDF NEW CODE RAN")
+
+    metadata = report.get("metadata")
+    exif = report.get("exif", {})
+
+    if exif:
+        line("EXIF metadata detected in the submitted file.", 60)
+        device = exif.get("Model", "Not Available")
+        date_taken = exif.get("DateTimeOriginal", "Not Available")
+        make = exif.get("Make", "Not Available")
+        gps_present = "GPSInfo" in exif
+
+        line(f"Device: {device}", 60)
+        line(f"Date Taken: {date_taken}", 60)
+        line(f"Camera Make: {make}", 60)
+        line(f"GPS Metadata Present: {'Yes' if gps_present else 'No'}", 60)
+
+    elif metadata:
+        line("Basic metadata detected in the submitted file.", 60)
+        for k, v in metadata.items():
+            line(f"{k}: {v}", 60)
+
+    else:
+        line(
+            "No embedded metadata detected. This may indicate metadata was removed during processing or transmission.",
+            60,
+        )
+
+    y -= 5
+    line("5. Rights Information")
+    rights_info = report.get("rights_info", {})
+    for key, value in rights_info.items():
+        line(f"{key}: {value}", 60)
+
+    c.save()
