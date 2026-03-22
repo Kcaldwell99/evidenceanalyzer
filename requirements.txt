@@ -6,4 +6,7 @@ reportlab
 stripe
 pillow
 imagehash
+opencv-python-headless
+
+
 
