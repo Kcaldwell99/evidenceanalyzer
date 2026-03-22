@@ -182,11 +182,52 @@
     </form>
 </div>
 <td>
+<tbody>
+
+<tbody>
+{% for m in evidence_items %}
+<tr>
+    <td>
+        <a href="/cases/{{ case.case_id }}">{{ case.case_id }}</a>
+    </td>
+
+    <td>
+        {{ m.file_name }}
+    </td>
+
+    <td>
+        {% if m.pdf_report %}
+            <a href="/case-files/{{ m.pdf_report.replace('\\', '/').replace('cases/', '') }}" target="_blank">
+                PDF
+            </a>
+        {% else %}
+            -
+        {% endif %}
+    </td>
+
+    <td>
+        {% if m.similarity is defined %}
+            {% if m.similarity >= 90 %}
+                High Match
+            {% elif m.similarity >= 75 %}
+                Possible Match
+            {% else %}
+                Review
+            {% endif %}
+        {% else %}
+            -
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+
+     {% if m.pdf_report %}
     <a href="/cases/{{ case.case_id }}">{{ case.case_id }}</a>
            
 </td>
 <td>
-    {% if m.pdf_report %}
+   
     <a href="/case-files/{{ m.pdf_report.replace('\\','/').replace('cases/','') }}" target="_blank">
         PDF
     </a>
