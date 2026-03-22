@@ -1,61 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Case Detail</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case {{ case.case_id }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 40px auto;
-            max-width: 1000px;
-            background: #f9fafb;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            color: #111827;
         }
 
-        .btn {
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px 40px 20px;
+        }
+
+        .header {
+            background: #0f172a;
+            color: white;
+            padding: 24px 28px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 34px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #cbd5e1;
+            font-size: 16px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 22px;
+            color: #111827;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 10px 16px;
+            margin-top: 10px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .value {
+            color: #111827;
+        }
+
+        .success-banner {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            color: #065f46;
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .button {
             display: inline-block;
-            padding: 10px 14px;
+            padding: 10px 16px;
             background: #2563eb;
             color: white;
             text-decoration: none;
-            border-radius: 6px;
-            margin-right: 10px;
-            border: none;
-            cursor: pointer;
+            border-radius: 10px;
+            font-weight: 600;
         }
 
-        .btn:hover {
+        .button:hover {
             background: #1d4ed8;
-            text-decoration: none;
         }
 
-        .section {
-            background: white;
-            padding: 20px;
-            margin-top: 25px;
-            border-radius: 8px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        .button.secondary {
+            background: #475569;
         }
 
-        h1, h2 {
-            color: #1f2937;
-            margin-top: 0;
+        .button.secondary:hover {
+            background: #334155;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            background: white;
+            margin-top: 10px;
         }
 
         th, td {
-            border-bottom: 1px solid #ddd;
             text-align: left;
-            padding: 10px;
+            padding: 12px 10px;
+            border-bottom: 1px solid #e5e7eb;
             vertical-align: top;
         }
 
         th {
-            background: #f3f4f6;
+            background: #f8fafc;
+            font-size: 14px;
+        }
+
+        td {
+            font-size: 14px;
         }
 
         a {
@@ -67,150 +139,132 @@
             text-decoration: underline;
         }
 
-        .muted {
+        .mono {
+            font-family: Consolas, Monaco, monospace;
+            word-break: break-all;
+            font-size: 13px;
+        }
+
+        .empty {
             color: #6b7280;
+            font-style: italic;
+            padding-top: 6px;
         }
 
-        .success-banner {
-            background: #dcfce7;
-            color: #166534;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border: 1px solid #bbf7d0;
+        .small-note {
+            color: #6b7280;
+            font-size: 13px;
+            margin-top: 10px;
         }
 
-        .top-actions {
-            margin-bottom: 20px;
-        }
+        @media (max-width: 800px) {
+            .meta-grid {
+                grid-template-columns: 1fr;
+            }
 
-        input[type="file"] {
-            padding: 8px 0;
+            table {
+                display: block;
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>Case {{ case.case_id }}</h1>
+            <p>{{ case.case_name }}</p>
+        </div>
 
-    <div class="top-actions">
-        <a href="/cases/{{ case.case_id }}/audit-log" class="btn">Audit Log</a>
-    </div>
-
-    {% if uploaded %}
-    <div class="success-banner">
-        Evidence uploaded and analyzed successfully.
-    </div>
-    {% endif %}
-
-    <div class="section">
-        <h1>{{ case.case_id }} - {{ case.case_name }}</h1>
-        <p><strong>Created:</strong> {{ case.created_at }}</p>
-        <p><strong>Description:</strong> {{ case.description or "None" }}</p>
-    </div>
-
-    <div class="section">
-        <h2>Upload Evidence</h2>
-        <form action="/analyze" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="case_id" value="{{ case.case_id }}">
-
-            <p>
-                <input type="file" name="file" required>
-            </p>
-
-            <p>
-                <button type="submit" class="btn">Upload and Analyze</button>
-            </p>
-        </form>
-    </div>
-
-    <div class="section">
-        <h2>Compare Suspect Image Against This Case</h2>
-        <form action="/compare-case" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="case_id" value="{{ case.case_id }}">
-
-            <p>
-                <input type="file" name="suspect_file" required>
-            </p>
-
-            <p>
-                <button type="submit" class="btn">Compare Against Case Evidence</button>
-            </p>
-        </form>
-    </div>
-
-    <div class="section">
-        <h2>Evidence Index</h2>
-
-        {% if evidence_items %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Evidence ID</th>
-                    <th>File Name</th>
-                    <th>SHA-256</th>
-                    <th>Analysis Date</th>
-                    <th>JSON Report</th>
-                    <th>PDF Report</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in evidence_items %}
-                <tr>
-                    <td>{{ item.evidence_id }}</td>
-                    <td>{{ item.file_name }}</td>
-                    <td style="max-width: 260px; word-break: break-all;">{{ item.sha256 }}</td>
-                    <td>{{ item.analysis_date }}</td>
-                    <td>
-                        <a href="/{{ item.json_report.replace('\\', '/') }}" target="_blank">Open JSON</a>
-                    </td>
-                    <td>
-                        <a href="/{{ item.pdf_report.replace('\\', '/') }}" target="_blank">Open PDF</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p class="muted">No evidence items have been added to this case yet.</p>
+        {% if uploaded %}
+        <div class="success-banner">
+            Evidence file uploaded and analyzed successfully.
+        </div>
         {% endif %}
+
+        <div class="card">
+            <h2>Case Information</h2>
+
+            <div class="meta-grid">
+                <div class="label">Case ID</div>
+                <div class="value">{{ case.case_id }}</div>
+
+                <div class="label">Case Name</div>
+                <div class="value">{{ case.case_name }}</div>
+
+                <div class="label">Description</div>
+                <div class="value">
+                    {% if case.description %}
+                        {{ case.description }}
+                    {% else %}
+                        <span class="empty">No description provided.</span>
+                    {% endif %}
+                </div>
+
+                <div class="label">Created</div>
+                <div class="value">
+                    {% if case.created_at %}
+                        {{ case.created_at }}
+                    {% else %}
+                        <span class="empty">Not available.</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="actions">
+                <a class="button" href="/">Back to Dashboard</a>
+                <a class="button secondary" href="/reports">View All Cases</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Evidence Index</h2>
+
+            {% if evidence_items and evidence_items|length > 0 %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Evidence ID</th>
+                        <th>File Name</th>
+                        <th>SHA-256</th>
+                        <th>Analysis Date</th>
+                        <th>JSON Report</th>
+                        <th>PDF Report</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in evidence_items %}
+                    <tr>
+                        <td>{{ m.evidence_id if m.evidence_id is defined else "-" }}</td>
+                        <td>{{ m.file_name if m.file_name is defined else "-" }}</td>
+                        <td class="mono">{{ m.sha256 if m.sha256 is defined and m.sha256 else "-" }}</td>
+                        <td>{{ m.analysis_date if m.analysis_date is defined and m.analysis_date else "-" }}</td>
+                        <td>
+                            {% if m.json_report is defined and m.json_report %}
+                                <a href="/case-files/{{ m.json_report }}" target="_blank">Open JSON</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if m.pdf_report is defined and m.pdf_report %}
+                                <a href="/case-files/{{ m.pdf_report }}" target="_blank">Open PDF</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="small-note">
+                Reports listed above are generated from the current evidence records stored for this case.
+            </div>
+            {% else %}
+            <div class="empty">No evidence has been analyzed for this case yet.</div>
+            {% endif %}
+        </div>
     </div>
-    <div class="section">
-        <h2>Global Image Search</h2>
-
-        <form action="/compare-global" method="post" enctype="multipart/form-data">
-        <p><input type="file" name="suspect_file" required></p>
-        <p><button type="submit" class="btn">Search Across All Cases</button></p>
-    </form>
-</div>
-<td>
-<tbody>
-
-<tbody>
-
-<tbody>
-    {% for m in evidence_items %}
-<tr>
-    <td>
-        <a href="/cases/{{ case.case_id }}">{{ case.case_id }}</a>
-    </td>
-    <td>
-        {{ m.evidence_id if m.evidence_id is defined else "-" }}
-    </td>
-    <td>
-        {{ m.file_name if m.file_name is defined else "-" }}
-    </td>
-    <td>
-        {% if m.pdf_report is defined and m.pdf_report %}
-            <a href="/case-files/{{ m.pdf_report.replace('\\', '/').replace('cases/', '') }}" target="_blank">PDF</a>
-        {% else %}
-            -
-        {% endif %}
-    </td>
-    <td>
-        {% if m.json_report is defined and m.json_report %}
-            <a href="/case-files/{{ m.json_report.replace('\\', '/').replace('cases/', '') }}" target="_blank">JSON</a>
-        {% else %}
-            -
-        {% endif %}
-    </td>
-    {% endfor %}
-</tbody>
+</body>
+</html>
