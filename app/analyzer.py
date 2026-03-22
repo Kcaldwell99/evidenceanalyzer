@@ -253,7 +253,11 @@ def analyze_file(file_path, case_dir=None):
 
     c.save()
 
-    if case_dir and case_id_value and evidence_id:
+        if case_dir and case_id_value and evidence_id:
+        case_root = os.path.dirname(case_dir)
+        relative_json_path = os.path.relpath(json_path, start=case_root).replace("\\", "/")
+        relative_pdf_path = os.path.relpath(pdf_path, start=case_root).replace("\\", "/")
+
         db = SessionLocal()
         try:
             db_item = EvidenceItem(
@@ -263,8 +267,8 @@ def analyze_file(file_path, case_dir=None):
                 sha256=file_hash,
                 phash=phash,
                 analysis_date=report["analysis_date"],
-                json_report=json_path,
-                pdf_report=pdf_path,
+                json_report=relative_json_path,
+                pdf_report=relative_pdf_path,
             )
             db.add(db_item)
             db.commit()
@@ -276,8 +280,10 @@ def analyze_file(file_path, case_dir=None):
             evidence_id,
             os.path.basename(file_path),
             phash,
-            pdf_path,
-            json_path,
+            relative_pdf_path,
+            relative_json_path,
         )
 
     return report, json_path, pdf_path
+
+   
