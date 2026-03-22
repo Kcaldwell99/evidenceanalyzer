@@ -7,4 +7,6 @@ stripe
 pillow
 imagehash
 opencv-python-headless
+scikit-image
+
 
