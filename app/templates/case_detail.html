@@ -216,10 +216,8 @@
 {% endfor %}
 </tbody>
 
-{% for m in evidence_items %}
-<tr>
-    <td>{{ m.file_name }}</td>
-    <td>
+<td>
+    {% if m.similarity is defined %}
         {% if m.similarity >= 90 %}
             <strong style="color:red">{{ m.similarity }}%</strong>
         {% elif m.similarity >= 70 %}
@@ -227,6 +225,7 @@
         {% else %}
             {{ m.similarity }}%
         {% endif %}
-    </td>
-</tr>
-{% endfor %}
+    {% else %}
+        -
+    {% endif %}
+</td>
