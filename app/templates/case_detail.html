@@ -212,20 +212,5 @@
             -
         {% endif %}
     </td>
-</tr>
-{% endfor %}
+    {% endfor %}
 </tbody>
-
-<td>
-    {% if m.similarity is defined %}
-        {% if m.similarity >= 90 %}
-            <strong style="color:red">{{ m.similarity }}%</strong>
-        {% elif m.similarity >= 70 %}
-            <span style="color:orange">{{ m.similarity }}%</span>
-        {% else %}
-            {{ m.similarity }}%
-        {% endif %}
-    {% else %}
-        -
-    {% endif %}
-</td>
