@@ -253,13 +253,13 @@ def analyze_file(file_path, case_dir=None):
 
     c.save()
 
-        if case_dir and case_id_value and evidence_id:
+    if case_dir and case_id_value and evidence_id:
         case_root = os.path.dirname(case_dir)
         relative_json_path = os.path.relpath(json_path, start=case_root).replace("\\", "/")
         relative_pdf_path = os.path.relpath(pdf_path, start=case_root).replace("\\", "/")
 
         db = SessionLocal()
-        try:
+    try:
             db_item = EvidenceItem(
                 case_id=case_id_value,
                 evidence_id=evidence_id,
@@ -272,7 +272,7 @@ def analyze_file(file_path, case_dir=None):
             )
             db.add(db_item)
             db.commit()
-        finally:
+    finally:
             db.close()
 
         add_fingerprint(
