@@ -16,6 +16,7 @@ from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
 from app.db import SessionLocal, engine
 from app.models import Base, Case, EvidenceItem
+from app.storage import upload_file
 
 from core.batch_scan import scan_folder
 from core.compare_files import compare_two_files, compare_against_case, compare_against_all_cases
@@ -151,9 +152,9 @@ def verify_checkout_session(session_id: str):
 async def upload_page(request: Request):
     data = load_cases()
     return templates.TemplateResponse(
+        request,
         "upload.html",
         {
-            "request": request,
             "cases": data["cases"],
         },
     )
@@ -183,9 +184,9 @@ async def create_case(
         updated_data = load_cases()
 
         return templates.TemplateResponse(
+            request,
             "upload.html",
             {
-                "request": request,
                 "cases": updated_data["cases"],
                 "message": f"Case created successfully: {case_id}",
             },
@@ -219,9 +220,9 @@ def reports_page(request: Request):
             )
 
         return templates.TemplateResponse(
+            request,
             "reports.html",
             {
-                "request": request,
                 "items": items,
             },
         )
@@ -268,9 +269,9 @@ async def case_detail(request: Request, case_id: str):
         ]
 
         return templates.TemplateResponse(
+            request,
             "case_detail.html",
             {
-                "request": request,
                 "case": case_record,
                 "evidence_items": evidence_items,
                 "uploaded": uploaded,
@@ -279,20 +280,6 @@ async def case_detail(request: Request, case_id: str):
     finally:
         db.close()
 
-
-@app.post("/analyze")
-async def analyze_file_route(
-    request: Request,
-    case_id: str = Form(...),
-    file: UploadFile = File(...),
-):
-    case_dir = CASES_DIR / case_id
-    case_upload_dir = case_dir / "uploads"
-    case_upload_dir.mkdir(parents=True, exist_ok=True)
-
-    file_path = case_upload_dir / file.filename
-
-from app.storage import upload_file
 
 @app.post("/analyze")
 async def analyze_file_route(
@@ -348,6 +335,7 @@ async def analyze_file_route(
         status_code=303,
     )
 
+
 # =========================================================
 # COMPARISON WORKFLOW
 # =========================================================
@@ -355,8 +343,9 @@ async def analyze_file_route(
 @app.get("/compare", response_class=HTMLResponse)
 async def compare_page(request: Request):
     return templates.TemplateResponse(
+        request,
         "compare.html",
-        {"request": request},
+        {},
     )
 
 
@@ -385,9 +374,9 @@ async def compare_submit(
     comparison = compare_two_files(str(original_path), str(suspected_path), str(case_path))
 
     return templates.TemplateResponse(
+        request,
         "compare_result.html",
         {
-            "request": request,
             "comparison": comparison,
             "case_name": case_name,
             "client_name": client_name,
@@ -430,9 +419,9 @@ async def compare_case_route(
     )
 
     return templates.TemplateResponse(
+        request,
         "compare_case_result.html",
         {
-            "request": request,
             "case_id": case_id,
             "suspect_file": suspect_file.filename,
             "suspect_phash": result.get("suspect_phash"),
@@ -469,9 +458,9 @@ async def compare_global_route(
     )
 
     return templates.TemplateResponse(
+        request,
         "compare_global_result.html",
         {
-            "request": request,
             "suspect_file": suspect_file.filename,
             "suspect_phash": result.get("suspect_phash"),
             "matches": result.get("matches", []),
@@ -486,8 +475,9 @@ async def compare_global_route(
 @app.get("/batch-scan", response_class=HTMLResponse)
 async def batch_scan_page(request: Request):
     return templates.TemplateResponse(
+        request,
         "batch_scan.html",
-        {"request": request},
+        {},
     )
 
 
@@ -502,9 +492,9 @@ async def batch_scan_route(
     results = scan_folder(folder_path)
 
     return templates.TemplateResponse(
+        request,
         "batch_scan_result.html",
         {
-            "request": request,
             "folder": folder_path,
             "results": results,
         },
@@ -518,9 +508,9 @@ async def batch_scan_route(
 @app.get("/copyright-search", response_class=HTMLResponse)
 async def copyright_search_page(request: Request):
     return templates.TemplateResponse(
+        request,
         "copyright_search.html",
         {
-            "request": request,
             "search_link": None,
             "title": "",
             "author": "",
@@ -549,9 +539,9 @@ async def copyright_search_submit(
     )
 
     return templates.TemplateResponse(
+        request,
         "copyright_search.html",
         {
-            "request": request,
             "search_link": search_link,
             "title": title,
             "author": author,
@@ -581,9 +571,9 @@ async def intake_page(
         session = verify_checkout_session(session_id)
 
     return templates.TemplateResponse(
+        request,
         "intake_form.html",
         {
-            "request": request,
             "session_id": session_id,
             "service": service,
             "service_info": SERVICE_MAP[service],
@@ -698,9 +688,9 @@ async def submit_intake(
         analyze_file(image_path, case_dir=str(case_dir))
 
     return templates.TemplateResponse(
+        request,
         "intake_success.html",
         {
-            "request": request,
             "case_id": case_id,
             "service_name": SERVICE_MAP[service]["name"],
             "file_count": len(uploaded_items),
