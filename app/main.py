@@ -292,10 +292,13 @@ async def analyze_file_route(
 
     file_path = case_upload_dir / file.filename
 
-    with file_path.open("wb") as buffer:
-        buffer.write(await file.read())
+from app.storage import upload_file
 
-    log_audit_event(
+file_key = upload_file(file.file, file.filename, file.content_type)
+
+print("Uploaded to S3:", file_key)
+
+log_audit_event(
         event_type="file_uploaded",
         case_id=case_id,
         file_name=file.filename,
