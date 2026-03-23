@@ -235,26 +235,26 @@
                 <tbody>
                     {% for m in evidence_items %}
                     <tr>
-                        <td>{{ m.evidence_id if m.evidence_id is defined else "-" }}</td>
-                        <td>{{ m.file_name if m.file_name is defined else "-" }}</td>
-                        <td class="mono">{{ m.sha256 if m.sha256 is defined and m.sha256 else "-" }}</td>
-                        <td>{{ m.analysis_date if m.analysis_date is defined and m.analysis_date else "-" }}</td>
+                        <td>{{ m.evidence_id or "-" }}</td>
+                        <td>{{ m.file_name or "-" }}</td>
+                        <td class="mono">{{ m.sha256 or "-" }}</td>
+                        <td>{{ m.analysis_date or "-" }}</td>
                         <td>
-                            {% if m.json_report is defined and m.json_report %}
+                            {% if m.json_report %}
                                 <a href="/case-files/{{ m.json_report }}" target="_blank">Open JSON</a>
                             {% else %}
                                 -
                             {% endif %}
                         </td>
                         <td>
-                            {% if m.pdf_report is defined and m.pdf_report %}
+                            {% if m.pdf_report %}
                                 <a href="/case-files/{{ m.pdf_report }}" target="_blank">Open PDF</a>
                             {% else %}
                                 -
                             {% endif %}
                         </td>
                     </tr>
-                            {% endfor %}
+                    {% endfor %}
                 </tbody>
             </table>
 
