@@ -306,21 +306,21 @@ log_audit_event(
         notes="Evidence file uploaded",
     )
 
-    report, json_path, pdf_path = analyze_file(str(file_path), case_dir=str(case_dir))
+report, json_path, pdf_path = analyze_file(str(file_path), case_dir=str(case_dir))
 
-    json_path = json_path.replace("\\", "/")
-    pdf_path = pdf_path.replace("\\", "/")
+json_path = json_path.replace("\\", "/")
+pdf_path = pdf_path.replace("\\", "/")
 
-    log_audit_event(
-        event_type="analysis_completed",
-        case_id=case_id,
-        file_name=file.filename,
-        sha256=report.get("sha256"),
-        user="system",
-        notes="Image analysis and forensic report generated",
-        extra={
-            "json_report": json_path,
-            "pdf_report": pdf_path,
+log_audit_event(
+    event_type="analysis_completed",
+    case_id=case_id,
+    file_name=file.filename,
+    sha256=report.get("sha256"),
+    user="system",
+    notes="Image analysis and forensic report generated",
+    extra={
+        "json_report": json_path,
+        "pdf_report": pdf_path,
         },
     )
 
