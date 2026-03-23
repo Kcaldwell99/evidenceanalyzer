@@ -294,11 +294,29 @@ async def analyze_file_route(
 
 from app.storage import upload_file
 
-file_key = upload_file(file.file, file.filename, file.content_type)
+@app.post("/analyze")
+async def analyze_file_route(
+    request: Request,
+    case_id: str = Form(...),
+    file: UploadFile = File(...),
+):
+    case_dir = CASES_DIR / case_id
+    case_upload_dir = case_dir / "uploads"
+    case_upload_dir.mkdir(parents=True, exist_ok=True)
 
-print("Uploaded to S3:", file_key)
+    file_path = case_upload_dir / file.filename
 
-log_audit_event(
+    # Save locally first so analyze_file can read it
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Reset stream before uploading to S3
+    file.file.seek(0)
+
+    file_key = upload_file(file.file, file.filename, file.content_type)
+    print("Uploaded to S3:", file_key)
+
+    log_audit_event(
         event_type="file_uploaded",
         case_id=case_id,
         file_name=file.filename,
@@ -306,21 +324,22 @@ log_audit_event(
         notes="Evidence file uploaded",
     )
 
-report, json_path, pdf_path = analyze_file(str(file_path), case_dir=str(case_dir))
+    report, json_path, pdf_path = analyze_file(str(file_path), case_dir=str(case_dir))
 
-json_path = json_path.replace("\\", "/")
-pdf_path = pdf_path.replace("\\", "/")
+    json_path = json_path.replace("\\", "/")
+    pdf_path = pdf_path.replace("\\", "/")
 
-log_audit_event(
-    event_type="analysis_completed",
-    case_id=case_id,
-    file_name=file.filename,
-    sha256=report.get("sha256"),
-    user="system",
-    notes="Image analysis and forensic report generated",
-    extra={
-        "json_report": json_path,
-        "pdf_report": pdf_path,
+    log_audit_event(
+        event_type="analysis_completed",
+        case_id=case_id,
+        file_name=file.filename,
+        sha256=report.get("sha256"),
+        user="system",
+        notes="Image analysis and forensic report generated",
+        extra={
+            "json_report": json_path,
+            "pdf_report": pdf_path,
+            "s3_file_key": file_key,
         },
     )
 
@@ -328,7 +347,6 @@ log_audit_event(
         url=f"/cases/{case_id}?uploaded=1",
         status_code=303,
     )
-
 
 # =========================================================
 # COMPARISON WORKFLOW

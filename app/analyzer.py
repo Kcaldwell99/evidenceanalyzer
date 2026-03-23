@@ -259,7 +259,7 @@ def analyze_file(file_path, case_dir=None):
         relative_pdf_path = os.path.relpath(pdf_path, start=case_root).replace("\\", "/")
 
         db = SessionLocal()
-    try:
+        try:
             db_item = EvidenceItem(
                 case_id=case_id_value,
                 evidence_id=evidence_id,
@@ -272,7 +272,7 @@ def analyze_file(file_path, case_dir=None):
             )
             db.add(db_item)
             db.commit()
-    finally:
+        finally:
             db.close()
 
         add_fingerprint(
@@ -285,5 +285,3 @@ def analyze_file(file_path, case_dir=None):
         )
 
     return report, json_path, pdf_path
-
-   
