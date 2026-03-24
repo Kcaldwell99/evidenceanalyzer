@@ -26,3 +26,4 @@ class EvidenceItem(Base):
     analysis_date = Column(String(100), nullable=True)
     json_report = Column(Text, nullable=True)
     pdf_report = Column(Text, nullable=True)
+    file_key = Column(String(500), nullable=True)
