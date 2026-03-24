@@ -150,13 +150,13 @@ async def upload_page(request: Request):
     cases = load_cases()
 
     return templates.TemplateResponse(
-    request,
-    "upload.html",
-    {
-        "cases": cases,
-    },
-)
-
+        request,
+        "upload.html",
+        {
+            "cases": cases,
+        },
+    )
+   
 @app.post("/create-case", response_class=HTMLResponse)
 async def create_case(
     request: Request,
