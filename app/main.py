@@ -712,7 +712,6 @@ async def download_case_file(case_id: str, subfolder: str, timestamp: str, filen
 def add_column():
     from app.db import engine
     with engine.begin () as conn:
-        conn.execute(
-            "ALTER TABLE evidence_items ADD COLUMN file_key VARCHAR"
+        conn.execute(text("ALTER TABLE evidence_items ADD COLUMN file_key VARCHAR")
         )
     return {"status": "column added"}
