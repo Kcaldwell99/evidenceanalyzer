@@ -708,10 +708,10 @@ async def download_case_file(case_id: str, subfolder: str, timestamp: str, filen
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found.")
     return FileResponse(str(file_path), filename=filename)
-@app.get("/add-column")
-def add_column():
-    from app.db import engine
-    with engine.begin () as conn:
-        conn.execute(text("ALTER TABLE evidence_items ADD COLUMN file_key VARCHAR")
-        )
-    return {"status": "column added"}
+#@app.get("/add-column")
+#def add_column():
+#    from app.db import engine
+#    with engine.begin () as conn:
+#        conn.execute(text("ALTER TABLE evidence_items ADD COLUMN file_key VARCHAR")
+#        )
+#    return {"status": "column added"}
