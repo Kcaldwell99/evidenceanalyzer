@@ -82,20 +82,17 @@ def load_cases():
     db = SessionLocal()
     try:
         cases = db.query(Case).order_by(Case.id.asc()).all()
-        return {
-            "cases": [
-                {
-                    "case_id": c.case_id,
-                    "case_name": c.case_name,
-                    "description": c.description or "",
-                    "created_at": c.created_at.strftime("%Y-%m-%d %H:%M:%S") if c.created_at else "",
-                }
-                for c in cases
-            ]
-        }
+        return [
+            {
+                "case_id": c.case_id,
+                "case_name": c.case_name,
+                "description": c.description or "",
+                "created_at": c.created_at.strftime("%Y-%m-%d %H:%M:%S") if c.created_at else "",
+            }
+            for c in cases
+        ]
     finally:
         db.close()
-
 
 def generate_case_id(existing_cases):
     next_number = len(existing_cases) + 1
@@ -150,15 +147,15 @@ def verify_checkout_session(session_id: str):
 
 @app.get("/", response_class=HTMLResponse)
 async def upload_page(request: Request):
-    data = load_cases()
-    return templates.TemplateResponse(
-        request,
-        "upload.html",
-        {
-            "cases": data["cases"],
-        },
-    )
+cases = load_cases()
 
+return templates.TemplateResponse(
+    request,
+    "upload.html",
+    {
+        "cases": cases,
+    },
+)
 
 @app.post("/create-case", response_class=HTMLResponse)
 async def create_case(
