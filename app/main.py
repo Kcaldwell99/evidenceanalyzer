@@ -21,6 +21,7 @@ from app.storage import upload_file
 from core.batch_scan import scan_folder
 from core.compare_files import compare_two_files, compare_against_case, compare_against_all_cases
 from core.copyright_lookup import build_copyright_search_link
+from sqlalchemy import text
 
 
 # =========================================================
@@ -710,7 +711,7 @@ async def download_case_file(case_id: str, subfolder: str, timestamp: str, filen
 @app.get("/add-column")
 def add_column():
     from app.db import engine
-    with engine.connect() as conn:
+    with engine.begin () as conn:
         conn.execute(
             "ALTER TABLE evidence_items ADD COLUMN file_key VARCHAR"
         )
