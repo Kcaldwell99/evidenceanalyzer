@@ -147,9 +147,9 @@ def verify_checkout_session(session_id: str):
 
 @app.get("/", response_class=HTMLResponse)
 async def upload_page(request: Request):
-cases = load_cases()
+    cases = load_cases()
 
-return templates.TemplateResponse(
+    return templates.TemplateResponse(
     request,
     "upload.html",
     {
