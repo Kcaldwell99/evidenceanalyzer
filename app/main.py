@@ -183,11 +183,12 @@ async def create_case(
         return templates.TemplateResponse(
             request,
             "upload.html",
-            {
-                "cases": updated_data["cases"],
+    {
+                "cases": updated_data,
                 "message": f"Case created successfully: {case_id}",
-            },
-        )
+    },
+)
+        
     finally:
         db.close()
 
