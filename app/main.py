@@ -310,14 +310,11 @@ async def analyze_file_route(
         user="system",
         notes="Evidence file uploaded",
     )
-report, json_path, pdf_path = analyze_file(
+    report, json_path, pdf_path = analyze_file(
     str(file_path),
     case_dir=str(case_dir),
     file_key=file_key,
 )
-    json_path = json_path.replace("\\", "/")
-    pdf_path = pdf_path.replace("\\", "/")
-
     log_audit_event(
         event_type="analysis_completed",
         case_id=case_id,
