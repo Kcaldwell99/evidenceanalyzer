@@ -724,56 +724,6 @@ async def submit_intake(
 # DOWNLOAD BUNDLE
 # =========================================================
 
-import zipfile
-import tempfile
-import requests
-
-@app.get("/download-bundle/{case_id}/{evidence_id}")
-async def download_bundle(case_id: str, evidence_id: str):
-    from app.storage import generate_presigned_url
-
-    db = SessionLocal()
-    try:
-        item = (
-            db.query(EvidenceItem)
-            .filter(
-                EvidenceItem.case_id == case_id,
-                EvidenceItem.evidence_id == evidence_id,
-            )
-            .first()
-        )
-
-        if not item:
-            raise HTTPException(status_code=404, detail="Evidence not found.")
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp:
-            zip_path = tmp.name
-
-        with zipfile.ZipFile(zip_path, "w") as zipf:
-            if item.file_key:
-                url = generate_presigned_url(item.file_key)
-                r = requests.get(url)
-                zipf.writestr(item.file_name, r.content)
-
-            if item.json_report:
-                json_path = os.path.join("cases", case_id, item.json_report)
-                if os.path.exists(json_path):
-                    zipf.write(json_path, "analysis_report.json")
-
-            if item.pdf_report:
-                pdf_path = os.path.join("cases", case_id, item.pdf_report)
-                if os.path.exists(pdf_path):
-                    zipf.write(pdf_path, "analysis_report.pdf")
-
-        return FileResponse(
-            zip_path,
-            filename=f"{case_id}_{evidence_id}_bundle.zip",
-            media_type="application/zip",
-        )
-
-    finally:
-        db.close()
-
 
 # =========================================================
 # OPTIONAL FILE DOWNLOAD HELPERS
