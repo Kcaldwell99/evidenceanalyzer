@@ -250,6 +250,13 @@
                                 -
                             {% endif %}
                         </td>
+                        <td>
+                            {% if m.file_key %}
+                                <a href="/evidence-file/{{ case.case_id }}/{{ m.evidence_id }}" target="_blank">Open Original</a>
+                            {% else %}
+                                -
+                            {% endif %}
+</td>
                         <td>{{ m.file_key or "NO_FILE_KEY" }}</td>
                          </td>
                     </tr>
