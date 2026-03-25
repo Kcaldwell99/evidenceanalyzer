@@ -231,7 +231,7 @@
                         <th>Original File</th>
                         <th>JSON Report</th>
                         <th>PDF Report</th>
-                    </tr>
+                </tr>
                 </thead>
                 <tbody>
                     {% for m in evidence_items %}
@@ -241,11 +241,7 @@
                         <td class="mono">{{ m.sha256 or "-" }}</td>
                         <td>{{ m.analysis_date or "-" }}</td>
                         <td>
-                            {% if m.file_key %}
-                                <a href="/evidence-file/{{ case.case_id }}/{{ m.evidence_id }}" target="_blank">Open Original</a>
-                            {% else %}
-                                -
-                            {% endif %}
+                         
                         </td>
                         <td>
                             {% if m.json_report %}
@@ -254,13 +250,8 @@
                                 -
                             {% endif %}
                         </td>
-                        <td>
-                            {% if m.pdf_report %}
-                                <a href="/case-files/{{ m.pdf_report }}" target="_blank">Open PDF</a>
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
+                        <td>{{ m.file_key or "NO_FILE_KEY" }}</td>
+                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
