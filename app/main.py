@@ -333,8 +333,28 @@ async def analyze_file_route(
         url=f"/cases/{case_id}?uploaded=1",
         status_code=303,
     )
+@app.get("/evidence-file/{case_id}/{evidence_id}")
+async def evidence_file_redirect(case_id: str, evidence_id: str):
+    from app.storage import generate_presigned_url
 
+    db = SessionLocal()
+    try:
+        item = (
+            db.query(EvidenceItem)
+            .filter(
+                EvidenceItem.case_id == case_id,
+                EvidenceItem.evidence_id == evidence_id,
+            )
+            .first()
+        )
 
+        if not item or not item.file_key:
+            raise HTTPException(status_code=404, detail="Original file not found.")
+
+        url = generate_presigned_url(item.file_key)
+        return RedirectResponse(url=url, status_code=302)
+    finally:
+        db.close()
 # =========================================================
 # COMPARISON WORKFLOW
 # =========================================================
