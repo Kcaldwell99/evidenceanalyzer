@@ -720,6 +720,10 @@ async def submit_intake(
 # DOWNLOAD BUNDLE (NEW FEATURE)
 # =========================================================
 
+# =========================================================
+# DOWNLOAD BUNDLE
+# =========================================================
+
 import zipfile
 import tempfile
 import requests
@@ -766,14 +770,31 @@ async def download_bundle(case_id: str, evidence_id: str):
             filename=f"{case_id}_{evidence_id}_bundle.zip",
             media_type="application/zip",
         )
+
     finally:
         db.close()
+
+
 # =========================================================
 # OPTIONAL FILE DOWNLOAD HELPERS
 # =========================================================
 
-#if not os.getenv("ALLOW_FREE_DOWNLOADS", "false") == "true":
-#    raise HTTPException(status_code=403, detail="Payment required to download bundle.")
+@app.get("/download-case-file/{case_id}/{subfolder}/{timestamp}/{filename}")
+async def download_case_file(case_id: str, subfolder: str, timestamp: str, filename: str):
+    file_path = CASES_DIR / case_id / subfolder / timestamp / filename
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found.")
+
+    return FileResponse(str(file_path), filename=filename)
+
+# =========================================================
+# DOWNLOAD BUNDLE
+# =========================================================
+
+import zipfile
+import tempfile
+import requests
 
 @app.get("/download-bundle/{case_id}/{evidence_id}")
 async def download_bundle(case_id: str, evidence_id: str):
@@ -793,16 +814,10 @@ async def download_bundle(case_id: str, evidence_id: str):
         if not item:
             raise HTTPException(status_code=404, detail="Evidence not found.")
 
-        import zipfile
-        import tempfile
-        import requests
-        import os
-
         with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp:
             zip_path = tmp.name
 
         with zipfile.ZipFile(zip_path, "w") as zipf:
-
             if item.file_key:
                 url = generate_presigned_url(item.file_key)
                 r = requests.get(url)
@@ -826,6 +841,27 @@ async def download_bundle(case_id: str, evidence_id: str):
 
     finally:
         db.close()
+
+
+# =========================================================
+# OPTIONAL FILE DOWNLOAD HELPERS
+# =========================================================
+
+@app.get("/download-case-file/{case_id}/{subfolder}/{timestamp}/{filename}")
+async def download_case_file(case_id: str, subfolder: str, timestamp: str, filename: str):
+    file_path = CASES_DIR / case_id / subfolder / timestamp / filename
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found.")
+
+    return FileResponse(str(file_path), filename=filename)
+
+# =========================================================
+# OPTIONAL FILE DOWNLOAD HELPERS
+# =========================================================
+
+#if not os.getenv("ALLOW_FREE_DOWNLOADS", "false") == "true":
+#    raise HTTPException(status_code=403, detail="Payment required to download bundle.")
 
 
 @app.get("/download-case-file/{case_id}/{subfolder}/{timestamp}/{filename}")
