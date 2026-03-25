@@ -217,60 +217,62 @@
             </div>
         </div>
 
-<div class="card">
-    <h2>Evidence Index</h2>
+        <div class="card">
+            <h2>Evidence Index</h2>
 
-    {% if evidence_items and evidence_items|length > 0 %}
-    <table>
-        <thead>
-            <tr>
-                <th>Evidence ID</th>
-                <th>File Name</th>
-                <th>SHA-256</th>
-                <th>Analysis Date</th>
-                <th>Original File</th>
-                <th>JSON Report</th>
-                <th>PDF Report</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for m in evidence_items %}
-            <tr>
-                <td>{{ m.evidence_id or "-" }}</td>
-                <td>{{ m.file_name or "-" }}</td>
-                <td class="mono">{{ m.sha256 or "-" }}</td>
-                <td>{{ m.analysis_date or "-" }}</td>
-                <td>
-                    {% if m.file_key %}
-                        <a href="/evidence-file/{{ case.case_id }}/{{ m.evidence_id }}" target="_blank">Open Original</a>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                <td>
-                    {% if m.json_report %}
-                        <a href="/case-files/{{ m.json_report }}" target="_blank">Open JSON</a>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                <td>
-                    {% if m.pdf_report %}
-                        <a href="/case-files/{{ m.pdf_report }}" target="_blank">Open PDF</a>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            {% if evidence_items and evidence_items|length > 0 %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Evidence ID</th>
+                        <th>File Name</th>
+                        <th>SHA-256</th>
+                        <th>Analysis Date</th>
+                        <th>Original File</th>
+                        <th>JSON Report</th>
+                        <th>PDF Report</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in evidence_items %}
+                    <tr>
+                        <td>{{ m.evidence_id or "-" }}</td>
+                        <td>{{ m.file_name or "-" }}</td>
+                        <td class="mono">{{ m.sha256 or "-" }}</td>
+                        <td>{{ m.analysis_date or "-" }}</td>
+                        <td>
+                            {% if m.file_key %}
+                                <a href="/evidence-file/{{ case.case_id }}/{{ m.evidence_id }}" target="_blank">Open Original</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if m.json_report %}
+                                <a href="/case-files/{{ m.json_report }}" target="_blank">Open JSON</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if m.pdf_report %}
+                                <a href="/case-files/{{ m.pdf_report }}" target="_blank">Open PDF</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
-    <div class="small-note">
-        Reports listed above are generated from the current evidence records stored for this case.
+            <div class="small-note">
+                Reports listed above are generated from the current evidence records stored for this case.
+            </div>
+            {% else %}
+            <div class="empty">No evidence has been analyzed for this case yet.</div>
+            {% endif %}
+        </div>
     </div>
-    {% else %}
-    <div class="empty">No evidence has been analyzed for this case yet.</div>
-    {% endif %}
-</div>
-
+</body>
+</html>
