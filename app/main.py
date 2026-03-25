@@ -775,6 +775,9 @@ async def download_bundle(case_id: str, evidence_id: str):
 # OPTIONAL FILE DOWNLOAD HELPERS
 # =========================================================
 
+if not os.getenv("ALLOW_FREE_DOWNLOADS", "false") == "true":
+    raise HTTPException(status_code=403, detail="Payment required to download bundle.")
+
 @app.get("/download-case-file/{case_id}/{subfolder}/{timestamp}/{filename}")
 async def download_case_file(case_id: str, subfolder: str, timestamp: str, filename: str):
     file_path = CASES_DIR / case_id / subfolder / timestamp / filename
