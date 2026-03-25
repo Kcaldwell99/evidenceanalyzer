@@ -777,6 +777,56 @@ async def download_bundle(case_id: str, evidence_id: str):
 
 @app.get("/download-bundle/{case_id}/{evidence_id}")
 async def download_bundle(case_id: str, evidence_id: str):
+    from app.storage import generate_presigned_url
+
+    db = SessionLocal()
+    try:
+        item = (
+            db.query(EvidenceItem)
+            .filter(
+                EvidenceItem.case_id == case_id,
+                EvidenceItem.evidence_id == evidence_id,
+            )
+            .first()
+        )
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Evidence not found.")
+
+        import zipfile
+        import tempfile
+        import requests
+        import os
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp:
+            zip_path = tmp.name
+
+        with zipfile.ZipFile(zip_path, "w") as zipf:
+
+            if item.file_key:
+                url = generate_presigned_url(item.file_key)
+                r = requests.get(url)
+                zipf.writestr(item.file_name, r.content)
+
+            if item.json_report:
+                json_path = os.path.join("cases", case_id, item.json_report)
+                if os.path.exists(json_path):
+                    zipf.write(json_path, "analysis_report.json")
+
+            if item.pdf_report:
+                pdf_path = os.path.join("cases", case_id, item.pdf_report)
+                if os.path.exists(pdf_path):
+                    zipf.write(pdf_path, "analysis_report.pdf")
+
+        return FileResponse(
+            zip_path,
+            filename=f"{case_id}_{evidence_id}_bundle.zip",
+            media_type="application/zip",
+        )
+
+    finally:
+        db.close()
+
 
 @app.get("/download-case-file/{case_id}/{subfolder}/{timestamp}/{filename}")
 async def download_case_file(case_id: str, subfolder: str, timestamp: str, filename: str):
@@ -786,11 +836,3 @@ async def download_case_file(case_id: str, subfolder: str, timestamp: str, filen
         raise HTTPException(status_code=404, detail="File not found.")
 
     return FileResponse(str(file_path), filename=filename)
-
-#@app.get("/add-column")
-#def add_column():
-#    from app.db import engine
-#    with engine.begin () as conn:
-#        conn.execute(text("ALTER TABLE evidence_items ADD COLUMN file_key VARCHAR")
-#        )
-#    return {"status": "column added"}
