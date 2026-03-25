@@ -263,6 +263,7 @@ async def case_detail(request: Request, case_id: str):
                 "analysis_date": e.analysis_date,
                 "json_report": e.json_report,
                 "pdf_report": e.pdf_report,
+                "file_key": e.file_key,
             }
             for e in evidence_rows
         ]
@@ -309,9 +310,11 @@ async def analyze_file_route(
         user="system",
         notes="Evidence file uploaded",
     )
-
-    report, json_path, pdf_path = analyze_file(str(file_path), case_dir=str(case_dir),file_key=file_key,)
-
+report, json_path, pdf_path = analyze_file(
+    str(file_path),
+    case_dir=str(case_dir),
+    file_key=file_key,
+)
     json_path = json_path.replace("\\", "/")
     pdf_path = pdf_path.replace("\\", "/")
 
