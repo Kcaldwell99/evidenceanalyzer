@@ -269,6 +269,7 @@ def analyze_file(file_path, case_dir=None):
                 analysis_date=report["analysis_date"],
                 json_report=relative_json_path,
                 pdf_report=relative_pdf_path,
+                file_key=file_key,
             )
             db.add(db_item)
             db.commit()

@@ -310,7 +310,7 @@ async def analyze_file_route(
         notes="Evidence file uploaded",
     )
 
-    report, json_path, pdf_path = analyze_file(str(file_path), case_dir=str(case_dir))
+    report, json_path, pdf_path = analyze_file(str(file_path), case_dir=str(case_dir),file_key=file_key,)
 
     json_path = json_path.replace("\\", "/")
     pdf_path = pdf_path.replace("\\", "/")
