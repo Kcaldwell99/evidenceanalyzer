@@ -33,7 +33,7 @@ def _draw_wrapped_lines(c, lines, x, y, line_height=12, bottom_margin=50):
         y -= line_height
     return y
 
-def analyze_file(file_path, case_dir=None):
+def analyze_file(file_path, case_dir=None, file_key=None):
     file_hash = sha256_file(file_path)
     file_size = os.path.getsize(file_path)
     image_metadata = get_image_metadata(file_path)
