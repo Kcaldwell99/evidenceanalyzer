@@ -47,7 +47,8 @@ REPORTS_DIR.mkdir(exist_ok=True)
 UPLOADS_DIR.mkdir(exist_ok=True)
 
 
-
+os.makedirs("cases", exist_ok=True)
+os.makedirs("reports", exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
