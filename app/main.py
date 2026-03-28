@@ -13,6 +13,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 app = FastAPI()
+
+
+os.makedirs("cases", exist_ok=True)
+os.makedirs("reports", exist_ok=True)
 app.mount("/case-files", StaticFiles(directory="cases"), name="case-files")
 
 from app.analyzer import analyze_file
@@ -45,10 +49,6 @@ DATA_DIR.mkdir(exist_ok=True)
 CASES_DIR.mkdir(exist_ok=True)
 REPORTS_DIR.mkdir(exist_ok=True)
 UPLOADS_DIR.mkdir(exist_ok=True)
-
-
-os.makedirs("cases", exist_ok=True)
-os.makedirs("reports", exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
