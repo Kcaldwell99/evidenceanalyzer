@@ -11,6 +11,9 @@ from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+app = FastAPI()
+app.mount("/case-files", StaticFiles(directory="cases"), name="case-files")
 
 from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
@@ -43,7 +46,9 @@ CASES_DIR.mkdir(exist_ok=True)
 REPORTS_DIR.mkdir(exist_ok=True)
 UPLOADS_DIR.mkdir(exist_ok=True)
 
-app = FastAPI()
+
+
+
 Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
@@ -269,14 +274,15 @@ async def case_detail(request: Request, case_id: str):
         ]
 
         return templates.TemplateResponse(
-            request,
             "case_detail.html",
-            {
+    {
+                "request": request,
                 "case": case_record,
                 "evidence_items": evidence_items,
                 "uploaded": uploaded,
-            },
-        )
+    },
+)
+       
     finally:
         db.close()
 
@@ -393,16 +399,70 @@ async def compare_submit(
     comparison = compare_two_files(str(original_path), str(suspected_path), str(case_path))
 
     return templates.TemplateResponse(
-        request,
         "compare_result.html",
-        {
-            "comparison": comparison,
-            "case_name": case_name,
-            "client_name": client_name,
-            "case_notes": case_notes,
-        },
-    )
+    {
+        "request": request,
+        "comparison": comparison,
+        "case_name": case_name,
+        "client_name": client_name,
+        "case_notes": case_notes,
+    },
+)    
 
+from core.compare_files import compare_against_case
+
+@app.post("/compare-against-case", response_class=HTMLResponse)
+async def compare_against_case_route(request: Request):
+
+    form = await request.form()
+    print("FORM KEYS:", list(form.keys()))
+    raw_case_id = form.get("case_id")
+    file = form.get("file")
+    print("FILE OBJECT:", file, type(file), getattr(file, "filename", None))
+    
+    case_id = str(raw_case_id).strip() if raw_case_id else ""
+
+    if not case_id or not file or not getattr(file, "filename", ""):
+        return templates.TemplateResponse(
+            "compare_result.html",
+            {
+                "request": request,
+                "error": f"Missing case_id or file. case_id={raw_case_id!r}, filename={getattr(file, 'filename', None)!r}",
+                "result": None,
+            },
+            status_code=400,
+        )
+
+    upload_dir = "temp_uploads"
+    os.makedirs(upload_dir, exist_ok=True)
+
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    safe_filename = f"{timestamp}_{file.filename}"
+    file_path = os.path.join(upload_dir, safe_filename)
+
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+
+    try:
+        result = compare_against_case(file_path, case_id)
+        return templates.TemplateResponse(
+            "compare_result.html",
+            {
+                "request": request,
+                "error": None,
+                "result": result,
+            },
+        )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "compare_result.html",
+            {
+                "request": request,
+                "error": str(e),
+                "result": None,
+            },
+            status_code=500,
+        )
 
 @app.post("/compare-case", response_class=HTMLResponse)
 async def compare_case_route(
@@ -420,9 +480,6 @@ async def compare_case_route(
 
     result = compare_against_case(str(suspect_path), case_id=case_id)
 
-    comparison = result.get("comparison")
-    matches = result.get("matches", [])
-
     log_audit_event(
         event_type="case_comparison_completed",
         case_id=case_id,
@@ -430,25 +487,24 @@ async def compare_case_route(
         user="system",
         notes="Suspect image compared against evidence in selected case",
         extra={
-            "best_match_file": comparison.get("original_file") if comparison else None,
-            "best_match_evidence_id": comparison.get("best_match_evidence_id") if comparison else None,
-            "similarity_score": comparison.get("similarity_score") if comparison else None,
-            "match_count": len(matches),
+            "best_match_file": result.get("comparison", {}).get("original_file") if result.get("comparison") else None,
+            "best_match_evidence_id": result.get("comparison", {}).get("best_match_evidence_id") if result.get("comparison") else None,
+            "similarity_score": result.get("comparison", {}).get("similarity_score") if result.get("comparison") else None,
+            "match_count": len(result.get("matches", [])),
         },
     )
 
     return templates.TemplateResponse(
-        request,
         "compare_case_result.html",
         {
+            "request": request,
             "case_id": case_id,
             "suspect_file": suspect_file.filename,
             "suspect_phash": result.get("suspect_phash"),
-            "comparison": comparison,
-            "matches": matches,
-        },
+            "comparison": result.get("comparison"),
+            "matches": result.get("matches", []),
+        }
     )
-
 
 @app.post("/compare-global", response_class=HTMLResponse)
 async def compare_global_route(
@@ -716,14 +772,10 @@ async def submit_intake(
             "client_email": client_email,
         },
     )
-# =========================================================
-# DOWNLOAD BUNDLE (NEW FEATURE)
-# =========================================================
 
-# =========================================================
-# DOWNLOAD BUNDLE
-# =========================================================
-
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 # =========================================================
 # OPTIONAL FILE DOWNLOAD HELPERS

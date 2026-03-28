@@ -279,3 +279,24 @@
     <div class="empty">No evidence has been analyzed for this case yet.</div>
     {% endif %}
 </div>
+
+<div class="card">
+    <h2>Compare Against Case</h2>
+    <p><strong>Debug Case ID:</strong> {{ case.case_id }}</p>
+
+    <form action="/compare-against-case" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="case_id" value="{{ case_id or case.case_id }}">
+
+        <div style="margin-bottom: 14px;">
+            <label><strong>Select Image to Compare:</strong></label><br>
+            <input type="file" id="compare_file" name="file" accept="image/*" required>
+          
+        </div>
+
+        <button class="button" type="submit">Run Comparison</button>
+    </form>
+
+    <div class="small-note">
+        Upload an image to compare against all evidence in this case.
+    </div>
+</div>

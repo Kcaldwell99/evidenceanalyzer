@@ -1,324 +1,351 @@
 import os
-from pathlib import Path
 from datetime import datetime
 
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
-from reportlab.lib import colors
-from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 
-def _safe_str(value, default="N/A"):
-    if value is None:
-        return default
-    value = str(value).strip()
-    return value if value else default
+def classify_similarity(score: float) -> str:
+    if score >= 90:
+        return "High Confidence Match"
+    elif score >= 75:
+        return "Strong Indication of Common Source"
+    elif score >= 60:
+        return "Possible Relationship"
+    return "Inconclusive"
 
 
-def _draw_wrapped_text(c, text, x, y, max_width, line_height=14, font_name="Helvetica", font_size=10):
+def wrap_text(text, max_chars=95):
     """
-    Draw wrapped text onto the canvas and return the new Y position.
+    Simple line wrapper for ReportLab drawString output.
     """
-    c.setFont(font_name, font_size)
+    if not text:
+        return []
 
     words = str(text).split()
-    if not words:
-        return y - line_height
+    lines = []
+    current = ""
 
-    line = ""
     for word in words:
-        candidate = f"{line} {word}".strip()
-        if c.stringWidth(candidate, font_name, font_size) <= max_width:
-            line = candidate
+        test = f"{current} {word}".strip()
+        if len(test) <= max_chars:
+            current = test
         else:
-            c.drawString(x, y, line)
-            y -= line_height
-            line = word
+            if current:
+                lines.append(current)
+            current = word
 
-    if line:
+    if current:
+        lines.append(current)
+
+    return lines
+
+
+def draw_wrapped_text(c, text, x, y, max_chars=95, line_height=14):
+    """
+    Draw wrapped text and return updated y position.
+    """
+    lines = wrap_text(text, max_chars=max_chars)
+    for line in lines:
         c.drawString(x, y, line)
         y -= line_height
-
     return y
 
 
-def _draw_section_title(c, title, x, y):
+def draw_section_heading(c, heading, x, y):
     c.setFont("Helvetica-Bold", 12)
-    c.setFillColor(colors.black)
-    c.drawString(x, y, title)
-    return y - 16
+    c.drawString(x, y, heading)
+    c.setFont("Helvetica", 10)
+    return y - 18
 
 
-def _draw_label_value(c, label, value, x, y, label_width=150, font_size=10):
-    c.setFont("Helvetica-Bold", font_size)
-    c.drawString(x, y, f"{label}")
-    c.setFont("Helvetica", font_size)
-    c.drawString(x + label_width, y, _safe_str(value))
-    return y - 14
-
-
-def _draw_image_fit(c, image_path, x, y_top, max_width, max_height, label=None):
-    """
-    Draw an image proportionally scaled to fit within max_width/max_height.
-    y_top is the top edge for placement.
-    Returns the bottom y position after drawing.
-    """
-    if not image_path or not os.path.exists(image_path):
-        c.setFont("Helvetica-Oblique", 9)
-        c.drawString(x, y_top - 12, f"{label or 'Image'} not available.")
-        return y_top - 20
-
-    try:
-        img = ImageReader(image_path)
-        iw, ih = img.getSize()
-    except Exception:
-        c.setFont("Helvetica-Oblique", 9)
-        c.drawString(x, y_top - 12, f"{label or 'Image'} could not be loaded.")
-        return y_top - 20
-
-    scale = min(max_width / iw, max_height / ih)
-    draw_w = iw * scale
-    draw_h = ih * scale
-
-    if label:
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(x, y_top - 12, label)
-        y_top -= 18
-
-    y_image_bottom = y_top - draw_h
-    c.drawImage(
-        image_path,
-        x,
-        y_image_bottom,
-        width=draw_w,
-        height=draw_h,
-        preserveAspectRatio=True,
-        mask="auto",
-    )
-
-    return y_image_bottom - 10
-
-
-def _ensure_page_space(c, y, needed_space=120, margin_bottom=60):
-    """
-    Starts a new page if there is not enough vertical room.
-    Returns the new/current y position.
-    """
-    if y < margin_bottom + needed_space:
+def new_page_if_needed(c, y, min_y=72):
+    if y < min_y:
         c.showPage()
+        c.setFont("Helvetica", 10)
         return 750
     return y
 
 
-def generate_comparison_pdf(comparison_result: dict, output_pdf_path: str):
+def generate_comparison_pdf(comparison_result, output_path):
     """
-    Generate a forensic-style comparison PDF report.
+    comparison_result expected structure:
 
-    comparison_result expected fields may include:
-        matched_case
-        matched_evidence
-        file_name
-        suspect_file_name
-        similarity_score
-        match_level
-        ssim_score
-        similarity_percent
-        visual_assessment
-        difference_regions
-        side_by_side_path
-        heatmap_path
-        original_marked_path
-        suspect_marked_path
-        source_url
-        analysis_date
+    {
+        "suspect_file": "suspect.jpg",
+        "reference_file": "reference.jpg",
+        "suspect_hash": "abc123...",
+        "reference_hash": "def456...",
+        "suspect_phash": "ffeeaa...",
+        "reference_phash": "ffeeab...",
+        "similarity_score": 92.4,
+        "classification": "High Confidence Match",   # optional
+        "phash_distance": 4,                         # optional
+        "sha256_match": False,                       # optional
+        "differences": [
+            "Resolution differs between the compared images.",
+            "Minor compression artifacts are present in the suspect file."
+        ],
+        "analysis_date": "2026-03-26 16:30:00"       # optional
+    }
     """
-    Path(os.path.dirname(output_pdf_path)).mkdir(parents=True, exist_ok=True)
+    output_dir = os.path.dirname(output_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
 
-    c = canvas.Canvas(output_pdf_path, pagesize=letter)
+    c = canvas.Canvas(output_path, pagesize=letter)
     width, height = letter
-
-    left_margin = 50
-    right_margin = 50
-    usable_width = width - left_margin - right_margin
     y = 750
 
-    # Header
-    c.setFont("Helvetica-Bold", 18)
-    c.drawString(left_margin, y, "Digital Evidence Comparison Report")
-    y -= 24
+    suspect_file = comparison_result.get("suspect_file", "Unknown")
+    reference_file = comparison_result.get("reference_file", "Unknown")
+    suspect_hash = comparison_result.get("suspect_hash", "Not Available")
+    reference_hash = comparison_result.get("reference_hash", "Not Available")
+    suspect_phash = comparison_result.get("suspect_phash", "Not Available")
+    reference_phash = comparison_result.get("reference_phash", "Not Available")
+    similarity_score = float(comparison_result.get("similarity_score", 0))
+    classification = comparison_result.get("classification") or classify_similarity(similarity_score)
+    phash_distance = comparison_result.get("phash_distance", "Not Available")
+    sha256_match = comparison_result.get("sha256_match", None)
+    differences = comparison_result.get("differences", [])
+
+    analysis_date = comparison_result.get(
+        "analysis_date",
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    )
+
+    # Title
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(50, y, "Digital Image Comparison Report")
+    y -= 28
 
     c.setFont("Helvetica", 10)
-    report_date = comparison_result.get("analysis_date") or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    c.drawString(left_margin, y, f"Generated: {report_date}")
-    y -= 22
+    c.drawString(50, y, f"Analysis Date: {analysis_date}")
+    y -= 24
 
-    c.setStrokeColor(colors.grey)
-    c.line(left_margin, y, width - right_margin, y)
-    y -= 20
+    # Section 1
+    y = draw_section_heading(c, "1. File Identification", 50, y)
+    y = new_page_if_needed(c, y)
 
-    # Summary Section
-    y = _draw_section_title(c, "1. Comparison Summary", left_margin, y)
-    y = _draw_label_value(c, "Reference File:", comparison_result.get("file_name"), left_margin, y)
-    y = _draw_label_value(c, "Comparison File:", comparison_result.get("suspect_file_name"), left_margin, y)
-    y = _draw_label_value(c, "Matched Case:", comparison_result.get("matched_case"), left_margin, y)
-    y = _draw_label_value(c, "Matched Evidence ID:", comparison_result.get("matched_evidence"), left_margin, y)
-    y = _draw_label_value(c, "Perceptual Similarity Score:", comparison_result.get("similarity_score"), left_margin, y)
-    y = _draw_label_value(c, "Match Level:", comparison_result.get("match_level"), left_margin, y)
+    c.drawString(60, y, f"Suspect File: {suspect_file}")
+    y -= 14
+    c.drawString(60, y, f"Reference File: {reference_file}")
+    y -= 14
 
-    source_url = comparison_result.get("source_url")
-    if source_url:
-        y = _ensure_page_space(c, y, needed_space=50)
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(left_margin, y, "Source URL:")
-        y -= 14
-        c.setFont("Helvetica", 9)
-        y = _draw_wrapped_text(c, source_url, left_margin, y, usable_width, line_height=12, font_size=9)
+    y = draw_wrapped_text(c, f"Suspect SHA-256: {suspect_hash}", 60, y, max_chars=88)
+    y = draw_wrapped_text(c, f"Reference SHA-256: {reference_hash}", 60, y, max_chars=88)
+    y = draw_wrapped_text(c, f"Suspect pHash: {suspect_phash}", 60, y, max_chars=88)
+    y = draw_wrapped_text(c, f"Reference pHash: {reference_phash}", 60, y, max_chars=88)
 
-    y -= 10
+    y -= 8
+    y = new_page_if_needed(c, y)
 
-    # Visual Analysis Section
-    visual_fields_present = any(
-        comparison_result.get(key) is not None
-        for key in [
-            "ssim_score",
-            "similarity_percent",
-            "visual_assessment",
-            "difference_regions",
-            "side_by_side_path",
-            "heatmap_path",
-            "original_marked_path",
-            "suspect_marked_path",
-        ]
+    # Section 2
+    y = draw_section_heading(c, "2. Comparison Summary", 50, y)
+    y = new_page_if_needed(c, y)
+
+    c.drawString(60, y, f"Similarity Score: {similarity_score:.2f}%")
+    y -= 14
+    c.drawString(60, y, f"Match Classification: {classification}")
+    y -= 24
+
+    # Section 3
+    y = draw_section_heading(c, "3. Technical Analysis", 50, y)
+    y = new_page_if_needed(c, y)
+
+    technical_intro = (
+        "The comparison incorporates both file-level and image-level forensic indicators, "
+        "including cryptographic hash analysis, perceptual hash comparison, and structural "
+        "image similarity evaluation."
     )
+    y = draw_wrapped_text(c, technical_intro, 60, y)
+    y -= 8
 
-    if visual_fields_present:
-        y = _ensure_page_space(c, y, needed_space=180)
-        y = _draw_section_title(c, "2. Visual Difference Analysis", left_margin, y)
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(60, y, "A. Hash Analysis")
+    y -= 14
+    c.setFont("Helvetica", 10)
 
-        y = _draw_label_value(c, "SSIM Score:", comparison_result.get("ssim_score"), left_margin, y)
-        y = _draw_label_value(c, "Similarity Percent:", 
-                              f"{comparison_result.get('similarity_percent')}%" if comparison_result.get("similarity_percent") is not None else "N/A",
-                              left_margin, y)
-        y = _draw_label_value(c, "Visual Assessment:", comparison_result.get("visual_assessment"), left_margin, y)
-        y = _draw_label_value(c, "Difference Regions:", comparison_result.get("difference_regions"), left_margin, y)
-
-        explanatory_text = (
-            "This section reflects structural similarity analysis performed after "
-            "normalizing the compared images to common dimensions. Highlighted regions "
-            "indicate localized areas of detected divergence between the reference image "
-            "and the comparison image."
+    if sha256_match is True:
+        sha_text = (
+            "The SHA-256 hash values are identical. This indicates that the compared files are "
+            "bit-for-bit exact copies."
         )
-        y -= 4
-        y = _draw_wrapped_text(
-            c,
-            explanatory_text,
-            left_margin,
-            y,
-            usable_width,
-            line_height=12,
-            font_name="Helvetica",
-            font_size=9,
+    elif sha256_match is False:
+        sha_text = (
+            "The SHA-256 hash values are not identical. This indicates that the compared files "
+            "are not exact binary duplicates."
         )
-        y -= 10
+    else:
+        sha_text = "SHA-256 comparison data was reviewed as part of the file-level assessment."
 
-        # Side-by-side
-        side_by_side_path = comparison_result.get("side_by_side_path")
-        if side_by_side_path:
-            y = _ensure_page_space(c, y, needed_space=240)
-            y = _draw_image_fit(
-                c,
-                side_by_side_path,
-                left_margin,
-                y,
-                max_width=usable_width,
-                max_height=220,
-                label="Side-by-Side Comparison",
-            )
+    y = draw_wrapped_text(c, sha_text, 70, y)
+    y -= 4
 
-        # Heatmap
-        heatmap_path = comparison_result.get("heatmap_path")
-        if heatmap_path:
-            y = _ensure_page_space(c, y, needed_space=240)
-            y = _draw_image_fit(
-                c,
-                heatmap_path,
-                left_margin,
-                y,
-                max_width=usable_width,
-                max_height=220,
-                label="Difference Heatmap",
-            )
-
-        # Marked images on separate pages if needed
-        original_marked_path = comparison_result.get("original_marked_path")
-        suspect_marked_path = comparison_result.get("suspect_marked_path")
-
-        if original_marked_path:
-            y = _ensure_page_space(c, y, needed_space=260)
-            y = _draw_image_fit(
-                c,
-                original_marked_path,
-                left_margin,
-                y,
-                max_width=usable_width,
-                max_height=240,
-                label="Reference Image with Marked Difference Regions",
-            )
-
-        if suspect_marked_path:
-            y = _ensure_page_space(c, y, needed_space=260)
-            y = _draw_image_fit(
-                c,
-                suspect_marked_path,
-                left_margin,
-                y,
-                max_width=usable_width,
-                max_height=240,
-                label="Comparison Image with Marked Difference Regions",
-            )
-
-    # Conclusion
-    y = _ensure_page_space(c, y, needed_space=120)
-    y = _draw_section_title(c, "3. Observations", left_margin, y)
-
-    match_level = _safe_str(comparison_result.get("match_level"))
-    visual_assessment = _safe_str(comparison_result.get("visual_assessment"), default="No visual assessment available")
-
-    observation_text = (
-        f"The compared files produced a perceptual match classification of {match_level}. "
-        f"Visual difference analysis assessed the image pair as {visual_assessment.lower()}. "
-        f"These results should be considered together with cryptographic hash values, metadata, "
-        f"provenance indicators, and any surrounding investigative context."
+    phash_text = (
+        f"The perceptual hash distance is {phash_distance}. Lower distances generally indicate "
+        "greater visual similarity between the compared images."
     )
-
-    y = _draw_wrapped_text(
-        c,
-        observation_text,
-        left_margin,
-        y,
-        usable_width,
-        line_height=13,
-        font_name="Helvetica",
-        font_size=10,
-    )
-
+    y = draw_wrapped_text(c, phash_text, 70, y)
     y -= 10
-    c.setFont("Helvetica-Oblique", 9)
-    disclaimer = (
-        "This report is intended as an analytical aid and does not by itself establish "
-        "authorship, ownership, publication date, or legal infringement."
+    y = new_page_if_needed(c, y)
+
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(60, y, "B. Visual Similarity Analysis")
+    y -= 14
+    c.setFont("Helvetica", 10)
+
+    if similarity_score >= 90:
+        visual_text = (
+            "The compared images exhibit a high degree of structural similarity. The observed "
+            "features are consistent with the same source image or a modified version of that image."
+        )
+    elif similarity_score >= 75:
+        visual_text = (
+            "The compared images exhibit substantial structural similarity. The observed features "
+            "suggest a common source relationship, potentially with minor edits, recompression, "
+            "resizing, or format conversion."
+        )
+    elif similarity_score >= 60:
+        visual_text = (
+            "The compared images exhibit moderate structural similarity. The findings suggest a "
+            "possible relationship, but the available indicators are not sufficiently strong to "
+            "support a more definitive conclusion."
+        )
+    else:
+        visual_text = (
+            "The compared images do not exhibit a sufficiently strong degree of structural "
+            "similarity to support a conclusion of likely common origin."
+        )
+
+    y = draw_wrapped_text(c, visual_text, 70, y)
+    y -= 18
+    y = new_page_if_needed(c, y)
+
+    # Section 4
+    y = draw_section_heading(c, "4. Observed Differences", 50, y)
+    y = new_page_if_needed(c, y)
+
+    if differences:
+        for diff in differences:
+            y = new_page_if_needed(c, y)
+            y = draw_wrapped_text(c, f"- {diff}", 60, y)
+    else:
+        default_diff = (
+            "No significant distinguishing differences were recorded beyond those ordinarily "
+            "associated with potential recompression, resizing, or metadata variation."
+        )
+        y = draw_wrapped_text(c, default_diff, 60, y)
+
+    y -= 12
+    y = new_page_if_needed(c, y)
+
+    # Section 5
+    y = draw_section_heading(c, "5. Forensic Interpretation", 50, y)
+    y = new_page_if_needed(c, y)
+
+    interpretation_intro = (
+        "The similarity assessment is based on converging indicators rather than any single metric. "
+        "This assessment considers both file-level and image-level characteristics."
     )
-    _draw_wrapped_text(
-        c,
-        disclaimer,
-        left_margin,
-        y,
-        usable_width,
-        line_height=12,
-        font_name="Helvetica-Oblique",
-        font_size=9,
+    y = draw_wrapped_text(c, interpretation_intro, 60, y)
+    y -= 8
+
+    if classification == "High Confidence Match":
+        interpretation = (
+            "The examined files exhibit a high degree of similarity across multiple forensic "
+            "indicators. The findings support the conclusion that the suspect image is likely "
+            "derived from the same source as the reference image, or represents a modified "
+            "version of that image."
+        )
+    elif classification == "Strong Indication of Common Source":
+        interpretation = (
+            "The compared files demonstrate substantial similarity across multiple forensic "
+            "indicators. The findings strongly suggest a common source relationship, although "
+            "minor variations are present."
+        )
+    elif classification == "Possible Relationship":
+        interpretation = (
+            "The observed similarities suggest a possible relationship between the compared files; "
+            "however, the available indicators are insufficient to conclusively determine a common origin."
+        )
+    else:
+        interpretation = (
+            "The available indicators do not support a reliable conclusion that the compared "
+            "files share a common source."
+        )
+
+    y = draw_wrapped_text(c, interpretation, 60, y)
+    y -= 12
+    y = new_page_if_needed(c, y)
+
+    # Section 6
+    y = draw_section_heading(c, "6. Methodology", 50, y)
+    y = new_page_if_needed(c, y)
+
+    methodology = (
+        "This analysis applies a multi-factor forensic methodology combining cryptographic hashing, "
+        "perceptual hashing, and comparative image structure evaluation. These techniques are widely "
+        "used in digital forensic examinations to assess file identity and similarity."
     )
+    y = draw_wrapped_text(c, methodology, 60, y)
+    y -= 12
+    y = new_page_if_needed(c, y)
+
+    # Section 7
+    y = draw_section_heading(c, "7. Limitations", 50, y)
+    y = new_page_if_needed(c, y)
+
+    limitations = (
+        "This report does not determine authorship, ownership, or legal infringement. Metadata may "
+        "be incomplete, absent, or altered. Conclusions are based solely on the digital characteristics "
+        "of the submitted files."
+    )
+    y = draw_wrapped_text(c, limitations, 60, y)
+    y -= 12
+    y = new_page_if_needed(c, y)
+
+    # Section 8
+    y = draw_section_heading(c, "8. Reproducibility Statement", 50, y)
+    y = new_page_if_needed(c, y)
+
+    reproducibility = (
+        "All analysis steps are reproducible using identical input files within the Evidentix™ system."
+    )
+    y = draw_wrapped_text(c, reproducibility, 60, y)
+    y -= 12
+    y = new_page_if_needed(c, y)
+
+    # Section 9
+    y = draw_section_heading(c, "9. Final Conclusion", 50, y)
+    y = new_page_if_needed(c, y)
+
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(60, y, f"Conclusion: {classification}")
+    y -= 16
+    c.setFont("Helvetica", 10)
+
+    if classification == "High Confidence Match":
+        final_conclusion = (
+            "The totality of forensic indicators supports the conclusion that the suspect image "
+            "is derived from the same source as the reference image."
+        )
+    elif classification == "Strong Indication of Common Source":
+        final_conclusion = (
+            "The totality of forensic indicators strongly supports a common source relationship "
+            "between the compared images."
+        )
+    elif classification == "Possible Relationship":
+        final_conclusion = (
+            "The compared images exhibit indicators consistent with a possible relationship, "
+            "but the findings remain inconclusive."
+        )
+    else:
+        final_conclusion = (
+            "The available indicators are insufficient to support a conclusion of common origin."
+        )
+
+    y = draw_wrapped_text(c, final_conclusion, 60, y)
 
     c.save()
-    return output_pdf_path
+    return output_path

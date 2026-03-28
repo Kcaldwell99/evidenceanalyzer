@@ -1,294 +1,153 @@
 <!DOCTYPE html>
-<html>
-
-<style>
-
-.summary-card {
-    border-left: 5px solid #2563eb;
-}
-
-.score-high {
-    color: #15803d;
-    font-weight: bold;
-}
-
-.score-medium {
-    color: #d97706;
-    font-weight: bold;
-}
-
-.score-low {
-    color: #dc2626;
-    font-weight: bold;
-}
-</style>
-
+<html lang="en">
 <head>
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparison Result</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            color: #111827;
+        }
+        .container {
+            max-width: 1000px;
             margin: 40px auto;
-            max-width: 900px;
-            background: #f9fafb;
-        }
-        .section {
             background: white;
-            padding: 20px;
-            margin-top: 25px;
-            border-radius: 8px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            padding: 32px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
         }
-        h1, h2 {
-            color: #1f2937;
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 14px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
         }
         .label {
             font-weight: bold;
         }
-        .yes {
-            color: green;
-            font-weight: bold;
+        .match {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid #e5e7eb;
         }
-        .no {
-            color: #b91c1c;
-            font-weight: bold;
-        }
-        a {
-            color: #2563eb;
+        a.button {
+            display: inline-block;
+            padding: 10px 14px;
+            background: #111827;
+            color: white;
             text-decoration: none;
+            border-radius: 8px;
+            margin-right: 10px;
         }
-        a:hover {
-            text-decoration: underline;
+        a.button:hover {
+            opacity: 0.9;
+        }
+        .muted {
+            color: #6b7280;
+        }
+        img.preview {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 1px solid #e5e7eb;
         }
     </style>
 </head>
 <body>
-    <h1>Comparison Result</h1>
-    {% if case_name is defined %}
-<div class="section">
-    <h2>Case Information</h2>
-    <p><span class="label">Case Name:</span> {{ case_name }}</p>
-</div>
+
+
+    <div class="container">
+        <h1>Comparison Result</h1>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if result %}
+            <div class="card">
+                <p><span class="label">Case ID:</span> {{ result.case_id }}</p>
+                <p><span class="label">Suspect File:</span> {{ result.suspect_file }}</p>
+                <p><span class="label">Matches Found:</span> {{ result.match_count }}</p>
+            </div>
+
+        {% if result and result.match_count == 0 %}
+            <div class="card">
+                <p>No similar evidence was identified in this case.</p>
+            </div>
+        {% endif %}
+
+            {% if result.best_match %}
+                
+                    <h2>Best Match</h2>
+                    <p><span class="label">Reference File:</span> {{ result.best_match.reference_file }}</p>
+                    <p><span class="label">Confidence:</span> {{ result.best_match.confidence_level }}</p>
+                    <p><span class="label">Similarity Score:</span> {{ result.best_match.similarity_score }}%</p>
+                    <p><span class="label">pHash Distance:</span> {{ result.best_match.phash_distance }}</p>
+                    <p><span class="label">Conclusion:</span> {{ result.best_match.conclusion_text }}</p>
+{% if result and result.match_count == 0 %}
+    <div class="card">
+        <p>No similar evidence was identified in this case.</p>
+    </div>
 {% endif %}
 
-<div class="section">
-<h2>Download Report</h2>
+                    {% if result.best_match.comparison_pdf %}
+                        <p>
+                            <a class="button" href="/{{ result.best_match.comparison_pdf }}" target="_blank">
+                                Open Comparison PDF
+                            </a>
+                        </p>
+                    {% endif %}
 
-<a href="/{{ comparison_pdf }}" target="_blank">
-    Download Comparison PDF
-</a>
+                    {% if result.best_match.difference_image %}
+                        <p class="muted">Difference Image Preview</p>
+                        <img class="preview" src="/{{ result.best_match.difference_image }}" alt="Difference Image">
+                    {% endif %}
+                </div>
+            {% endif %}
 
-@app.get("/compare-direct", response_class=HTMLResponse)
-async def compare_direct(
-    request: Request,
-    original: str,
-    suspect: str,
-):
-    if not original or not suspect:
-        return HTMLResponse(
-            f"<h1>Missing file path</h1><p>original={original!r}</p><p>suspect={suspect!r}</p>",
-            status_code=400,
-        )
+            {% if result.matches %}
+                <div class="card">
+                    <h2>All Matches</h2>
+                    {% for match in result.matches %}
+                        <div class="match">
+                            <p><span class="label">Reference File:</span> {{ match.reference_file }}</p>
+                            <p><span class="label">Confidence:</span> {{ match.confidence_level }}</p>
+                            <p><span class="label">Similarity Score:</span> {{ match.similarity_score }}%</p>
+                            <p><span class="label">pHash Distance:</span> {{ match.phash_distance }}</p>
 
-    comparison = compare_two_files(original, suspect, "reports")
-
-    case_folder = os.path.dirname(original)
-
-    json_name = "comparison_report.json"
-    json_path = os.path.join(case_folder, json_name)
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(comparison, f, indent=2)
-
-    pdf_name = "comparison_report.pdf"
-    pdf_path = os.path.join(case_folder, pdf_name)
-    create_comparison_pdf(comparison, pdf_path)
-
-    diff_name = "difference.png"
-    diff_path = os.path.join(case_folder, diff_name)
-    create_difference_image(original, suspect, diff_path)
-
-    return templates.TemplateResponse(
-        "compare_result.html",
-        {
-            "request": request,
-            "comparison": comparison,
-            "comparison_pdf": "/" + pdf_path.replace("\\", "/"),
-            "comparison_json": "/" + json_path.replace("\\", "/"),
-            "difference_image": "/" + diff_path.replace("\\", "/"),
-        },
-    )
-
-</div>
-
-    <div class="section">
-        <h2>Files</h2>
-        <p><span class="label">Original:</span> {{ comparison.original_file }}</p>
-        <p><span class="label">Suspected:</span> {{ comparison.suspected_file }}</p>
-    </div>
-
-
-<div class="section summary-card">
-    <h2>Comparison Summary</h2>
-    <p><span class="label">Exact SHA256 Match:</span>
-        {% if comparison.sha256_match %}
-            Yes
-        {% else %}
-            No
+                            {% if match.comparison_pdf %}
+                                <p>
+                                    <a class="button" href="/{{ match.comparison_pdf }}" target="_blank">
+                                        Open PDF
+                                    </a>
+                                </p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         {% endif %}
-    </p>
 
-    <p><span class="label">Similarity Score:</span> {{ comparison.similarity_score }}%</p>
-
-    <p><span class="label">Metadata Differences Detected:</span>
-        {% if comparison.metadata_differences and comparison.metadata_differences|length > 0 %}
-            Yes
-        {% else %}
-            No
-        {% endif %}
-    </p>
-
-    <p><span class="label">Conclusion:</span> {{ comparison.conclusion }}</p>
-
+<div style="margin-top: 20px;">
+    <a class="button" href="/cases/{{ result.case_id }}">
+        Back to Case
+    </a>
 </div>
-
-<div class="section">
-<h2>Image Preview</h2>
-
-<div class="section">
-    <h2>Difference Visualization</h2>
-    <p>This image highlights pixel-level differences between the original and suspected files.</p>
-
-    <img src="{{ difference_image }}" style="max-width:500px; border:1px solid #ccc; padding:4px;">
-</div>
-
-<div style="display:flex; gap:40px">
-
-<div>
-<h3>Original</h3>
-<img src="{{ comparison.original_file_path }}" width="300">
-</div>
-
-<div>
-<h3>Suspected</h3>
-<img src="{{ comparison.suspected_file_path }}" width="300">
-</div>
-<div class="section">
-<h2>Difference Visualization</h2>
-
-<p>This highlights pixel-level differences between the two images.</p>
-
-<img src="{{ difference_image }}" style="max-width:500px; border:1px solid #ccc; padding:4px;">
-</div>
-
-</div>
-</div>
-
-
-    <div class="section">
-        <h2>Perceptual Hash Comparison</h2>
-        <p><span class="label">Original pHash:</span> {{ comparison.original_phash }}</p>
-        <p><span class="label">Suspected pHash:</span> {{ comparison.suspected_phash }}</p>
-        <p><span class="label">pHash Distance:</span> {{ comparison.phash_distance }}</p>
-        <p>Lower numbers indicate greater visual similarity.</p>
     </div>
-
-    <div class="section">
-        <h2>SHA256 Comparison</h2>
-        <p><span class="label">Original SHA256:</span> {{ comparison.original_sha256 }}</p>
-        <p><span class="label">Suspected SHA256:</span> {{ comparison.suspected_sha256 }}</p>
-        <p>
-            <span class="label">Exact Match:</span>
-            {% if comparison.sha256_match %}
-                <span class="yes">Yes</span>
-            {% else %}
-                <span class="no">No</span>
-            {% endif %}
-        </p>
-    </div>
-
-    <div class="section">
-        <h2>Metadata Differences</h2>
-
-            {% if comparison.metadata_differences %}
-                <ul>
-            {% for diff in comparison.metadata_differences %}
-                <li>
-                <strong>{{ diff.field }}</strong> —
-                Original: {{ diff.original }} |
-                Suspected: {{ diff.suspected }}
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No metadata differences detected.</p>
-    {% endif %}
-</div>
-
-<div class="section">
-<h2>Similarity</h2>
-
-{% set score = comparison.similarity_score %}
-
-<p>
-    <span class="label">Similarity Score:</span>
-
-    {% if score >= 90 %}
-        <span class="score-high">{{ score }}%</span>
-    {% elif score >= 70 %}
-        <span class="score-medium">{{ score }}%</span>
-    {% else %}
-        <span class="score-low">{{ score }}%</span>
-    {% endif %}
-</p>
-
-<p>Higher values indicate greater visual similarity.</p>
-</div>
-      
-
-    <div class="section">
-        <h2>Size and Dimensions</h2>
-        <p><span class="label">Original Size:</span> {{ comparison.original_size }}</p>
-        <p><span class="label">Suspected Size:</span> {{ comparison.suspected_size }}</p>
-        <p>
-            <span class="label">Same File Size:</span>
-            {% if comparison.same_size %}
-                <span class="yes">Yes</span>
-            {% else %}
-                <span class="no">No</span>
-            {% endif %}
-        </p>
-
-        <p><span class="label">Original Dimensions:</span> {{ comparison.original_dimensions }}</p>
-        <p><span class="label">Suspected Dimensions:</span> {{ comparison.suspected_dimensions }}</p>
-        <p>
-            <span class="label">Same Dimensions:</span>
-            {% if comparison.same_dimensions %}
-                <span class="yes">Yes</span>
-            {% else %}
-                <span class="no">No</span>
-            {% endif %}
-        </p>
-    </div>
-
-    <div class="section">
-        <h2>Reports</h2>
-        <p><a href="{{ comparison.original_json }}">Download Original JSON Report</a></p>
-        <p><a href="{{ comparison.original_pdf }}">Download Original PDF Report</a></p>
-        <p><a href="{{ comparison.suspected_json }}">Download Suspected JSON Report</a></p>
-        <p><a href="{{ comparison.suspected_pdf }}">Download Suspected PDF Report</a></p>
-    </div>
-
-    <div class="section">
-        <h2>Next Actions</h2>
-        <p><a href="/compare">Compare two more files</a></p>
-        <p><a href="/">Analyze one file</a></p>
-        <p><a href="/reports">View saved reports</a></p>
-    </div>
-
-    <div class="section">
-        <h2>Conclusion</h2>
-        <p>{{ comparison.conclusion }}</p>
-    </div>
-
 </body>
 </html>

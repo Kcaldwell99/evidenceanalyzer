@@ -26,10 +26,10 @@
   {
     "case_id": "CASE-0003",
     "evidence_id": "E-001",
-    "file_name": "02.10.18 Pic 2.jpg",
-    "phash": "9be5561be4861b68",
-    "pdf_report": "cases\\CASE-0003\\reports\\20260316_150847\\analysis_report.pdf",
-    "json_report": "cases\\CASE-0003\\reports\\20260316_150847\\analysis_report.json"
+    "file_name": "02.10.18 Pic 3.jpg",
+    "phash": "98e5730ee5b24e2c",
+    "pdf_report": "CASE-0003/reports/20260326_142504/analysis_report.pdf",
+    "json_report": "CASE-0003/reports/20260326_142504/analysis_report.json"
   },
   {
     "case_id": "CASE-0001",
@@ -550,5 +550,61 @@
     "phash": "ccf5970d15b91989",
     "pdf_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-221255_test\\reports\\20260321_171256\\analysis_report.pdf",
     "json_report": "C:\\Users\\kcald\\c2pa-evidence-mvp\\cases\\SINGLE-20260321-221255_test\\reports\\20260321_171256\\analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0004",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "phash": "e8957acc934a29c7",
+    "pdf_report": "CASE-0004/reports/20260326_143611/analysis_report.pdf",
+    "json_report": "CASE-0004/reports/20260326_143611/analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0001",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 1.jpg",
+    "phash": "e8957acc934a29c7",
+    "pdf_report": "CASE-0001/reports/20260326_165151/analysis_report.pdf",
+    "json_report": "CASE-0001/reports/20260326_165151/analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0002",
+    "evidence_id": "E-001",
+    "file_name": "02.10.18 Pic 3.jpg",
+    "phash": "98e5730ee5b24e2c",
+    "pdf_report": "CASE-0002/reports/20260326_173504/analysis_report.pdf",
+    "json_report": "CASE-0002/reports/20260326_173504/analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0002",
+    "evidence_id": "E-002",
+    "file_name": "05 bw.jpg",
+    "phash": "b8e1a7125be6a315",
+    "pdf_report": "CASE-0002/reports/20260326_174223/analysis_report.pdf",
+    "json_report": "CASE-0002/reports/20260326_174223/analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0002",
+    "evidence_id": "E-003",
+    "file_name": "02.10.18 Pic 3.jpg",
+    "phash": "98e5730ee5b24e2c",
+    "pdf_report": "CASE-0002/reports/20260326_174708/analysis_report.pdf",
+    "json_report": "CASE-0002/reports/20260326_174708/analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0002",
+    "evidence_id": "E-004",
+    "file_name": "02.10.18 Pic 3.jpg",
+    "phash": "98e5730ee5b24e2c",
+    "pdf_report": "CASE-0002/reports/20260326_175511/analysis_report.pdf",
+    "json_report": "CASE-0002/reports/20260326_175511/analysis_report.json"
+  },
+  {
+    "case_id": "CASE-0002",
+    "evidence_id": "E-005",
+    "file_name": "02.10.18 Pic 3.jpg",
+    "phash": "98e5730ee5b24e2c",
+    "pdf_report": "CASE-0002/reports/20260326_183327/analysis_report.pdf",
+    "json_report": "CASE-0002/reports/20260326_183327/analysis_report.json"
   }
 ]

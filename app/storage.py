@@ -1,31 +1,20 @@
-import boto3
 import os
 from uuid import uuid4
 
-s3 = boto3.client(
-    "s3",
-    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    region_name=os.getenv("AWS_REGION"),
-)
-
-BUCKET = os.getenv("AWS_S3_BUCKET")
 
 def upload_file(file_obj, filename, content_type):
+    upload_dir = "local_uploads"
+    os.makedirs(upload_dir, exist_ok=True)
+
     key = f"{uuid4()}_{filename}"
+    file_path = os.path.join(upload_dir, key)
 
-    s3.upload_fileobj(
-        file_obj,
-        BUCKET,
-        key,
-        ExtraArgs={"ContentType": content_type},
-    )
+    file_obj.seek(0)
+    with open(file_path, "wb") as f:
+        f.write(file_obj.read())
 
-    return key
+    return file_path
+
 
 def generate_presigned_url(key, expires=3600):
-    return s3.generate_presigned_url(
-        "get_object",
-        Params={"Bucket": BUCKET, "Key": key},
-        ExpiresIn=expires,
-    )
+    return key

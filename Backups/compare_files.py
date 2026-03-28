@@ -92,15 +92,12 @@ def compare_two_files(original_path: str, suspected_path: str, case_path: str) -
     original_meta = original_report.get("image_metadata", {})
     suspected_meta = suspected_report.get("image_metadata", {})
 
-    original_meta = original_report.get("image_metadata", {})
-    suspected_meta = suspected_report.get("image_metadata", {})
-
     all_keys = sorted(set(original_meta.keys()) | set(suspected_meta.keys()))
     metadata_differences = []
 
-    for key in all_keys:
-        original_value = original_meta.get(key)
-        suspected_value = suspected_meta.get(key)
+for key in all_keys:
+    original_value = original_meta.get(key)
+    suspected_value = suspected_meta.get(key)
 
     if original_value != suspected_value:
         metadata_differences.append({
@@ -108,6 +105,22 @@ def compare_two_files(original_path: str, suspected_path: str, case_path: str) -
             "original": original_value,
             "suspected": suspected_value,
         })
+    original_exif = original_report.get("exif", {}) or {}
+    suspected_exif = suspected_report.get("exif", {}) or {}
+
+    exif_differences = []
+    exif_keys = sorted(set(original_exif.keys()) | set(suspected_exif.keys()))
+
+    for key in exif_keys:
+        original_value = original_exif.get(key)
+        suspected_value = suspected_exif.get(key)
+
+        if original_value != suspected_value:
+            exif_differences.append({
+                "field": key,
+                "original": original_value,
+                "suspected": suspected_value,
+            })
 
     original_phash = get_phash(original_path)
     suspected_phash = get_phash(suspected_path)
@@ -115,19 +128,24 @@ def compare_two_files(original_path: str, suspected_path: str, case_path: str) -
     distance = imagehash.hex_to_hash(original_phash) - imagehash.hex_to_hash(suspected_phash)
     similarity_score = max(0, round(100 - (distance * 100 / 64), 2))
 
-    if original_report.get("sha256") == suspected_report.get("sha256"):
-        conclusion = "The files are byte-for-byte identical based on matching SHA256 hashes."
-    elif distance <= 5:
-        conclusion = "The files are not identical, but perceptual hashing indicates they are highly similar."
-    elif distance <= 15:
-        conclusion = "The files are not identical, but perceptual hashing indicates possible similarity."
-    elif (
+    same_dimensions = (
         original_meta.get("width") == suspected_meta.get("width")
         and original_meta.get("height") == suspected_meta.get("height")
-    ):
-        conclusion = "The files are not identical, but they share the same image dimensions."
+    )
+
+    sha256_match = original_report.get("sha256") == suspected_report.get("sha256")
+    similarity_percent = diff_result.get("similarity_percent", 0)
+
+    if sha256_match:
+        conclusion = "The files are byte-for-byte identical based on matching SHA256 hashes."
+    elif similarity_percent >= 95:
+        conclusion = "The files are not identical at the binary level, but visual comparison indicates they are highly similar."
+    elif similarity_percent >= 80:
+        conclusion = "The files are not identical, but visual comparison indicates moderate similarity consistent with possible editing, recompression, or derivation."
+    elif same_dimensions:
+        conclusion = "The files are not identical and show limited similarity, though they share the same image dimensions."
     else:
-        conclusion = "The files are not identical and do not show strong similarity based on current checks."
+        conclusion = "The files are not identical and do not show strong similarity based on current hash, metadata, and visual comparison checks."
 
     comparison = {
         "original_file": original_report.get("file_name"),
@@ -136,10 +154,11 @@ def compare_two_files(original_path: str, suspected_path: str, case_path: str) -
         "suspected_file_path": "/" + suspected_path.replace("\\", "/"),
         "original_sha256": original_report.get("sha256"),
         "suspected_sha256": suspected_report.get("sha256"),
-        "sha256_match": original_report.get("sha256") == suspected_report.get("sha256"),
+        "sha256_match": sha256_match,
         "original_phash": original_phash,
         "suspected_phash": suspected_phash,
         "metadata_differences": metadata_differences,
+        "exif_differences": exif_differences,
         "phash_distance": distance,
         "similarity_score": similarity_score,
         "original_size": original_report.get("size_bytes"),
@@ -153,10 +172,8 @@ def compare_two_files(original_path: str, suspected_path: str, case_path: str) -
             suspected_meta.get("width"),
             suspected_meta.get("height"),
         ),
-        "same_dimensions": (
-            original_meta.get("width") == suspected_meta.get("width")
-            and original_meta.get("height") == suspected_meta.get("height")
-        ),
+        "same_dimensions": same_dimensions,
+
         "conclusion": conclusion,
         "original_json": original_json,
         "original_pdf": original_pdf,

@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import textwrap
 from datetime import datetime
@@ -33,6 +33,7 @@ def _draw_wrapped_lines(c, lines, x, y, line_height=12, bottom_margin=50):
         y -= line_height
     return y
 
+
 def analyze_file(file_path, case_dir=None, file_key=None):
     file_hash = sha256_file(file_path)
     file_size = os.path.getsize(file_path)
@@ -55,7 +56,6 @@ def analyze_file(file_path, case_dir=None, file_key=None):
 
     if case_dir:
         case_id_value = os.path.basename(case_dir)
-
         db = SessionLocal()
         try:
             existing_count = (
@@ -107,12 +107,10 @@ def analyze_file(file_path, case_dir=None, file_key=None):
         )
     else:
         report["finding"] = (
-            else:
-    report["finding"] = (
-        "No embedded metadata was detected in the submitted file. The absence of metadata may be "
-        "consistent with removal during transmission, editing, export, or platform processing. "
-        "This limits file-level attribution regarding device origin, capture time, and location."
-    )
+            "No embedded metadata was detected in the submitted file. The absence of metadata may be "
+            "consistent with removal during transmission, editing, export, or platform processing. "
+            "This limits file-level attribution regarding device origin, capture time, and location."
+        )
 
     report["rights_info"] = {
         "Original Copyright Owner": "Must Request Separate Report",
@@ -134,44 +132,60 @@ def analyze_file(file_path, case_dir=None, file_key=None):
             "No prior similar image match was identified within the configured threshold."
         )
 
-report["methodology"] = (
-    "The submitted file was analyzed using file-level forensic review, including "
-    "SHA-256 hashing, perceptual hashing, metadata review, EXIF extraction when available, "
-    "and comparison against previously indexed evidence."
-)
+    if report["similar_matches"]:
+        best_match = report["similar_matches"][0]
+        similarity = best_match.get("similarity", 0)
 
-report["limitations"] = (
-    "This analysis is limited to the submitted file and the metadata and similarity indicators "
-    "available from that file. No source-device extraction, account-level acquisition, or "
-    "native device forensic imaging was performed."
-)
+        if similarity >= 90:
+            confidence = "High Confidence Match"
+        elif similarity >= 75:
+            confidence = "Probable Match"
+        else:
+            confidence = "Inconclusive"
 
-if report["similar_matches"]:
-    best_match = report["similar_matches"][0]
-    similarity = best_match.get("similarity", 0)
-
-    if similarity >= 90:
-        confidence = "High similarity"
-    elif similarity >= 75:
-        confidence = "Moderate similarity"
+        report["similarity_assessment"] = confidence
     else:
-        confidence = "Low similarity"
+        report["similarity_assessment"] = "Inconclusive"
 
-    report["similarity_assessment"] = confidence
-else:
-    report["similarity_assessment"] = "No similar prior file identified"
+    confidence = report.get("similarity_assessment")
 
-report["preliminary_conclusion"] = (
-    f"{report.get('finding', 'No finding available')} "
-    f"Similarity assessment: {report.get('similarity_assessment', 'Not available')}."
-)
+    if confidence == "High Confidence Match":
+        report["preliminary_conclusion"] = (
+            "The submitted image exhibits a high degree of similarity to previously indexed evidence. "
+            "The available indicators support the conclusion that the image is likely derived from "
+            "the same source or an altered version of the same original image."
+        )
+    elif confidence == "Probable Match":
+        report["preliminary_conclusion"] = (
+            "The submitted image exhibits notable similarity to previously indexed evidence. "
+            "The indicators suggest a probable relationship between the images, although differences "
+            "may reflect editing, recompression, or transformation."
+        )
+    else:
+        report["preliminary_conclusion"] = (
+            "The submitted image does not exhibit sufficient similarity to support a reliable "
+            "forensic conclusion of derivation from previously indexed evidence."
+        )
+
+    report["methodology"] = (
+        "The submitted file was analyzed using a combination of forensic techniques, including "
+        "SHA-256 hashing for file integrity verification, perceptual hashing for structural similarity, "
+        "metadata and EXIF analysis, and comparison against previously indexed evidence. "
+        "Where applicable, visual comparison techniques were used to identify structural and compositional similarities."
+    )
+
+    report["limitations"] = (
+        "This report reflects a tool-assisted forensic analysis of the submitted file. "
+        "It does not independently establish authorship, ownership, or legal infringement. "
+        "Metadata may be altered or removed during processing or transmission. "
+        "Conclusions are limited to the observable characteristics of the files analyzed."
+    )
 
     json_path = os.path.join(case_path, "analysis_report.json")
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
 
     pdf_path = os.path.join(case_path, "analysis_report.pdf")
-
     c = canvas.Canvas(pdf_path, pagesize=letter)
     width, height = letter
     y = height - 50
@@ -273,54 +287,49 @@ report["preliminary_conclusion"] = (
 
     y -= 8
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "5. Conclusion")
+    c.drawString(50, y, "5. Forensic Conclusion")
     y -= 15
 
     c.setFont("Helvetica", 10)
     y = _draw_wrapped_lines(
         c,
-        _wrap_text(f"Finding: {report.get('finding', 'No finding available')}"),
+        _wrap_text(f"Confidence Level: {report.get('similarity_assessment', 'Not available')}"),
         60,
         y,
     )
-y -= 8
-c.setFont("Helvetica-Bold", 12)
-c.drawString(50, y, "6. Methodology")
-y -= 15
+    y = _draw_wrapped_lines(
+        c,
+        _wrap_text(report.get("preliminary_conclusion", "")),
+        60,
+        y,
+    )
 
-c.setFont("Helvetica", 10)
-y = _draw_wrapped_lines(
-    c,
-    _wrap_text(report.get("methodology", "")),
-    60,
-    y,
-)
+    y -= 8
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "6. Methodology")
+    y -= 15
 
-y -= 8
-c.setFont("Helvetica-Bold", 12)
-c.drawString(50, y, "7. Limitations")
-y -= 15
+    c.setFont("Helvetica", 10)
+    y = _draw_wrapped_lines(
+        c,
+        _wrap_text(report.get("methodology", "")),
+        60,
+        y,
+    )
 
-c.setFont("Helvetica", 10)
-y = _draw_wrapped_lines(
-    c,
-    _wrap_text(report.get("limitations", "")),
-    60,
-    y,
-)
+    y -= 8
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "7. Limitations")
+    y -= 15
 
-y -= 8
-c.setFont("Helvetica-Bold", 12)
-c.drawString(50, y, "8. Preliminary Conclusion")
-y -= 15
+    c.setFont("Helvetica", 10)
+    y = _draw_wrapped_lines(
+        c,
+        _wrap_text(report.get("limitations", "")),
+        60,
+        y,
+    )
 
-c.setFont("Helvetica", 10)
-y = _draw_wrapped_lines(
-    c,
-    _wrap_text(report.get("preliminary_conclusion", "")),
-    60,
-    y,
-)
     c.save()
 
     if case_dir and case_id_value and evidence_id:
@@ -356,53 +365,3 @@ y = _draw_wrapped_lines(
         )
 
     return report, json_path, pdf_path
-report["methodology"] = (
-    "The submitted file was analyzed using file-level forensic review, including "
-    "SHA-256 hashing, perceptual hashing, metadata review, EXIF extraction when available, "
-    "and a comparison against previously indexed evidence."
-)
-
-report["limitations"] = (
-    "This analysis is limited to the file provided and the metadata and visual-comparison "
-    "indicators available from that file. No device-level extraction or source-device "
-    "forensic acquisition was performed."
-)
-
-if report["similar_matches"]:
-    best = report["similar_matches"][0]
-    similarity = best.get("similarity", 0)
-
-    if similarity >= 90:
-        confidence = "High similarity"
-    elif similarity >= 75:
-        confidence = "Moderate similarity"
-    else:
-        confidence = "Low similarity"
-
-    report["similarity_assessment"] = confidence
-else:
-    report["similarity_assessment"] = "No similar prior file identified"
-
-report["preliminary_conclusion"] = (
-    f"{report['finding']} Similarity assessment: {report['similarity_assessment']}."
-)
-y -= 8
-c.setFont("Helvetica-Bold", 12)
-c.drawString(50, y, "6. Methodology")
-y -= 15
-c.setFont("Helvetica", 10)
-y = _draw_wrapped_lines(c, _wrap_text(report.get("methodology", "")), 60, y)
-
-y -= 8
-c.setFont("Helvetica-Bold", 12)
-c.drawString(50, y, "7. Limitations")
-y -= 15
-c.setFont("Helvetica", 10)
-y = _draw_wrapped_lines(c, _wrap_text(report.get("limitations", "")), 60, y)
-
-y -= 8
-c.setFont("Helvetica-Bold", 12)
-c.drawString(50, y, "8. Preliminary Conclusion")
-y -= 15
-c.setFont("Helvetica", 10)
-y = _draw_wrapped_lines(c, _wrap_text(report.get("preliminary_conclusion", "")), 60, y)
