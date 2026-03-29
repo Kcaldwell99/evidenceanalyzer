@@ -14,7 +14,6 @@ from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import text
 
 from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
@@ -58,6 +57,7 @@ app.mount("/case-files", StaticFiles(directory=str(CASES_DIR)), name="case-files
 app.mount("/report-files", StaticFiles(directory=str(REPORTS_DIR)), name="report-files")
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
+
 
 SERVICE_MAP = {
     "single": {
@@ -193,6 +193,28 @@ async def create_case(
                 "message": f"Case created successfully: {case_id}",
             },
         )
+    finally:
+        db.close()
+
+
+@app.post("/delete-case/{case_id}")
+async def delete_case(case_id: str):
+    db = SessionLocal()
+    try:
+        case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+
+        if not case_obj:
+            raise HTTPException(status_code=404, detail="Case not found.")
+
+        db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).delete()
+        db.delete(case_obj)
+        db.commit()
+
+        case_dir = CASES_DIR / case_id
+        if case_dir.exists():
+            shutil.rmtree(case_dir)
+
+        return RedirectResponse(url="/", status_code=303)
     finally:
         db.close()
 
@@ -415,10 +437,8 @@ async def compare_submit(
 @app.post("/compare-against-case", response_class=HTMLResponse)
 async def compare_against_case_route(request: Request):
     form = await request.form()
-    print("FORM KEYS:", list(form.keys()))
     raw_case_id = form.get("case_id")
     file = form.get("file")
-    print("FILE OBJECT:", file, type(file), getattr(file, "filename", None))
 
     case_id = str(raw_case_id).strip() if raw_case_id else ""
 

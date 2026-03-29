@@ -259,18 +259,31 @@
                     <select id="case_id" name="case_id" required>
                         <option value="">-- Select a Case --</option>
                         <ul>
+
 {% for case in cases %}
-        <li>
-            <a href="/case/{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</a>
-        </li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <div style="padding:20px; background:#f8f9fa; border:1px solid #ddd; border-radius:8px; margin-top:20px;">
-        <strong>No cases yet.</strong><br>
-        Create your first case to begin analyzing and comparing evidence.
+    <li>
+        <a href="/cases/{{ case.case_id }}">
+            {{ case.case_id }} - {{ case.case_name }}
+        </a>
+    </li>
+{% endfor %}
+{% for case in cases %}
+    <div style="margin-bottom:10px;">
+        <a href="/cases/{{ case.case_id }}">
+            {{ case.case_id }} - {{ case.case_name }}
+        </a>
+
+        <form action="/delete-case/{{ case.case_id }}" method="post" style="display:inline; margin-left:10px;">
+            <button type="submit"
+                    onclick="return confirm('Delete this case?')"
+                    style="background:#c62828; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer;">
+                Delete
+            </button>
+        </form>
     </div>
-{% endif %}
+{% endfor %}
+
+    </ul>
 
 
                     </select>
