@@ -2,22 +2,19 @@ import json
 import os
 import shutil
 import hashlib
+import tempfile
+import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import List
 
+import requests
 import stripe
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-app = FastAPI()
-
-
-os.makedirs("cases", exist_ok=True)
-os.makedirs("reports", exist_ok=True)
-app.mount("/case-files", StaticFiles(directory="cases"), name="case-files")
+from sqlalchemy import text
 
 from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
@@ -28,8 +25,9 @@ from app.storage import upload_file
 from core.batch_scan import scan_folder
 from core.compare_files import compare_two_files, compare_against_case, compare_against_all_cases
 from core.copyright_lookup import build_copyright_search_link
-from sqlalchemy import text
 
+
+app = FastAPI()
 
 # =========================================================
 # PATHS / CONFIG
@@ -60,7 +58,6 @@ app.mount("/case-files", StaticFiles(directory=str(CASES_DIR)), name="case-files
 app.mount("/report-files", StaticFiles(directory=str(REPORTS_DIR)), name="report-files")
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
-
 
 SERVICE_MAP = {
     "single": {
@@ -100,6 +97,7 @@ def load_cases():
         ]
     finally:
         db.close()
+
 
 def generate_case_id(existing_cases):
     next_number = len(existing_cases) + 1
@@ -153,17 +151,17 @@ def verify_checkout_session(session_id: str):
 # =========================================================
 
 @app.get("/", response_class=HTMLResponse)
-async def upload_page(request: Request):
+async def home(request: Request):
     cases = load_cases()
-
     return templates.TemplateResponse(
-        request,
         "upload.html",
         {
+            "request": request,
             "cases": cases,
         },
     )
-   
+
+
 @app.post("/create-case", response_class=HTMLResponse)
 async def create_case(
     request: Request,
@@ -188,14 +186,13 @@ async def create_case(
         updated_data = load_cases()
 
         return templates.TemplateResponse(
-            request,
             "upload.html",
-    {
+            {
+                "request": request,
                 "cases": updated_data,
                 "message": f"Case created successfully: {case_id}",
-    },
-)
-        
+            },
+        )
     finally:
         db.close()
 
@@ -225,9 +222,9 @@ def reports_page(request: Request):
             )
 
         return templates.TemplateResponse(
-            request,
             "reports.html",
             {
+                "request": request,
                 "items": items,
             },
         )
@@ -276,14 +273,13 @@ async def case_detail(request: Request, case_id: str):
 
         return templates.TemplateResponse(
             "case_detail.html",
-    {
+            {
                 "request": request,
                 "case": case_record,
                 "evidence_items": evidence_items,
                 "uploaded": uploaded,
-    },
-)
-       
+            },
+        )
     finally:
         db.close()
 
@@ -300,11 +296,9 @@ async def analyze_file_route(
 
     file_path = case_upload_dir / file.filename
 
-    # Save locally first so analyze_file can read it
     with file_path.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # Reset stream before uploading to S3
     file.file.seek(0)
 
     file_key = upload_file(file.file, file.filename, file.content_type)
@@ -317,11 +311,13 @@ async def analyze_file_route(
         user="system",
         notes="Evidence file uploaded",
     )
+
     report, json_path, pdf_path = analyze_file(
-    str(file_path),
-    case_dir=str(case_dir),
-    file_key=file_key,
-)
+        str(file_path),
+        case_dir=str(case_dir),
+        file_key=file_key,
+    )
+
     log_audit_event(
         event_type="analysis_completed",
         case_id=case_id,
@@ -340,6 +336,8 @@ async def analyze_file_route(
         url=f"/cases/{case_id}?uploaded=1",
         status_code=303,
     )
+
+
 @app.get("/evidence-file/{case_id}/{evidence_id}")
 async def evidence_file_redirect(case_id: str, evidence_id: str):
     from app.storage import generate_presigned_url
@@ -362,6 +360,8 @@ async def evidence_file_redirect(case_id: str, evidence_id: str):
         return RedirectResponse(url=url, status_code=302)
     finally:
         db.close()
+
+
 # =========================================================
 # COMPARISON WORKFLOW
 # =========================================================
@@ -369,9 +369,10 @@ async def evidence_file_redirect(case_id: str, evidence_id: str):
 @app.get("/compare", response_class=HTMLResponse)
 async def compare_page(request: Request):
     return templates.TemplateResponse(
-        request,
         "compare.html",
-        {},
+        {
+            "request": request,
+        },
     )
 
 
@@ -401,26 +402,24 @@ async def compare_submit(
 
     return templates.TemplateResponse(
         "compare_result.html",
-    {
-        "request": request,
-        "comparison": comparison,
-        "case_name": case_name,
-        "client_name": client_name,
-        "case_notes": case_notes,
-    },
-)    
+        {
+            "request": request,
+            "comparison": comparison,
+            "case_name": case_name,
+            "client_name": client_name,
+            "case_notes": case_notes,
+        },
+    )
 
-from core.compare_files import compare_against_case
 
 @app.post("/compare-against-case", response_class=HTMLResponse)
 async def compare_against_case_route(request: Request):
-
     form = await request.form()
     print("FORM KEYS:", list(form.keys()))
     raw_case_id = form.get("case_id")
     file = form.get("file")
     print("FILE OBJECT:", file, type(file), getattr(file, "filename", None))
-    
+
     case_id = str(raw_case_id).strip() if raw_case_id else ""
 
     if not case_id or not file or not getattr(file, "filename", ""):
@@ -434,18 +433,18 @@ async def compare_against_case_route(request: Request):
             status_code=400,
         )
 
-    upload_dir = "temp_uploads"
-    os.makedirs(upload_dir, exist_ok=True)
+    upload_dir = PROJECT_ROOT / "temp_uploads"
+    upload_dir.mkdir(exist_ok=True)
 
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
     safe_filename = f"{timestamp}_{file.filename}"
-    file_path = os.path.join(upload_dir, safe_filename)
+    file_path = upload_dir / safe_filename
 
-    with open(file_path, "wb") as f:
+    with file_path.open("wb") as f:
         f.write(await file.read())
 
     try:
-        result = compare_against_case(file_path, case_id)
+        result = compare_against_case(str(file_path), case_id)
         return templates.TemplateResponse(
             "compare_result.html",
             {
@@ -464,6 +463,7 @@ async def compare_against_case_route(request: Request):
             },
             status_code=500,
         )
+
 
 @app.post("/compare-case", response_class=HTMLResponse)
 async def compare_case_route(
@@ -504,8 +504,9 @@ async def compare_case_route(
             "suspect_phash": result.get("suspect_phash"),
             "comparison": result.get("comparison"),
             "matches": result.get("matches", []),
-        }
+        },
     )
+
 
 @app.post("/compare-global", response_class=HTMLResponse)
 async def compare_global_route(
@@ -534,9 +535,9 @@ async def compare_global_route(
     )
 
     return templates.TemplateResponse(
-        request,
         "compare_global_result.html",
         {
+            "request": request,
             "suspect_file": suspect_file.filename,
             "suspect_phash": result.get("suspect_phash"),
             "matches": result.get("matches", []),
@@ -551,9 +552,10 @@ async def compare_global_route(
 @app.get("/batch-scan", response_class=HTMLResponse)
 async def batch_scan_page(request: Request):
     return templates.TemplateResponse(
-        request,
         "batch_scan.html",
-        {},
+        {
+            "request": request,
+        },
     )
 
 
@@ -568,9 +570,9 @@ async def batch_scan_route(
     results = scan_folder(folder_path)
 
     return templates.TemplateResponse(
-        request,
         "batch_scan_result.html",
         {
+            "request": request,
             "folder": folder_path,
             "results": results,
         },
@@ -584,9 +586,9 @@ async def batch_scan_route(
 @app.get("/copyright-search", response_class=HTMLResponse)
 async def copyright_search_page(request: Request):
     return templates.TemplateResponse(
-        request,
         "copyright_search.html",
         {
+            "request": request,
             "search_link": None,
             "title": "",
             "author": "",
@@ -615,9 +617,9 @@ async def copyright_search_submit(
     )
 
     return templates.TemplateResponse(
-        request,
         "copyright_search.html",
         {
+            "request": request,
             "search_link": search_link,
             "title": title,
             "author": author,
@@ -647,9 +649,9 @@ async def intake_page(
         session = verify_checkout_session(session_id)
 
     return templates.TemplateResponse(
-        request,
         "intake_form.html",
         {
+            "request": request,
             "session_id": session_id,
             "service": service,
             "service_info": SERVICE_MAP[service],
@@ -764,9 +766,9 @@ async def submit_intake(
         analyze_file(image_path, case_dir=str(case_dir))
 
     return templates.TemplateResponse(
-        request,
         "intake_success.html",
         {
+            "request": request,
             "case_id": case_id,
             "service_name": SERVICE_MAP[service]["name"],
             "file_count": len(uploaded_items),
@@ -774,9 +776,6 @@ async def submit_intake(
         },
     )
 
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
 
 # =========================================================
 # OPTIONAL FILE DOWNLOAD HELPERS
@@ -791,13 +790,10 @@ async def download_case_file(case_id: str, subfolder: str, timestamp: str, filen
 
     return FileResponse(str(file_path), filename=filename)
 
+
 # =========================================================
 # DOWNLOAD BUNDLE
 # =========================================================
-
-import zipfile
-import tempfile
-import requests
 
 @app.get("/download-bundle/{case_id}/{evidence_id}")
 async def download_bundle(case_id: str, evidence_id: str):
@@ -841,37 +837,5 @@ async def download_bundle(case_id: str, evidence_id: str):
             filename=f"{case_id}_{evidence_id}_bundle.zip",
             media_type="application/zip",
         )
-
     finally:
         db.close()
-
-
-# =========================================================
-# OPTIONAL FILE DOWNLOAD HELPERS
-# =========================================================
-
-@app.get("/download-case-file/{case_id}/{subfolder}/{timestamp}/{filename}")
-async def download_case_file(case_id: str, subfolder: str, timestamp: str, filename: str):
-    file_path = CASES_DIR / case_id / subfolder / timestamp / filename
-
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found.")
-
-    return FileResponse(str(file_path), filename=filename)
-
-# =========================================================
-# OPTIONAL FILE DOWNLOAD HELPERS
-# =========================================================
-
-#if not os.getenv("ALLOW_FREE_DOWNLOADS", "false") == "true":
-#    raise HTTPException(status_code=403, detail="Payment required to download bundle.")
-
-
-@app.get("/download-case-file/{case_id}/{subfolder}/{timestamp}/{filename}")
-async def download_case_file(case_id: str, subfolder: str, timestamp: str, filename: str):
-    file_path = CASES_DIR / case_id / subfolder / timestamp / filename
-
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found.")
-
-    return FileResponse(str(file_path), filename=filename)
