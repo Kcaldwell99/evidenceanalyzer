@@ -258,9 +258,21 @@
                     <label for="case_id">Select Case</label>
                     <select id="case_id" name="case_id" required>
                         <option value="">-- Select a Case --</option>
-                        {% for case in cases %}
-                            <option value="{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</option>
-                        {% endfor %}
+                        <ul>
+{% for case in cases %}
+        <li>
+            <a href="/case/{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</a>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <div style="padding:20px; background:#f8f9fa; border:1px solid #ddd; border-radius:8px; margin-top:20px;">
+        <strong>No cases yet.</strong><br>
+        Create your first case to begin analyzing and comparing evidence.
+    </div>
+{% endif %}
+
+
                     </select>
 
                     <label for="file">Choose File</label>
