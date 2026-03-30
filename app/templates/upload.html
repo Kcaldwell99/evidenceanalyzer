@@ -247,13 +247,15 @@
                 <h2>Upload Evidence File</h2>
                 <form action="/analyze" method="post" enctype="multipart/form-data">
                     <label for="case_id">Select Case</label>
+
                     <select id="case_id" name="case_id" required>
                         <option value="">-- Select a Case --</option>
                         {% for case in cases %}
                             <option value="{{ case.case_id }}">
-                        {{ case.case_id }} - {{ case.case_name }}
-                        </option>
+                                {{ case.case_id }} - {{ case.case_name }}
+                            </option>
                         {% endfor %}
+
                     </select>
                   
                     <label for="file">Choose File</label>
@@ -325,9 +327,6 @@
     <p>No cases yet.</p>
 {% endif %}
 
-
-
-            </div>
 
             <div class="card full-width">
                 <h2>Investigation Tools</h2>
