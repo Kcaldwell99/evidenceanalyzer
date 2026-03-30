@@ -1,77 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <style>
-
-<hr style="margin:60px 0;">
-
-<h2>Pricing</h2>
-
-<div style="display:flex; gap:20px; flex-wrap:wrap;">
-
-    <div style="border:1px solid #ccc; padding:20px; border-radius:10px; width:250px;">
-        <h3>Single Report</h3>
-        <h2>$79</h2>
-        <p>Per analysis</p>
-        <p>PDF report included</p>
-    </div>
-
-    <div style="border:1px solid #ccc; padding:20px; border-radius:10px; width:250px;">
-        <h3>Professional</h3>
-        <h2>$399/mo</h2>
-        <p>Up to 150 analyses</p>
-        <p>Unlimited cases</p>
-    </div>
-
-    <div style="border:2px solid #2d6cdf; padding:20px; border-radius:10px; width:250px;">
-        <h3>Firm License</h3>
-        <h2>$7,500/yr</h2>
-        <p>Unlimited analyses</p>
-        <p>Unlimited reports</p>
-    </div>
-
-</div>
-
-<h2>Pricing</h2>
-
-<div style="display:flex; gap:20px; flex-wrap:wrap;">
-    ...
-</div>
-
-<!-- ADD THIS RIGHT HERE -->
-<div style="margin-top:30px;">
-
-<a href="mailto:yourrealemail@domain.com?subject=Evidentix%20Inquiry"
-   style="display:inline-block; background:#2d6cdf; color:white; padding:14px 22px; border-radius:8px; text-decoration:none; font-weight:bold;">
-   Request Demo / Licensing Info
-</a>
-
-
-    
-       style="display:inline-block; background:#2d6cdf; color:white; padding:14px 22px; border-radius:8px; text-decoration:none; font-weight:bold;">
-       Request Demo / Licensing Info
-    </a>
-</div>
-
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            margin: 0;
-            padding: 0;
-            color: #1f2937;
-        }
-    </style>
-</head>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-</p>
+    <title>Evidentix&#8482; Digital Evidence Platform</title>
     <style>
-       
+        body {
             font-family: Arial, sans-serif;
             background: #f4f6f8;
             margin: 0;
@@ -101,6 +35,15 @@
         .header p {
             margin: 0;
             color: #d1d5db;
+        }
+
+        .beta-notice {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-top: 16px;
+            border: 1px solid #ffeeba;
         }
 
         .grid {
@@ -196,7 +139,14 @@
         }
 
         .case-list li {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .case-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .case-list a {
@@ -214,11 +164,46 @@
             margin-top: 8px;
         }
 
-        .section-title {
-            margin-bottom: 14px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #374151;
+        .message {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .pricing-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .price-card {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            width: 250px;
+            background: white;
+        }
+
+        .price-card.featured {
+            border: 2px solid #2d6cdf;
+        }
+
+        .delete-button {
+            margin-top: 0;
+            background: #c62828;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .delete-button:hover {
+            background: #b71c1c;
         }
 
         @media (max-width: 850px) {
@@ -231,12 +216,18 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1><h1>Evidentix&trade; Digital Evidence Platform</h1>
-            <div style="background:#fff3cd; color:#856404; padding:12px 16px; border-radius:6px; margin-bottom:20px; border:1px solid #ffeeba;">
-    <strong>Beta Notice:</strong> Evidentix&trade; is currently in beta. Features, functionality, and outputs are under active development. 
-    For access, licensing, or enterprise use, please contact us.</div>
+            <h1>Evidentix&trade; Digital Evidence Platform</h1>
+            <p>Analyze digital images, compare suspect files against case evidence, and generate litigation-ready forensic reports.</p>
 
-    
+            <div class="beta-notice">
+                <strong>Beta Notice:</strong> Evidentix&trade; is currently in beta. Features, functionality, and outputs are under active development.
+                For access, licensing, or enterprise use, please contact us.
+            </div>
+        </div>
+
+        {% if message %}
+            <div class="message">{{ message }}</div>
+        {% endif %}
 
         <div class="grid">
             <div class="card">
@@ -258,34 +249,9 @@
                     <label for="case_id">Select Case</label>
                     <select id="case_id" name="case_id" required>
                         <option value="">-- Select a Case --</option>
-                        <ul>
-
-{% for case in cases %}
-    <li>
-        <a href="/cases/{{ case.case_id }}">
-            {{ case.case_id }} - {{ case.case_name }}
-        </a>
-    </li>
-{% endfor %}
-{% for case in cases %}
-    <div style="margin-bottom:10px;">
-        <a href="/cases/{{ case.case_id }}">
-            {{ case.case_id }} - {{ case.case_name }}
-        </a>
-
-        <form action="/delete-case/{{ case.case_id }}" method="post" style="display:inline; margin-left:10px;">
-            <button type="submit"
-                    onclick="return confirm('Delete this case?')"
-                    style="background:#c62828; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer;">
-                Delete
-            </button>
-        </form>
-    </div>
-{% endfor %}
-
-    </ul>
-
-
+                        {% for case in cases %}
+                            <option value="{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</option>
+                        {% endfor %}
                     </select>
 
                     <label for="file">Choose File</label>
@@ -302,13 +268,14 @@
                 <form action="/compare-against-case" method="post" enctype="multipart/form-data">
                     <label for="compare_case_id">Select Case</label>
                     <select id="compare_case_id" name="case_id" required>
+                        <option value="">-- Select a Case --</option>
                         {% for case in cases %}
                             <option value="{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</option>
                         {% endfor %}
                     </select>
 
                     <label for="suspect_file_case">Choose Suspect Image</label>
-                    <input type="file" id="suspect_file_case" name="suspect_file" required>
+                    <input type="file" id="suspect_file_case" name="file" required>
 
                     <div class="note">This compares the suspect image to evidence already analyzed within the selected case.</div>
 
@@ -334,12 +301,22 @@
                     <ul class="case-list">
                         {% for case in cases %}
                             <li>
-                                <a href="/cases/{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</a>
+                                <div class="case-row">
+                                    <a href="/cases/{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</a>
+
+                                    <form action="/delete-case/{{ case.case_id }}" method="post" style="display:inline;">
+                                        <button type="submit"
+                                                class="delete-button"
+                                                onclick="return confirm('Delete this case?')">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
                             </li>
                         {% endfor %}
                     </ul>
                 {% else %}
-                    <p>No cases created yet.</p>
+                    <p>No cases yet. Create your first case to begin analyzing and comparing evidence.</p>
                 {% endif %}
             </div>
 
@@ -347,36 +324,37 @@
                 <h2>Investigation Tools</h2>
                 <a class="button" href="/global-matches">Open Global Match Dashboard</a>
             </div>
-        </div>
-    </div>
 
-<hr style="margin:60px 0;">
+            <div class="card full-width">
+                <h2>Pricing</h2>
 
-<h2>Pricing</h2>
+                <div class="pricing-grid">
+                    <div class="price-card">
+                        <h3>Single Report</h3>
+                        <h2>$79</h2>
+                        <p>Per analysis</p>
+                        <p>PDF report included</p>
+                    </div>
 
-<div style="display:flex; gap:20px; flex-wrap:wrap;">
+                    <div class="price-card">
+                        <h3>Professional</h3>
+                        <h2>$399/mo</h2>
+                        <p>Up to 150 analyses</p>
+                        <p>Unlimited cases</p>
+                    </div>
 
-    <div style="border:1px solid #ccc; padding:20px; border-radius:10px; width:250px;">
-        <h3>Single Report</h3>
-        <h2>$79</h2>
-        <p>Per analysis</p>
-        <p>PDF report included</p>
-    </div>
-
-    <div style="border:1px solid #ccc; padding:20px; border-radius:10px; width:250px;">
-        <h3>Professional</h3>
-        <h2>$399/mo</h2>
-        <p>Up to 150 analyses</p>
-        <p>Unlimited cases</p>
-    </div>
-
-    <div style="border:2px solid #2d6cdf; padding:20px; border-radius:10px; width:250px;">
-        <h3>Firm License</h3>
-        <h2>$7,500/yr</h2>
-        <p>Unlimited analyses</p>
-        <p>Unlimited reports</p>
-    </div>
-
+                    <div class="price-card featured">
+                        <h3>Firm License</h3>
+                        <h2>$7,500/yr</h2>
+                        <p>Unlimited analyses</p>
+                        <p>Unlimited reports</p>
+                    </div>
+                </div>
+                <div style="margin-top:30px;">
+                    <a href="mailto:intake@evidenceanalyzer.com?subject=Evidentix%20Inquiry"
+                        class="button">
+                        Request Demo / Licensing Info
+    </a>
 </div>
 
 </body>
