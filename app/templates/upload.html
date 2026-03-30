@@ -303,29 +303,28 @@
 
 
     <h2>Existing Cases</h2>
-                {% if cases %}
-    <ul class="case-list">
-        {% for case in cases %}
+        {% if cases %}
+            <ul class="case-list">
+                {% for case in cases %}
             <li>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <a href="/cases/{{ case.case_id }}">
+                <div class="case-row">
+                    <a href="/cases/{{ case.case_id }}"> method="post" style="display:inline;">
+
                         {{ case.case_id }} - {{ case.case_name }}
                     </a>
 
                     <form action="/delete-case/{{ case.case_id }}" method="post" style="display:inline;">
                         <button type="submit"
+                                class="delete-button"
                                 onclick="return confirm('Delete this case?')"
-                                style="background:#c62828; color:white; border:none; padding:6px 10px; border-radius:4px;">
-                            Delete
+                            Delete    
                         </button>
                     </form>
                 </div>
             </li>
         {% endfor %}
     </ul>
-{% else %}
-    <p>No cases yet.</p>
-{% endif %}
+
 
 
             <div class="card full-width">
