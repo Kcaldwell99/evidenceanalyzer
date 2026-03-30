@@ -250,10 +250,12 @@
                     <select id="case_id" name="case_id" required>
                         <option value="">-- Select a Case --</option>
                         {% for case in cases %}
-                            <option value="{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</option>
+                            <option value="{{ case.case_id }}">
+                        {{ case.case_id }} - {{ case.case_name }}
+                        </option>
                         {% endfor %}
                     </select>
-
+                  
                     <label for="file">Choose File</label>
                     <input type="file" id="file" name="file" required>
 
@@ -296,28 +298,35 @@
             </div>
 
             <div class="card full-width">
-                <h2>Existing Cases</h2>
-                {% if cases %}
-                    <ul class="case-list">
-                        {% for case in cases %}
-                            <li>
-                                <div class="case-row">
-                                    <a href="/cases/{{ case.case_id }}">{{ case.case_id }} - {{ case.case_name }}</a>
 
-                                    <form action="/delete-case/{{ case.case_id }}" method="post" style="display:inline;">
-                                        <button type="submit"
-                                                class="delete-button"
-                                                onclick="return confirm('Delete this case?')">
-                                            Delete
-                                        </button>
-                                    </form>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>No cases yet. Create your first case to begin analyzing and comparing evidence.</p>
-                {% endif %}
+
+    <h2>Existing Cases</h2>
+                {% if cases %}
+    <ul class="case-list">
+        {% for case in cases %}
+            <li>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <a href="/cases/{{ case.case_id }}">
+                        {{ case.case_id }} - {{ case.case_name }}
+                    </a>
+
+                    <form action="/delete-case/{{ case.case_id }}" method="post" style="display:inline;">
+                        <button type="submit"
+                                onclick="return confirm('Delete this case?')"
+                                style="background:#c62828; color:white; border:none; padding:6px 10px; border-radius:4px;">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No cases yet.</p>
+{% endif %}
+
+
+
             </div>
 
             <div class="card full-width">
