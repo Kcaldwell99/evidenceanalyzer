@@ -196,7 +196,6 @@ async def create_case(
     finally:
         db.close()
 
-
 @app.post("/delete-case/{case_id}")
 async def delete_case(case_id: str):
     db = SessionLocal()
@@ -214,10 +213,9 @@ async def delete_case(case_id: str):
         if case_dir.exists():
             shutil.rmtree(case_dir)
 
-        return RedirectResponse(url="/", status_code=303)
+        return RedirectResponse(url="/?deleted=1", status_code=303)
     finally:
         db.close()
-
 
 @app.get("/reports", response_class=HTMLResponse)
 def reports_page(request: Request):
