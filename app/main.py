@@ -58,7 +58,6 @@ app.mount("/report-files", StaticFiles(directory=str(REPORTS_DIR)), name="report
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
 
-
 SERVICE_MAP = {
     "single": {
         "name": "Single Image Analysis",
@@ -156,9 +155,9 @@ async def home(request: Request):
     deleted = request.query_params.get("deleted")
 
     return templates.TemplateResponse(
-        name="upload.html",
-        context={
-            "request": request,
+        request,
+        "upload.html",
+        {
             "cases": cases,
             "message": "Case deleted successfully." if deleted else None,
         },
@@ -189,9 +188,9 @@ async def create_case(
         updated_data = load_cases()
 
         return templates.TemplateResponse(
-            name="upload.html",
-            context={
-                "request": request,
+            request,
+            "upload.html",
+            {
                 "cases": updated_data,
                 "message": f"Case created successfully: {case_id}",
             },
@@ -247,9 +246,9 @@ def reports_page(request: Request):
             )
 
         return templates.TemplateResponse(
-            name="reports.html",
-            context={
-                "request": request,
+            request,
+            "reports.html",
+            {
                 "items": items,
             },
         )
@@ -297,9 +296,9 @@ async def case_detail(request: Request, case_id: str):
         ]
 
         return templates.TemplateResponse(
-            name="case_detail.html",
-            context={
-                "request": request,
+            request,
+            "case_detail.html",
+            {
                 "case": case_record,
                 "evidence_items": evidence_items,
                 "uploaded": uploaded,
@@ -394,10 +393,9 @@ async def evidence_file_redirect(case_id: str, evidence_id: str):
 @app.get("/compare", response_class=HTMLResponse)
 async def compare_page(request: Request):
     return templates.TemplateResponse(
-        name="compare.html",
-        context={
-            "request": request,
-        },
+        request,
+        "compare.html",
+        {},
     )
 
 
@@ -426,9 +424,9 @@ async def compare_submit(
     comparison = compare_two_files(str(original_path), str(suspected_path), str(case_path))
 
     return templates.TemplateResponse(
-        name="compare_result.html",
-        context={
-            "request": request,
+        request,
+        "compare_result.html",
+        {
             "comparison": comparison,
             "case_name": case_name,
             "client_name": client_name,
@@ -447,9 +445,9 @@ async def compare_against_case_route(request: Request):
 
     if not case_id or not file or not getattr(file, "filename", ""):
         return templates.TemplateResponse(
-            name="compare_result.html",
-            context={
-                "request": request,
+            request,
+            "compare_result.html",
+            {
                 "error": f"Missing case_id or file. case_id={raw_case_id!r}, filename={getattr(file, 'filename', None)!r}",
                 "result": None,
             },
@@ -469,18 +467,18 @@ async def compare_against_case_route(request: Request):
     try:
         result = compare_against_case(str(file_path), case_id)
         return templates.TemplateResponse(
-            name="compare_result.html",
-            context={
-                "request": request,
+            request,
+            "compare_result.html",
+            {
                 "error": None,
                 "result": result,
             },
         )
     except Exception as e:
         return templates.TemplateResponse(
-            name="compare_result.html",
-            context={
-                "request": request,
+            request,
+            "compare_result.html",
+            {
                 "error": str(e),
                 "result": None,
             },
@@ -519,9 +517,9 @@ async def compare_case_route(
     )
 
     return templates.TemplateResponse(
-        name="compare_case_result.html",
-        context={
-            "request": request,
+        request,
+        "compare_case_result.html",
+        {
             "case_id": case_id,
             "suspect_file": suspect_file.filename,
             "suspect_phash": result.get("suspect_phash"),
@@ -558,9 +556,9 @@ async def compare_global_route(
     )
 
     return templates.TemplateResponse(
-        name="compare_global_result.html",
-        context={
-            "request": request,
+        request,
+        "compare_global_result.html",
+        {
             "suspect_file": suspect_file.filename,
             "suspect_phash": result.get("suspect_phash"),
             "matches": result.get("matches", []),
@@ -575,10 +573,9 @@ async def compare_global_route(
 @app.get("/batch-scan", response_class=HTMLResponse)
 async def batch_scan_page(request: Request):
     return templates.TemplateResponse(
-        name="batch_scan.html",
-        context={
-            "request": request,
-        },
+        request,
+        "batch_scan.html",
+        {},
     )
 
 
@@ -593,9 +590,9 @@ async def batch_scan_route(
     results = scan_folder(folder_path)
 
     return templates.TemplateResponse(
-        name="batch_scan_result.html",
-        context={
-            "request": request,
+        request,
+        "batch_scan_result.html",
+        {
             "folder": folder_path,
             "results": results,
         },
@@ -609,9 +606,9 @@ async def batch_scan_route(
 @app.get("/copyright-search", response_class=HTMLResponse)
 async def copyright_search_page(request: Request):
     return templates.TemplateResponse(
-        name="copyright_search.html",
-        context={
-            "request": request,
+        request,
+        "copyright_search.html",
+        {
             "search_link": None,
             "title": "",
             "author": "",
@@ -640,9 +637,9 @@ async def copyright_search_submit(
     )
 
     return templates.TemplateResponse(
-        name="copyright_search.html",
-        context={
-            "request": request,
+        request,
+        "copyright_search.html",
+        {
             "search_link": search_link,
             "title": title,
             "author": author,
@@ -672,9 +669,9 @@ async def intake_page(
         session = verify_checkout_session(session_id)
 
     return templates.TemplateResponse(
-        name="intake_form.html",
-        context={
-            "request": request,
+        request,
+        "intake_form.html",
+        {
             "session_id": session_id,
             "service": service,
             "service_info": SERVICE_MAP[service],
@@ -789,9 +786,9 @@ async def submit_intake(
         analyze_file(image_path, case_dir=str(case_dir))
 
     return templates.TemplateResponse(
-        name="intake_success.html",
-        context={
-            "request": request,
+        request,
+        "intake_success.html",
+        {
             "case_id": case_id,
             "service_name": SERVICE_MAP[service]["name"],
             "file_count": len(uploaded_items),
