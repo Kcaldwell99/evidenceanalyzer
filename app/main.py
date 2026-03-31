@@ -58,6 +58,7 @@ app.mount("/report-files", StaticFiles(directory=str(REPORTS_DIR)), name="report
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
 
+
 SERVICE_MAP = {
     "single": {
         "name": "Single Image Analysis",
