@@ -154,9 +154,9 @@ def verify_checkout_session(session_id: str):
 async def home(request: Request):
     cases = load_cases()
     return templates.TemplateResponse(
-        request,
         "upload.html",
         {
+            "request": request,
             "cases": cases,
         },
     )
@@ -186,9 +186,9 @@ async def create_case(
         updated_data = load_cases()
 
         return templates.TemplateResponse(
-            request,
             "upload.html",
             {
+                "request": request,
                 "cases": updated_data,
                 "message": f"Case created successfully: {case_id}",
             },
@@ -244,9 +244,9 @@ def reports_page(request: Request):
             )
 
         return templates.TemplateResponse(
-            request,
             "reports.html",
             {
+                "request": request,
                 "items": items,
             },
         )
@@ -294,9 +294,9 @@ async def case_detail(request: Request, case_id: str):
         ]
 
         return templates.TemplateResponse(
-            request,
             "case_detail.html",
             {
+                "request": request,
                 "case": case_record,
                 "evidence_items": evidence_items,
                 "uploaded": uploaded,
@@ -391,9 +391,10 @@ async def evidence_file_redirect(case_id: str, evidence_id: str):
 @app.get("/compare", response_class=HTMLResponse)
 async def compare_page(request: Request):
     return templates.TemplateResponse(
-        request,
         "compare.html",
-        {},
+        {
+            "request": request,
+        },
     )
 
 
@@ -422,9 +423,9 @@ async def compare_submit(
     comparison = compare_two_files(str(original_path), str(suspected_path), str(case_path))
 
     return templates.TemplateResponse(
-        request,
         "compare_result.html",
         {
+            "request": request,
             "comparison": comparison,
             "case_name": case_name,
             "client_name": client_name,
@@ -443,9 +444,9 @@ async def compare_against_case_route(request: Request):
 
     if not case_id or not file or not getattr(file, "filename", ""):
         return templates.TemplateResponse(
-            request,
             "compare_result.html",
             {
+                "request": request,
                 "error": f"Missing case_id or file. case_id={raw_case_id!r}, filename={getattr(file, 'filename', None)!r}",
                 "result": None,
             },
@@ -465,18 +466,18 @@ async def compare_against_case_route(request: Request):
     try:
         result = compare_against_case(str(file_path), case_id)
         return templates.TemplateResponse(
-            request,
             "compare_result.html",
             {
+                "request": request,
                 "error": None,
                 "result": result,
             },
         )
     except Exception as e:
         return templates.TemplateResponse(
-            request,
             "compare_result.html",
             {
+                "request": request,
                 "error": str(e),
                 "result": None,
             },
@@ -515,9 +516,9 @@ async def compare_case_route(
     )
 
     return templates.TemplateResponse(
-        request,
         "compare_case_result.html",
         {
+            "request": request,
             "case_id": case_id,
             "suspect_file": suspect_file.filename,
             "suspect_phash": result.get("suspect_phash"),
@@ -554,9 +555,9 @@ async def compare_global_route(
     )
 
     return templates.TemplateResponse(
-        request,
         "compare_global_result.html",
         {
+            "request": request,
             "suspect_file": suspect_file.filename,
             "suspect_phash": result.get("suspect_phash"),
             "matches": result.get("matches", []),
@@ -571,9 +572,10 @@ async def compare_global_route(
 @app.get("/batch-scan", response_class=HTMLResponse)
 async def batch_scan_page(request: Request):
     return templates.TemplateResponse(
-        request,
         "batch_scan.html",
-        {},
+        {
+            "request": request,
+        },
     )
 
 
@@ -588,9 +590,9 @@ async def batch_scan_route(
     results = scan_folder(folder_path)
 
     return templates.TemplateResponse(
-        request,
         "batch_scan_result.html",
         {
+            "request": request,
             "folder": folder_path,
             "results": results,
         },
@@ -604,9 +606,9 @@ async def batch_scan_route(
 @app.get("/copyright-search", response_class=HTMLResponse)
 async def copyright_search_page(request: Request):
     return templates.TemplateResponse(
-        request,
         "copyright_search.html",
         {
+            "request": request,
             "search_link": None,
             "title": "",
             "author": "",
@@ -635,9 +637,9 @@ async def copyright_search_submit(
     )
 
     return templates.TemplateResponse(
-        request,
         "copyright_search.html",
         {
+            "request": request,
             "search_link": search_link,
             "title": title,
             "author": author,
@@ -667,9 +669,9 @@ async def intake_page(
         session = verify_checkout_session(session_id)
 
     return templates.TemplateResponse(
-        request,
         "intake_form.html",
         {
+            "request": request,
             "session_id": session_id,
             "service": service,
             "service_info": SERVICE_MAP[service],
@@ -784,9 +786,9 @@ async def submit_intake(
         analyze_file(image_path, case_dir=str(case_dir))
 
     return templates.TemplateResponse(
-        request,
         "intake_success.html",
         {
+            "request": request,
             "case_id": case_id,
             "service_name": SERVICE_MAP[service]["name"],
             "file_count": len(uploaded_items),
