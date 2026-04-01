@@ -1022,3 +1022,31 @@ async def download_bundle(
         filename=f"{case_id}_{evidence_id}_bundle.zip",
         media_type="application/zip",
     )
+# STRIPE CHECKOUT
+STRIPE_PRICES = {
+    "single": "price_1THUZ2HVHQNKUlwkBfHnsoDj",
+    "bundle": "price_1THUiNHVHQNKUlwkJG0v91C7",
+    "professional": "price_1THV2DHVHQNKUlwkZ5lyCBsE",
+    "firm": "price_1THV6cHVHQNKUlwkViPyHk4f",
+}
+
+@app.get("/checkout/{product}", response_class=HTMLResponse)
+async def checkout(product: str, request: Request):
+    if product not in STRIPE_PRICES:
+        raise HTTPException(status_code=404, detail="Product not found")
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        line_items=[{"price": STRIPE_PRICES[product], "quantity": 1}],
+        mode="subscription" if product in ["professional", "firm"] else "payment",
+        success_url=str(request.base_url) + "checkout/success",
+        cancel_url=str(request.base_url) + "checkout/cancel",
+    )
+    return RedirectResponse(url=session.url)
+
+@app.get("/checkout/success", response_class=HTMLResponse)
+async def checkout_success(request: Request):
+    return templates.TemplateResponse("checkout_success.html", {"request": request})
+
+@app.get("/checkout/cancel", response_class=HTMLResponse)
+async def checkout_cancel(request: Request):
+    return templates.TemplateResponse("checkout_cancel.html", {"request": request})
