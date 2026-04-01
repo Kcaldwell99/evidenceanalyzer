@@ -1022,11 +1022,3 @@ async def download_bundle(
         filename=f"{case_id}_{evidence_id}_bundle.zip",
         media_type="application/zip",
     )
-@app.get("/make-me-admin-temp")
-async def make_admin(db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == "kcaldwell@caldwell-law-firm.com").first()
-    if user:
-        user.is_admin = True
-        db.commit()
-        return {"status": "done", "email": user.email}
-    return {"status": "user not found"}
