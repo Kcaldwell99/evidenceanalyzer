@@ -163,17 +163,17 @@ def analyze_file(file_path, case_dir=None, file_key=None):
     )
     confidence = report.get("similarity_assessment")
 
-if confidence == "High Confidence Match":
-    report["preliminary_conclusion"] = (
-        "The submitted image exhibits a high degree of similarity to previously indexed evidence. "
-        "The available indicators support the conclusion that the image is likely derived from "
-        "the same source or an altered version of the same original image."
+    if confidence == "High Confidence Match":
+        report["preliminary_conclusion"] = (
+            "The submitted image exhibits a high degree of similarity to previously indexed evidence. "
+            "The available indicators support the conclusion that the image is likely derived from "
+            "the same source or an altered version of the same original image."
     )
-elif confidence == "Probable Match":
-    report["preliminary_conclusion"] = (
-        "The submitted image exhibits notable similarity to previously indexed evidence. "
-        "The indicators suggest a probable relationship between the images, although differences "
-        "may reflect editing, recompression, or transformation."
+    elif confidence == "Probable Match":
+        report["preliminary_conclusion"] = (
+            "The submitted image exhibits notable similarity to previously indexed evidence. "
+            "The indicators suggest a probable relationship between the images, although differences "
+            "may reflect editing, recompression, or transformation."
     )
 else:
     report["preliminary_conclusion"] = (
