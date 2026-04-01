@@ -129,7 +129,7 @@ def generate_pdf_report(report: dict, pdf_path: str) -> None:
     draw_label_value("Copyright Assignments", "Information not Available in this Report")
 
     draw_paragraph(
-        "Ownership information is preliminary and based solely on available file data and observable indicators. "
+        "Ownership and copyright information is preliminary and based solely on available file data and observable indicators. "
         "No independent verification of copyright registration or assignment has been performed."
 )
 

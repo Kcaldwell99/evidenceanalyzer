@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import textwrap
 from datetime import datetime
@@ -143,29 +143,10 @@ def analyze_file(file_path, case_dir=None, file_key=None):
         else:
             confidence = "Inconclusive"
 
+      
         report["similarity_assessment"] = confidence
     else:
-        report["similarity_assessment"] = "Inconclusive"
-
-    confidence = report.get("similarity_assessment")
-
-    if confidence == "High Confidence Match":
-        report["preliminary_conclusion"] = (
-            "The submitted image exhibits a high degree of similarity to previously indexed evidence. "
-            "The available indicators support the conclusion that the image is likely derived from "
-            "the same source or an altered version of the same original image."
-        )
-    elif confidence == "Probable Match":
-        report["preliminary_conclusion"] = (
-            "The submitted image exhibits notable similarity to previously indexed evidence. "
-            "The indicators suggest a probable relationship between the images, although differences "
-            "may reflect editing, recompression, or transformation."
-        )
-    else:
-        report["preliminary_conclusion"] = (
-            "The submitted image does not exhibit sufficient similarity to support a reliable "
-            "forensic conclusion of derivation from previously indexed evidence."
-        )
+        report["similarity_assessment"] = "No similar prior file identified"
 
     report["methodology"] = (
         "The submitted file was analyzed using a combination of forensic techniques, including "
@@ -179,6 +160,25 @@ def analyze_file(file_path, case_dir=None, file_key=None):
         "It does not independently establish authorship, ownership, or legal infringement. "
         "Metadata may be altered or removed during processing or transmission. "
         "Conclusions are limited to the observable characteristics of the files analyzed."
+    )
+    confidence = report.get("similarity_assessment")
+
+if confidence == "High Confidence Match":
+    report["preliminary_conclusion"] = (
+        "The submitted image exhibits a high degree of similarity to previously indexed evidence. "
+        "The available indicators support the conclusion that the image is likely derived from "
+        "the same source or an altered version of the same original image."
+    )
+elif confidence == "Probable Match":
+    report["preliminary_conclusion"] = (
+        "The submitted image exhibits notable similarity to previously indexed evidence. "
+        "The indicators suggest a probable relationship between the images, although differences "
+        "may reflect editing, recompression, or transformation."
+    )
+else:
+    report["preliminary_conclusion"] = (
+        "The submitted image does not exhibit sufficient similarity to support a reliable "
+        "forensic conclusion of derivation from previously indexed evidence." 
     )
 
     json_path = os.path.join(case_path, "analysis_report.json")
@@ -291,6 +291,7 @@ def analyze_file(file_path, case_dir=None, file_key=None):
     y -= 15
 
     c.setFont("Helvetica", 10)
+   
     y = _draw_wrapped_lines(
         c,
         _wrap_text(f"Confidence Level: {report.get('similarity_assessment', 'Not available')}"),
@@ -329,39 +330,4 @@ def analyze_file(file_path, case_dir=None, file_key=None):
         60,
         y,
     )
-
-    c.save()
-
-    if case_dir and case_id_value and evidence_id:
-        case_root = os.path.dirname(case_dir)
-        relative_json_path = os.path.relpath(json_path, start=case_root).replace("\\", "/")
-        relative_pdf_path = os.path.relpath(pdf_path, start=case_root).replace("\\", "/")
-
-        db = SessionLocal()
-        try:
-            db_item = EvidenceItem(
-                case_id=case_id_value,
-                evidence_id=evidence_id,
-                file_name=os.path.basename(file_path),
-                sha256=file_hash,
-                phash=phash,
-                analysis_date=report["analysis_date"],
-                json_report=relative_json_path,
-                pdf_report=relative_pdf_path,
-                file_key=file_key,
-            )
-            db.add(db_item)
-            db.commit()
-        finally:
-            db.close()
-
-        add_fingerprint(
-            case_id_value,
-            evidence_id,
-            os.path.basename(file_path),
-            phash,
-            relative_pdf_path,
-            relative_json_path,
-        )
-
-    return report, json_path, pdf_path
+ 
