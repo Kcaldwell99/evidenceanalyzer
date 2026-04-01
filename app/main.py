@@ -6,20 +6,30 @@ import tempfile
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import requests
 import stripe
-from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Depends, Response
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
 
 from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
 from app.db import SessionLocal, engine
-from app.models import Base, Case, EvidenceItem
+from app.models import Base, Case, EvidenceItem, User
 from app.storage import upload_file
+from app.auth import (
+    hash_password,
+    verify_password,
+    create_access_token,
+    get_current_user,
+    get_optional_user,
+    get_db,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+)
 
 from core.batch_scan import scan_folder
 from core.compare_files import compare_two_files, compare_against_case, compare_against_all_cases
@@ -27,6 +37,10 @@ from core.copyright_lookup import build_copyright_search_link
 
 
 app = FastAPI()
+
+@app.exception_handler(401)
+async def unauthorized_handler(request: Request, exc):
+    return RedirectResponse(url="/login", status_code=303)
 
 # =========================================================
 # PATHS / CONFIG
@@ -82,10 +96,14 @@ SERVICE_MAP = {
 # HELPERS
 # =========================================================
 
-def load_cases():
+def load_cases_for_user(user: User):
+    """Return cases belonging to this user (or all cases if admin)."""
     db = SessionLocal()
     try:
-        cases = db.query(Case).order_by(Case.id.asc()).all()
+        query = db.query(Case).order_by(Case.id.asc())
+        if not user.is_admin:
+            query = query.filter(Case.user_id == user.id)
+        cases = query.all()
         return [
             {
                 "case_id": c.case_id,
@@ -134,25 +152,127 @@ def create_paid_case_id(service: str) -> str:
 def verify_checkout_session(session_id: str):
     if not stripe.api_key:
         raise HTTPException(status_code=500, detail="Stripe secret key not configured.")
-
     try:
         session = stripe.checkout.Session.retrieve(session_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Unable to verify Stripe session: {e}")
-
     if session.get("status") != "complete" or session.get("payment_status") != "paid":
         raise HTTPException(status_code=403, detail="Stripe payment not completed.")
-
     return session
 
 
+def assert_case_ownership(case_obj: Case, current_user: User):
+    """Raise 403 if the user doesn't own the case (unless admin)."""
+    if not current_user.is_admin and case_obj.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied.")
+
+
 # =========================================================
-# BASIC CASE WORKFLOW
+# AUTH ROUTES
+# =========================================================
+
+@app.get("/register", response_class=HTMLResponse)
+async def register_page(request: Request):
+    return templates.TemplateResponse(request, "register.html", {"error": None})
+
+
+@app.post("/register", response_class=HTMLResponse)
+async def register_submit(
+    request: Request,
+    response: Response,
+    email: str = Form(...),
+    password: str = Form(...),
+    password_confirm: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    error = None
+
+    if password != password_confirm:
+        error = "Passwords do not match."
+    elif len(password) < 8:
+        error = "Password must be at least 8 characters."
+    elif db.query(User).filter(User.email == email.lower().strip()).first():
+        error = "An account with that email already exists."
+
+    if error:
+        return templates.TemplateResponse(
+            request, "register.html", {"error": error}, status_code=400
+        )
+
+    user = User(
+        email=email.lower().strip(),
+        hashed_password=hash_password(password),
+        is_admin=False,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    token = create_access_token(user.id, user.email)
+    resp = RedirectResponse(url="/", status_code=303)
+    resp.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+    return resp
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse(request, "login.html", {"error": None})
+
+
+@app.post("/login", response_class=HTMLResponse)
+async def login_submit(
+    request: Request,
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.email == email.lower().strip()).first()
+
+    if not user or not verify_password(password, user.hashed_password):
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {"error": "Invalid email or password."},
+            status_code=401,
+        )
+
+    token = create_access_token(user.id, user.email)
+    resp = RedirectResponse(url="/", status_code=303)
+    resp.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+    return resp
+
+
+@app.get("/logout")
+async def logout():
+    resp = RedirectResponse(url="/login", status_code=303)
+    resp.delete_cookie("access_token")
+    return resp
+
+
+# =========================================================
+# BASIC CASE WORKFLOW  (all routes now require login)
 # =========================================================
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    cases = load_cases()
+async def home(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    cases = load_cases_for_user(current_user)
     deleted = request.query_params.get("deleted")
 
     return templates.TemplateResponse(
@@ -160,6 +280,7 @@ async def home(request: Request):
         "upload.html",
         {
             "cases": cases,
+            "current_user": current_user,
             "message": "Case deleted successfully." if deleted else None,
         },
     )
@@ -170,143 +291,149 @@ async def create_case(
     request: Request,
     case_name: str = Form(...),
     description: str = Form(""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    db = SessionLocal()
-    try:
-        existing_cases = db.query(Case).order_by(Case.id.asc()).all()
-        case_id = generate_case_id(existing_cases)
+    existing_cases = db.query(Case).order_by(Case.id.asc()).all()
+    case_id = generate_case_id(existing_cases)
 
-        new_case = Case(
-            case_id=case_id,
-            case_name=case_name,
-            description=description,
-        )
-        db.add(new_case)
-        db.commit()
+    new_case = Case(
+        case_id=case_id,
+        case_name=case_name,
+        description=description,
+        user_id=current_user.id,
+    )
+    db.add(new_case)
+    db.commit()
 
-        create_case_folder(case_id)
+    create_case_folder(case_id)
 
-        updated_data = load_cases()
+    updated_data = load_cases_for_user(current_user)
 
-        return templates.TemplateResponse(
-            request,
-            "upload.html",
-            {
-                "cases": updated_data,
-                "message": f"Case created successfully: {case_id}",
-            },
-        )
-    finally:
-        db.close()
+    return templates.TemplateResponse(
+        request,
+        "upload.html",
+        {
+            "cases": updated_data,
+            "current_user": current_user,
+            "message": f"Case created successfully: {case_id}",
+        },
+    )
 
 
 @app.post("/delete-case/{case_id}")
-async def delete_case(case_id: str):
-    db = SessionLocal()
-    try:
-        case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+async def delete_case(
+    case_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
 
-        if not case_obj:
-            raise HTTPException(status_code=404, detail="Case not found.")
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
 
-        db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).delete()
-        db.delete(case_obj)
-        db.commit()
+    assert_case_ownership(case_obj, current_user)
 
-        case_dir = CASES_DIR / case_id
-        if case_dir.exists():
-            shutil.rmtree(case_dir)
+    db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).delete()
+    db.delete(case_obj)
+    db.commit()
 
-        return RedirectResponse(url="/?deleted=1", status_code=303)
-    finally:
-        db.close()
+    case_dir = CASES_DIR / case_id
+    if case_dir.exists():
+        shutil.rmtree(case_dir)
+
+    return RedirectResponse(url="/?deleted=1", status_code=303)
 
 
 @app.get("/reports", response_class=HTMLResponse)
-def reports_page(request: Request):
-    db = SessionLocal()
-    try:
-        cases = db.query(Case).order_by(Case.id.asc()).all()
-        items = []
+def reports_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    query = db.query(Case).order_by(Case.id.asc())
+    if not current_user.is_admin:
+        query = query.filter(Case.user_id == current_user.id)
+    cases = query.all()
 
-        for case in cases:
-            file_count = (
-                db.query(EvidenceItem)
-                .filter(EvidenceItem.case_id == case.case_id)
-                .count()
-            )
-
-            items.append(
-                {
-                    "case_id": case.case_id,
-                    "case_name": case.case_name,
-                    "description": case.description or "",
-                    "created_at": case.created_at.strftime("%Y-%m-%d %H:%M:%S") if case.created_at else "",
-                    "file_count": file_count,
-                }
-            )
-
-        return templates.TemplateResponse(
-            request,
-            "reports.html",
-            {
-                "items": items,
-            },
+    items = []
+    for case in cases:
+        file_count = (
+            db.query(EvidenceItem)
+            .filter(EvidenceItem.case_id == case.case_id)
+            .count()
         )
-    finally:
-        db.close()
+        items.append(
+            {
+                "case_id": case.case_id,
+                "case_name": case.case_name,
+                "description": case.description or "",
+                "created_at": case.created_at.strftime("%Y-%m-%d %H:%M:%S") if case.created_at else "",
+                "file_count": file_count,
+            }
+        )
+
+    return templates.TemplateResponse(
+        request,
+        "reports.html",
+        {"items": items, "current_user": current_user},
+    )
 
 
 @app.get("/cases/{case_id}", response_class=HTMLResponse)
-async def case_detail(request: Request, case_id: str):
+async def case_detail(
+    request: Request,
+    case_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     uploaded = request.query_params.get("uploaded")
 
-    db = SessionLocal()
-    try:
-        case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
 
-        if not case_obj:
-            return HTMLResponse(f"<h1>Case {case_id} not found</h1>", status_code=404)
+    if not case_obj:
+        return HTMLResponse(f"<h1>Case {case_id} not found</h1>", status_code=404)
 
-        case_record = {
-            "case_id": case_obj.case_id,
-            "case_name": case_obj.case_name,
-            "description": case_obj.description or "",
-            "created_at": case_obj.created_at.strftime("%Y-%m-%d %H:%M:%S") if case_obj.created_at else "",
+    assert_case_ownership(case_obj, current_user)
+
+    case_record = {
+        "case_id": case_obj.case_id,
+        "case_name": case_obj.case_name,
+        "description": case_obj.description or "",
+        "created_at": case_obj.created_at.strftime("%Y-%m-%d %H:%M:%S") if case_obj.created_at else "",
+    }
+
+    evidence_rows = (
+        db.query(EvidenceItem)
+        .filter(EvidenceItem.case_id == case_id)
+        .order_by(EvidenceItem.id.asc())
+        .all()
+    )
+
+    evidence_items = [
+        {
+            "evidence_id": e.evidence_id,
+            "file_name": e.file_name,
+            "sha256": e.sha256,
+            "phash": e.phash,
+            "analysis_date": e.analysis_date,
+            "json_report": e.json_report,
+            "pdf_report": e.pdf_report,
+            "file_key": e.file_key,
         }
+        for e in evidence_rows
+    ]
 
-        evidence_rows = (
-            db.query(EvidenceItem)
-            .filter(EvidenceItem.case_id == case_id)
-            .order_by(EvidenceItem.id.asc())
-            .all()
-        )
-
-        evidence_items = [
-            {
-                "evidence_id": e.evidence_id,
-                "file_name": e.file_name,
-                "sha256": e.sha256,
-                "phash": e.phash,
-                "analysis_date": e.analysis_date,
-                "json_report": e.json_report,
-                "pdf_report": e.pdf_report,
-                "file_key": e.file_key,
-            }
-            for e in evidence_rows
-        ]
-
-        return templates.TemplateResponse(
-            request,
-            "case_detail.html",
-            {
-                "case": case_record,
-                "evidence_items": evidence_items,
-                "uploaded": uploaded,
-            },
-        )
-    finally:
-        db.close()
+    return templates.TemplateResponse(
+        request,
+        "case_detail.html",
+        {
+            "case": case_record,
+            "evidence_items": evidence_items,
+            "uploaded": uploaded,
+            "current_user": current_user,
+        },
+    )
 
 
 @app.post("/analyze")
@@ -314,7 +441,14 @@ async def analyze_file_route(
     request: Request,
     case_id: str = Form(...),
     file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
+    assert_case_ownership(case_obj, current_user)
+
     case_dir = CASES_DIR / case_id
     case_upload_dir = case_dir / "uploads"
     case_upload_dir.mkdir(parents=True, exist_ok=True)
@@ -327,13 +461,12 @@ async def analyze_file_route(
     file.file.seek(0)
 
     file_key = upload_file(file.file, file.filename, file.content_type)
-    print("Uploaded to S3:", file_key)
 
     log_audit_event(
         event_type="file_uploaded",
         case_id=case_id,
         file_name=file.filename,
-        user="system",
+        user=current_user.email,
         notes="Evidence file uploaded",
     )
 
@@ -348,7 +481,7 @@ async def analyze_file_route(
         case_id=case_id,
         file_name=file.filename,
         sha256=report.get("sha256"),
-        user="system",
+        user=current_user.email,
         notes="Image analysis and forensic report generated",
         extra={
             "json_report": json_path,
@@ -357,47 +490,49 @@ async def analyze_file_route(
         },
     )
 
-    return RedirectResponse(
-        url=f"/cases/{case_id}?uploaded=1",
-        status_code=303,
-    )
+    return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
 
 
 @app.get("/evidence-file/{case_id}/{evidence_id}")
-async def evidence_file_redirect(case_id: str, evidence_id: str):
+async def evidence_file_redirect(
+    case_id: str,
+    evidence_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     from app.storage import generate_presigned_url
 
-    db = SessionLocal()
-    try:
-        item = (
-            db.query(EvidenceItem)
-            .filter(
-                EvidenceItem.case_id == case_id,
-                EvidenceItem.evidence_id == evidence_id,
-            )
-            .first()
+    item = (
+        db.query(EvidenceItem)
+        .filter(
+            EvidenceItem.case_id == case_id,
+            EvidenceItem.evidence_id == evidence_id,
         )
+        .first()
+    )
 
-        if not item or not item.file_key:
-            raise HTTPException(status_code=404, detail="Original file not found.")
+    if not item or not item.file_key:
+        raise HTTPException(status_code=404, detail="Original file not found.")
 
-        url = generate_presigned_url(item.file_key)
-        return RedirectResponse(url=url, status_code=302)
-    finally:
-        db.close()
+    # Verify ownership via the case
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if case_obj:
+        assert_case_ownership(case_obj, current_user)
+
+    url = generate_presigned_url(item.file_key)
+    return RedirectResponse(url=url, status_code=302)
 
 
 # =========================================================
-# COMPARISON WORKFLOW
+# COMPARISON WORKFLOW  (login required)
 # =========================================================
 
 @app.get("/compare", response_class=HTMLResponse)
-async def compare_page(request: Request):
-    return templates.TemplateResponse(
-        request,
-        "compare.html",
-        {},
-    )
+async def compare_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    return templates.TemplateResponse(request, "compare.html", {"current_user": current_user})
 
 
 @app.post("/compare", response_class=HTMLResponse)
@@ -408,6 +543,7 @@ async def compare_submit(
     case_notes: str = Form(""),
     original_file: UploadFile = File(...),
     suspected_file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
 ):
     safe_case_name = safe_slug(case_name)
     case_path = REPORTS_DIR / safe_case_name
@@ -432,12 +568,17 @@ async def compare_submit(
             "case_name": case_name,
             "client_name": client_name,
             "case_notes": case_notes,
+            "current_user": current_user,
         },
     )
 
 
 @app.post("/compare-against-case", response_class=HTMLResponse)
-async def compare_against_case_route(request: Request):
+async def compare_against_case_route(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     form = await request.form()
     raw_case_id = form.get("case_id")
     file = form.get("file")
@@ -449,11 +590,17 @@ async def compare_against_case_route(request: Request):
             request,
             "compare_result.html",
             {
-                "error": f"Missing case_id or file. case_id={raw_case_id!r}, filename={getattr(file, 'filename', None)!r}",
+                "error": f"Missing case_id or file.",
                 "result": None,
+                "current_user": current_user,
             },
             status_code=400,
         )
+
+    # Ownership check
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if case_obj:
+        assert_case_ownership(case_obj, current_user)
 
     upload_dir = PROJECT_ROOT / "temp_uploads"
     upload_dir.mkdir(exist_ok=True)
@@ -470,19 +617,13 @@ async def compare_against_case_route(request: Request):
         return templates.TemplateResponse(
             request,
             "compare_result.html",
-            {
-                "error": None,
-                "result": result,
-            },
+            {"error": None, "result": result, "current_user": current_user},
         )
     except Exception as e:
         return templates.TemplateResponse(
             request,
             "compare_result.html",
-            {
-                "error": str(e),
-                "result": None,
-            },
+            {"error": str(e), "result": None, "current_user": current_user},
             status_code=500,
         )
 
@@ -492,7 +633,13 @@ async def compare_case_route(
     request: Request,
     case_id: str = Form(...),
     suspect_file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if case_obj:
+        assert_case_ownership(case_obj, current_user)
+
     compare_dir = CASES_DIR / case_id / "comparisons"
     compare_dir.mkdir(parents=True, exist_ok=True)
 
@@ -507,11 +654,10 @@ async def compare_case_route(
         event_type="case_comparison_completed",
         case_id=case_id,
         file_name=suspect_file.filename,
-        user="system",
+        user=current_user.email,
         notes="Suspect image compared against evidence in selected case",
         extra={
             "best_match_file": result.get("comparison", {}).get("original_file") if result.get("comparison") else None,
-            "best_match_evidence_id": result.get("comparison", {}).get("best_match_evidence_id") if result.get("comparison") else None,
             "similarity_score": result.get("comparison", {}).get("similarity_score") if result.get("comparison") else None,
             "match_count": len(result.get("matches", [])),
         },
@@ -526,6 +672,7 @@ async def compare_case_route(
             "suspect_phash": result.get("suspect_phash"),
             "comparison": result.get("comparison"),
             "matches": result.get("matches", []),
+            "current_user": current_user,
         },
     )
 
@@ -534,6 +681,7 @@ async def compare_case_route(
 async def compare_global_route(
     request: Request,
     suspect_file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
 ):
     temp_dir = UPLOADS_DIR / "temp_compare"
     temp_dir.mkdir(parents=True, exist_ok=True)
@@ -549,11 +697,9 @@ async def compare_global_route(
         event_type="global_comparison_completed",
         case_id="GLOBAL",
         file_name=suspect_file.filename,
-        user="system",
+        user=current_user.email,
         notes="Image compared against all cases",
-        extra={
-            "match_count": len(result.get("matches", [])),
-        },
+        extra={"match_count": len(result.get("matches", []))},
     )
 
     return templates.TemplateResponse(
@@ -563,27 +709,28 @@ async def compare_global_route(
             "suspect_file": suspect_file.filename,
             "suspect_phash": result.get("suspect_phash"),
             "matches": result.get("matches", []),
+            "current_user": current_user,
         },
     )
 
 
 # =========================================================
-# BATCH SCAN
+# BATCH SCAN  (login required)
 # =========================================================
 
 @app.get("/batch-scan", response_class=HTMLResponse)
-async def batch_scan_page(request: Request):
-    return templates.TemplateResponse(
-        request,
-        "batch_scan.html",
-        {},
-    )
+async def batch_scan_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    return templates.TemplateResponse(request, "batch_scan.html", {"current_user": current_user})
 
 
 @app.post("/batch-scan", response_class=HTMLResponse)
 async def batch_scan_route(
     request: Request,
     folder_path: str = Form(...),
+    current_user: User = Depends(get_current_user),
 ):
     if not os.path.exists(folder_path):
         return HTMLResponse("Folder not found", status_code=404)
@@ -593,19 +740,19 @@ async def batch_scan_route(
     return templates.TemplateResponse(
         request,
         "batch_scan_result.html",
-        {
-            "folder": folder_path,
-            "results": results,
-        },
+        {"folder": folder_path, "results": results, "current_user": current_user},
     )
 
 
 # =========================================================
-# COPYRIGHT SEARCH
+# COPYRIGHT SEARCH  (login required)
 # =========================================================
 
 @app.get("/copyright-search", response_class=HTMLResponse)
-async def copyright_search_page(request: Request):
+async def copyright_search_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
     return templates.TemplateResponse(
         request,
         "copyright_search.html",
@@ -616,6 +763,7 @@ async def copyright_search_page(request: Request):
             "claimant": "",
             "registration_number": "",
             "year": "",
+            "current_user": current_user,
         },
     )
 
@@ -628,6 +776,7 @@ async def copyright_search_submit(
     claimant: str = Form(""),
     registration_number: str = Form(""),
     year: str = Form(""),
+    current_user: User = Depends(get_current_user),
 ):
     search_link = build_copyright_search_link(
         title=title,
@@ -647,12 +796,13 @@ async def copyright_search_submit(
             "claimant": claimant,
             "registration_number": registration_number,
             "year": year,
+            "current_user": current_user,
         },
     )
 
 
 # =========================================================
-# PAID INTAKE WORKFLOW
+# PAID INTAKE WORKFLOW  (no auth required — public intake)
 # =========================================================
 
 @app.get("/intake", response_class=HTMLResponse)
@@ -799,11 +949,22 @@ async def submit_intake(
 
 
 # =========================================================
-# OPTIONAL FILE DOWNLOAD HELPERS
+# DOWNLOAD HELPERS  (login required)
 # =========================================================
 
 @app.get("/download-case-file/{case_id}/{subfolder}/{timestamp}/{filename}")
-async def download_case_file(case_id: str, subfolder: str, timestamp: str, filename: str):
+async def download_case_file(
+    case_id: str,
+    subfolder: str,
+    timestamp: str,
+    filename: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if case_obj:
+        assert_case_ownership(case_obj, current_user)
+
     file_path = CASES_DIR / case_id / subfolder / timestamp / filename
 
     if not file_path.exists():
@@ -812,51 +973,52 @@ async def download_case_file(case_id: str, subfolder: str, timestamp: str, filen
     return FileResponse(str(file_path), filename=filename)
 
 
-# =========================================================
-# DOWNLOAD BUNDLE
-# =========================================================
-
 @app.get("/download-bundle/{case_id}/{evidence_id}")
-async def download_bundle(case_id: str, evidence_id: str):
+async def download_bundle(
+    case_id: str,
+    evidence_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     from app.storage import generate_presigned_url
 
-    db = SessionLocal()
-    try:
-        item = (
-            db.query(EvidenceItem)
-            .filter(
-                EvidenceItem.case_id == case_id,
-                EvidenceItem.evidence_id == evidence_id,
-            )
-            .first()
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if case_obj:
+        assert_case_ownership(case_obj, current_user)
+
+    item = (
+        db.query(EvidenceItem)
+        .filter(
+            EvidenceItem.case_id == case_id,
+            EvidenceItem.evidence_id == evidence_id,
         )
+        .first()
+    )
 
-        if not item:
-            raise HTTPException(status_code=404, detail="Evidence not found.")
+    if not item:
+        raise HTTPException(status_code=404, detail="Evidence not found.")
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp:
-            zip_path = tmp.name
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp:
+        zip_path = tmp.name
 
-        with zipfile.ZipFile(zip_path, "w") as zipf:
-            if item.file_key:
-                url = generate_presigned_url(item.file_key)
-                r = requests.get(url)
-                zipf.writestr(item.file_name, r.content)
+    with zipfile.ZipFile(zip_path, "w") as zipf:
+        if item.file_key:
+            url = generate_presigned_url(item.file_key)
+            r = requests.get(url)
+            zipf.writestr(item.file_name, r.content)
 
-            if item.json_report:
-                json_path = os.path.join("cases", case_id, item.json_report)
-                if os.path.exists(json_path):
-                    zipf.write(json_path, "analysis_report.json")
+        if item.json_report:
+            json_path = os.path.join("cases", case_id, item.json_report)
+            if os.path.exists(json_path):
+                zipf.write(json_path, "analysis_report.json")
 
-            if item.pdf_report:
-                pdf_path = os.path.join("cases", case_id, item.pdf_report)
-                if os.path.exists(pdf_path):
-                    zipf.write(pdf_path, "analysis_report.pdf")
+        if item.pdf_report:
+            pdf_path = os.path.join("cases", case_id, item.pdf_report)
+            if os.path.exists(pdf_path):
+                zipf.write(pdf_path, "analysis_report.pdf")
 
-        return FileResponse(
-            zip_path,
-            filename=f"{case_id}_{evidence_id}_bundle.zip",
-            media_type="application/zip",
-        )
-    finally:
-        db.close()
+    return FileResponse(
+        zip_path,
+        filename=f"{case_id}_{evidence_id}_bundle.zip",
+        media_type="application/zip",
+    )
