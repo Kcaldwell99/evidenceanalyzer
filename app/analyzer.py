@@ -175,10 +175,10 @@ def analyze_file(file_path, case_dir=None, file_key=None):
             "The indicators suggest a probable relationship between the images, although differences "
             "may reflect editing, recompression, or transformation."
     )
-else:
-    report["preliminary_conclusion"] = (
-        "The submitted image does not exhibit sufficient similarity to support a reliable "
-        "forensic conclusion of derivation from previously indexed evidence." 
+    else:
+        report["preliminary_conclusion"] = (
+            "The submitted image does not exhibit sufficient similarity to support a reliable "
+            "forensic conclusion of derivation from previously indexed evidence." 
     )
 
     json_path = os.path.join(case_path, "analysis_report.json")
