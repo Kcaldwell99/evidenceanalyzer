@@ -65,21 +65,21 @@ def get_file(key):
         with open(key, "rb") as f:
             return f.read()
         def upload_file(file_obj, filename, content_type=None):
-    """Alias for save_upload, compatible with main.py calls."""
-    key = f"{uuid4()}_{filename}"
+            """Alias for save_upload, compatible with main.py calls."""
+            key = f"{uuid4()}_{filename}"
 
-    if USE_S3:
-        file_obj.seek(0)
-        extra_args = {}
-        if content_type:
-            extra_args["ContentType"] = content_type
-        s3_client.upload_fileobj(file_obj, AWS_S3_BUCKET, key, ExtraArgs=extra_args)
-        return key
-    else:
-        upload_dir = PROJECT_ROOT / "uploads"
-        upload_dir.mkdir(parents=True, exist_ok=True)
-        file_path = upload_dir / key
-        file_obj.seek(0)
-        with open(file_path, "wb") as f:
+            if USE_S3:
+                file_obj.seek(0)
+                extra_args = {}
+            if content_type:
+                extra_args["ContentType"] = content_type
+            s3_client.upload_fileobj(file_obj, AWS_S3_BUCKET, key, ExtraArgs=extra_args)
+            return key
+        else:
+            upload_dir = PROJECT_ROOT / "uploads"
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            file_path = upload_dir / key
+            file_obj.seek(0)
+            with open(file_path, "wb") as f:
             f.write(file_obj.read())
-        return str(file_path)
+            return str(file_path)
