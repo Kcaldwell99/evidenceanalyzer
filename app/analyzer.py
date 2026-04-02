@@ -330,4 +330,5 @@ def analyze_file(file_path, case_dir=None, file_key=None):
         60,
         y,
     )
+    return report, json_path, pdf_path
  
