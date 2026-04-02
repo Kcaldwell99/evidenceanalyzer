@@ -449,15 +449,15 @@ async def analyze_file_route(
         raise HTTPException(status_code=404, detail="Case not found.")
     assert_case_ownership(case_obj, current_user)
 
-case_dir = CASES_DIR / case_id
+    case_dir = CASES_DIR / case_id
 
     file.file.seek(0)
     file_key = upload_file(file.file, file.filename, file.content_type)
 
     file.file.seek(0)
     with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
-        shutil.copyfileobj(file.file, tmp)
-        file_path = tmp.name
+    shutil.copyfileobj(file.file, tmp)
+    file_path = tmp.name
 
     log_audit_event(
         event_type="file_uploaded",
