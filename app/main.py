@@ -449,17 +449,29 @@ async def analyze_file_route(
         raise HTTPException(status_code=404, detail="Case not found.")
     assert_case_ownership(case_obj, current_user)
 
-    case_dir = CASES_DIR / case_id
+case_dir = CASES_DIR / case_id
 
-import tempfile
+    file.file.seek(0)
+    file_key = upload_file(file.file, file.filename, file.content_type)
 
-file.file.seek(0)
-file_key = upload_file(file.file, file.filename, file.content_type)
+    file.file.seek(0)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
+        shutil.copyfileobj(file.file, tmp)
+        file_path = tmp.name
 
-file.file.seek(0)
-with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
-    shutil.copyfileobj(file.file, tmp)
-    file_path = tmp.name
+    log_audit_event(
+        event_type="file_uploaded",
+        case_id=case_id,
+        file_name=file.filename,
+        user=current_user.email,
+        notes="Evidence file uploaded",
+    )
+
+    report, json_path, pdf_path = analyze_file(
+        str(file_path),
+        case_dir=str(case_dir),
+        file_key=file_key,
+    )
 
     evidence_item = EvidenceItem(
         case_id=case_id,
@@ -475,23 +487,7 @@ with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.file
     db.add(evidence_item)
     db.commit()
 
-
-    os.remove(file_path) 
-
-
-    log_audit_event(
-        event_type="file_uploaded",
-        case_id=case_id,
-        file_name=file.filename,
-        user=current_user.email,
-        notes="Evidence file uploaded",
-    )
-
-    report, json_path, pdf_path = analyze_file(
-        str(file_path),
-        case_dir=str(case_dir),
-        file_key=file_key,
-    )
+    os.remove(file_path)
 
     log_audit_event(
         event_type="analysis_completed",
