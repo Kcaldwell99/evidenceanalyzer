@@ -450,17 +450,34 @@ async def analyze_file_route(
     assert_case_ownership(case_obj, current_user)
 
     case_dir = CASES_DIR / case_id
-    case_upload_dir = case_dir / "uploads"
-    case_upload_dir.mkdir(parents=True, exist_ok=True)
 
-    file_path = case_upload_dir / file.filename
+import tempfile
 
-    with file_path.open("wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+file.file.seek(0)
+file_key = upload_file(file.file, file.filename, file.content_type)
 
-    file.file.seek(0)
+file.file.seek(0)
+with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
+    shutil.copyfileobj(file.file, tmp)
+    file_path = tmp.name
 
-    file_key = upload_file(file.file, file.filename, file.content_type)
+    evidence_item = EvidenceItem(
+        case_id=case_id,
+        evidence_id=report.get("evidence_id"),
+        file_name=file.filename,
+        sha256=report.get("sha256"),
+        phash=report.get("phash"),
+        analysis_date=report.get("analysis_date"),
+        json_report=json_path,
+        pdf_report=pdf_path,
+        file_key=file_key,
+    )
+    db.add(evidence_item)
+    db.commit()
+
+
+    os.remove(file_path) 
+
 
     log_audit_event(
         event_type="file_uploaded",
