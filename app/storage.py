@@ -1,7 +1,10 @@
 import os
 import boto3
 from uuid import uuid4
+from pathlib import Path
 from botocore.exceptions import ClientError
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -21,7 +24,6 @@ if USE_S3:
 
 def save_upload(file_obj, filename, upload_dir="uploads"):
     key = f"{uuid4()}_{filename}"
-
     if USE_S3:
         file_obj.seek(0)
         s3_client.upload_fileobj(
@@ -40,6 +42,26 @@ def save_upload(file_obj, filename, upload_dir="uploads"):
         return file_path
 
 
+def upload_file(file_obj, filename, content_type=None):
+    """Compatible with main.py calls."""
+    key = f"{uuid4()}_{filename}"
+    if USE_S3:
+        file_obj.seek(0)
+        extra_args = {}
+        if content_type:
+            extra_args["ContentType"] = content_type
+        s3_client.upload_fileobj(file_obj, AWS_S3_BUCKET, key, ExtraArgs=extra_args)
+        return key
+    else:
+        upload_dir = PROJECT_ROOT / "uploads"
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        file_path = upload_dir / key
+        file_obj.seek(0)
+        with open(file_path, "wb") as f:
+            f.write(file_obj.read())
+        return str(file_path)
+
+
 def generate_presigned_url(key, expires=3600):
     if USE_S3:
         try:
@@ -55,7 +77,7 @@ def generate_presigned_url(key, expires=3600):
 
 
 def get_file(key):
-    """Download file from S3 into memory and return bytes, or read from local disk."""
+    """Return file bytes from S3 or local disk."""
     if USE_S3:
         response = s3_client.get_object(Bucket=AWS_S3_BUCKET, Key=key)
         return response["Body"].read()
