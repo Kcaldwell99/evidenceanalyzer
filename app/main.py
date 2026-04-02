@@ -451,12 +451,12 @@ async def analyze_file_route(
 
     case_dir = CASES_DIR / case_id
 
-        file.file.seek(0)
-        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
-            shutil.copyfileobj(file.file, tmp)
-            file_path = tmp.name
+    file.file.seek(0)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
+    shutil.copyfileobj(file.file, tmp)
+    file_path = tmp.name
 
-        file_key = upload_file(open(file_path, "rb"), file.filename, file.content_type)
+    file_key = upload_file(open(file_path, "rb"), file.filename, file.content_type)
 
     log_audit_event(
         event_type="file_uploaded",
