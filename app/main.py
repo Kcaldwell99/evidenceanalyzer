@@ -895,59 +895,6 @@ for up in files:
             }
         )
         os.remove(target_path)
-```
-for up in files:
-        original_name = Path(up.filename).name
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(original_name).suffix) as tmp:
-            shutil.copyfileobj(up.file, tmp)
-            target_path = tmp.name
-
-        uploaded_items.append(
-            {
-                "filename": original_name,
-                "stored_path": target_path,
-                "content_type": up.content_type,
-                "size_bytes": os.path.getsize(target_path),
-                "sha256": sha256_file(target_path),
-            }
-        )
-        os.remove(target_path)
-```for up in files:
-        original_name = Path(up.filename).name
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(original_name).suffix) as tmp:
-            shutil.copyfileobj(up.file, tmp)
-            target_path = tmp.name
-
-        uploaded_items.append(
-            {
-                "filename": original_name,
-                "stored_path": target_path,
-                "content_type": up.content_type,
-                "size_bytes": os.path.getsize(target_path),
-                "sha256": sha256_file(target_path),
-            }
-        )
-        os.remove(target_path)
-
-    for up in files:
-        original_name = Path(up.filename).name
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(original_name).suffix) as tmp:
-            shutil.copyfileobj(up.file, tmp)
-            target_path = tmp.name
-
-        uploaded_items.append(
-            {
-                "filename": original_name,
-                "stored_path": target_path,
-                "content_type": up.content_type,
-                "size_bytes": os.path.getsize(target_path),
-                "sha256": sha256_file(target_path),
-            }
-        )
-        os.remove(target_path)
 
     intake_data = {
         "case_id": case_id,
