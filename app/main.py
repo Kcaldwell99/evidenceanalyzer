@@ -614,18 +614,14 @@ async def compare_against_case_route(
     if case_obj:
         assert_case_ownership(case_obj, current_user)
 
-    upload_dir = PROJECT_ROOT / "temp_uploads"
-    upload_dir.mkdir(exist_ok=True)
-
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    safe_filename = f"{timestamp}_{file.filename}"
-    file_path = upload_dir / safe_filename
-
-    with file_path.open("wb") as f:
-        f.write(await file.read())
+    file_content = await file.read()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
+        tmp.write(file_content)
+        file_path = tmp.name
 
     try:
         result = compare_against_case(str(file_path), case_id)
+        os.remove(file_path)
         return templates.TemplateResponse(
             request,
             "compare_result.html",
@@ -652,15 +648,14 @@ async def compare_case_route(
     if case_obj:
         assert_case_ownership(case_obj, current_user)
 
-    compare_dir = CASES_DIR / case_id / "comparisons"
-    compare_dir.mkdir(parents=True, exist_ok=True)
-
-    suspect_path = compare_dir / suspect_file.filename
-
-    with suspect_path.open("wb") as buffer:
-        buffer.write(await suspect_file.read())
+    file_content = await suspect_file.read()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(suspect_file.filename)[1]) as tmp:
+        tmp.write(file_content)
+        suspect_path = tmp.name
 
     result = compare_against_case(str(suspect_path), case_id=case_id)
+    os.remove(suspect_path)
+
 
     log_audit_event(
         event_type="case_comparison_completed",
@@ -688,22 +683,20 @@ async def compare_case_route(
         },
     )
 
-
 @app.post("/compare-global", response_class=HTMLResponse)
 async def compare_global_route(
     request: Request,
     suspect_file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
 ):
-    temp_dir = UPLOADS_DIR / "temp_compare"
-    temp_dir.mkdir(parents=True, exist_ok=True)
-
-    suspect_path = temp_dir / suspect_file.filename
-
-    with suspect_path.open("wb") as buffer:
-        buffer.write(await suspect_file.read())
+    
+    file_content = await suspect_file.read()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(suspect_file.filename)[1]) as tmp:
+        tmp.write(file_content)
+        suspect_path = tmp.name
 
     result = compare_against_all_cases(str(suspect_path))
+    os.remove(suspect_path)
 
     log_audit_event(
         event_type="global_comparison_completed",
@@ -885,28 +878,76 @@ async def submit_intake(
     reports_dir = case_dir / "reports"
     audit_dir = case_dir / "audit"
 
-    uploads_dir.mkdir(parents=True, exist_ok=True)
-    reports_dir.mkdir(parents=True, exist_ok=True)
-    audit_dir.mkdir(parents=True, exist_ok=True)
-
-    uploaded_items = []
-
-    for up in files:
+for up in files:
         original_name = Path(up.filename).name
-        target_path = uploads_dir / original_name
 
-        with target_path.open("wb") as buffer:
-            shutil.copyfileobj(up.file, buffer)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(original_name).suffix) as tmp:
+            shutil.copyfileobj(up.file, tmp)
+            target_path = tmp.name
 
         uploaded_items.append(
             {
                 "filename": original_name,
-                "stored_path": str(target_path),
+                "stored_path": target_path,
                 "content_type": up.content_type,
-                "size_bytes": target_path.stat().st_size,
+                "size_bytes": os.path.getsize(target_path),
                 "sha256": sha256_file(target_path),
             }
         )
+        os.remove(target_path)
+```
+for up in files:
+        original_name = Path(up.filename).name
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(original_name).suffix) as tmp:
+            shutil.copyfileobj(up.file, tmp)
+            target_path = tmp.name
+
+        uploaded_items.append(
+            {
+                "filename": original_name,
+                "stored_path": target_path,
+                "content_type": up.content_type,
+                "size_bytes": os.path.getsize(target_path),
+                "sha256": sha256_file(target_path),
+            }
+        )
+        os.remove(target_path)
+```for up in files:
+        original_name = Path(up.filename).name
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(original_name).suffix) as tmp:
+            shutil.copyfileobj(up.file, tmp)
+            target_path = tmp.name
+
+        uploaded_items.append(
+            {
+                "filename": original_name,
+                "stored_path": target_path,
+                "content_type": up.content_type,
+                "size_bytes": os.path.getsize(target_path),
+                "sha256": sha256_file(target_path),
+            }
+        )
+        os.remove(target_path)
+
+    for up in files:
+        original_name = Path(up.filename).name
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(original_name).suffix) as tmp:
+            shutil.copyfileobj(up.file, tmp)
+            target_path = tmp.name
+
+        uploaded_items.append(
+            {
+                "filename": original_name,
+                "stored_path": target_path,
+                "content_type": up.content_type,
+                "size_bytes": os.path.getsize(target_path),
+                "sha256": sha256_file(target_path),
+            }
+        )
+        os.remove(target_path)
 
     intake_data = {
         "case_id": case_id,
