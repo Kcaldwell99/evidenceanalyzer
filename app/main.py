@@ -878,7 +878,7 @@ async def submit_intake(
     reports_dir = case_dir / "reports"
     audit_dir = case_dir / "audit"
 
-for up in files:
+    for up in files:
         original_name = Path(up.filename).name
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=Path(original_name).suffix) as tmp:
