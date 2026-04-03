@@ -619,9 +619,13 @@ async def compare_against_case_route(
         tmp.write(file_content)
         file_path = tmp.name
 
+    original_filename = file.filename
+
     try:
         result = compare_against_case(str(file_path), case_id)
-        os.remove(file_path)
+        result["suspect_file"] = original_filename
+        if result.get("best_match"):
+            result["best_match"]["suspect_file"] = original_filename
         return templates.TemplateResponse(
             request,
             "compare_result.html",
@@ -634,7 +638,9 @@ async def compare_against_case_route(
             {"error": str(e), "result": None, "current_user": current_user},
             status_code=500,
         )
-
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 @app.post("/compare-case", response_class=HTMLResponse)
 async def compare_case_route(
