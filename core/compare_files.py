@@ -452,32 +452,35 @@ def _find_uploaded_evidence_file(case_path, file_name):
                 return os.path.join(root, filename)
     return None
 
-
 def compare_against_case(suspect_path, case_id_or_path):
-    case_path = _find_case_path(case_id_or_path)
-    report_files = _case_report_files(case_path)
+    from app.utils.image_fingerprint import generate_phash
+    from app.utils.hash_compare import hamming_distance
+    from core.fingerprint_index import search_similar
+    from app.db import SessionLocal
+    from app.models import EvidenceItem
+    from app.storage import download_to_tempfile
+
+    case_id = os.path.basename(str(case_id_or_path))
+
+    suspect_phash = generate_phash(suspect_path)
+
+    all_matches = search_similar(
+        suspect_phash,
+        hamming_distance,
+        max_distance=16,
+    )
+
+    case_matches = [m for m in all_matches if m.get("case_id") == case_id]
 
     matches = []
     best_match = None
 
-    for report_file in report_files:
-        try:
-            with open(report_file, "r", encoding="utf-8") as f:
-                evidence_report = json.load(f)
-        except Exception:
-            continue
-
-        evidence_file_name = evidence_report.get("file_name")
-
-        from app.db import SessionLocal
-        from app.models import EvidenceItem
-        from app.storage import download_to_tempfile
-
+    for match in case_matches:
         db = SessionLocal()
         try:
             item = db.query(EvidenceItem).filter(
-                EvidenceItem.case_id == os.path.basename(case_path),
-                EvidenceItem.file_name == evidence_file_name,
+                EvidenceItem.case_id == case_id,
+                EvidenceItem.evidence_id == match.get("evidence_id"),
             ).first()
         finally:
             db.close()
@@ -485,16 +488,18 @@ def compare_against_case(suspect_path, case_id_or_path):
         if not item or not item.file_key:
             continue
 
-        suffix = os.path.splitext(evidence_file_name)[1]
+        suffix = os.path.splitext(item.file_name)[1]
         evidence_path = download_to_tempfile(item.file_key, suffix=suffix)
 
-        comparison = compare_two_files(evidence_path, suspect_path, case_path=case_path)
-        comparison["case_id"] = os.path.basename(case_path)
-        comparison["evidence_id"] = evidence_report.get("evidence_id")
-        comparison["reference_file"] = evidence_file_name
+        try:
+            comparison = compare_two_files(evidence_path, suspect_path)
+            comparison["case_id"] = case_id
+            comparison["evidence_id"] = item.evidence_id
+            comparison["reference_file"] = item.file_name
+            matches.append(comparison)
+        finally:
+            os.remove(evidence_path)
 
-        matches.append(comparison)
-        os.remove(evidence_path)
     matches.sort(
         key=lambda item: (
             -item.get("similarity_score", 0),
@@ -506,12 +511,22 @@ def compare_against_case(suspect_path, case_id_or_path):
         best_match = matches[0]
 
     return {
-        "case_id": os.path.basename(case_path),
+        "case_id": case_id,
         "suspect_file": os.path.basename(str(suspect_path)),
+        "suspect_phash": suspect_phash,
         "best_match": best_match,
         "matches": matches,
         "match_count": len(matches),
     }
+```
+
+Then commit and push:
+```
+git add core/compare_files.py
+git commit -m "fix: rewrite compare_against_case to use DB fingerprint index and S3"
+git push
+
+
 
 
 def compare_against_all_cases(suspect_path, cases_root="cases"):
