@@ -40,6 +40,7 @@ def analyze_file(file_path, case_dir=None, file_key=None):
     image_metadata = get_image_metadata(file_path)
     exif_data = extract_exif(file_path)
     c2pa_info = check_c2pa_presence(file_path)
+
     phash = generate_phash(file_path)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -66,6 +67,13 @@ def analyze_file(file_path, case_dir=None, file_key=None):
             evidence_id = f"E-{existing_count + 1:03d}"
         finally:
             db.close()
+
+    add_fingerprint(
+        case_id=case_id_value,
+        evidence_id=evidence_id,
+        file_name=os.path.basename(file_path),
+        phash=phash,
+    )
 
     similar_matches = search_similar(
         phash,
