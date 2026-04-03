@@ -518,7 +518,6 @@ def compare_against_case(suspect_path, case_id_or_path):
         "matches": matches,
         "match_count": len(matches),
     }
-```
 
 Then commit and push:
 ```
