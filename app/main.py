@@ -286,6 +286,11 @@ async def home(
     )
 
 
+
+
+
+
+
 @app.post("/create-case", response_class=HTMLResponse)
 async def create_case(
     request: Request,
@@ -811,6 +816,13 @@ async def copyright_search_submit(
         },
     )
 
+@app.get("/terms", response_class=HTMLResponse)
+async def terms(request: Request):
+    return templates.TemplateResponse(request, "terms.html", {})
+
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy(request: Request):
+    return templates.TemplateResponse(request, "privacy.html", {})
 
 # =========================================================
 # PAID INTAKE WORKFLOW  (no auth required — public intake)
