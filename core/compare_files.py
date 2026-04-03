@@ -468,10 +468,25 @@ def compare_against_case(suspect_path, case_id_or_path):
             continue
 
         evidence_file_name = evidence_report.get("file_name")
-        evidence_path = _find_uploaded_evidence_file(case_path, evidence_file_name)
 
-        if not evidence_path or not os.path.exists(evidence_path):
+from app.db import SessionLocal
+        from app.models import EvidenceItem
+        from app.storage import download_to_tempfile
+
+        db = SessionLocal()
+        try:
+            item = db.query(EvidenceItem).filter(
+                EvidenceItem.case_id == os.path.basename(case_path),
+                EvidenceItem.file_name == evidence_file_name,
+            ).first()
+        finally:
+            db.close()
+
+        if not item or not item.file_key:
             continue
+
+        suffix = os.path.splitext(evidence_file_name)[1]
+        evidence_path = download_to_tempfile(item.file_key, suffix=suffix)
 
         comparison = compare_two_files(evidence_path, suspect_path, case_path=case_path)
         comparison["case_id"] = os.path.basename(case_path)
@@ -479,7 +494,7 @@ def compare_against_case(suspect_path, case_id_or_path):
         comparison["reference_file"] = evidence_file_name
 
         matches.append(comparison)
-
+        os.remove(evidence_path)
     matches.sort(
         key=lambda item: (
             -item.get("similarity_score", 0),

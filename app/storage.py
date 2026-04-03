@@ -84,3 +84,11 @@ def get_file(key):
     else:
         with open(key, "rb") as f:
             return f.read()
+def download_to_tempfile(key, suffix=""):
+    """Download S3 file to a temp file and return the path."""
+    import tempfile
+    data = get_file(key)
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+    tmp.write(data)
+    tmp.close()
+    return tmp.name
