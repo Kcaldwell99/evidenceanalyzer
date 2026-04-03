@@ -519,15 +519,6 @@ def compare_against_case(suspect_path, case_id_or_path):
         "match_count": len(matches),
     }
 
-Then commit and push:
-```
-git add core/compare_files.py
-git commit -m "fix: rewrite compare_against_case to use DB fingerprint index and S3"
-git push
-
-
-
-
 def compare_against_all_cases(suspect_path, cases_root="cases"):
     cases_root = str(cases_root)
     all_results = []
