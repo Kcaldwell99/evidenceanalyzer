@@ -56,3 +56,14 @@ class FingerprintIndex(Base):
     pdf_report = Column(Text, nullable=True)
     json_report = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+class Payment(Base):
+    __tablename__ = "payments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    stripe_session_id = Column(String(255), unique=True, nullable=False, index=True)
+    stripe_customer_email = Column(String(255), nullable=True)
+    stripe_amount_total = Column(Integer, nullable=True)
+    stripe_currency = Column(String(10), nullable=True)
+    product = Column(String(50), nullable=True)
+    status = Column(String(50), nullable=False, default="pending")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

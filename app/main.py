@@ -7,7 +7,7 @@ import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
-
+from app.models import Payment
 import requests
 import stripe
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Depends, Response
@@ -1028,6 +1028,36 @@ async def download_bundle(
         filename=f"{case_id}_{evidence_id}_bundle.zip",
         media_type="application/zip",
     )
+
+@app.post("/webhook/stripe")
+async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid payload")
+    except stripe.error.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+
+        payment = Payment(
+            stripe_session_id=session.get("id"),
+            stripe_customer_email=session.get("customer_details", {}).get("email"),
+            stripe_amount_total=session.get("amount_total"),
+            stripe_currency=session.get("currency"),
+            product=session.get("metadata", {}).get("product"),
+            status="paid",
+        )
+        db.add(payment)
+        db.commit()
+
+    return {"status": "ok"}
+
 # STRIPE CHECKOUT
 STRIPE_PRICES = {
     "single": "price_1THUZ2HVHQNKUlwkBfHnsoDj",
