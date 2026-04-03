@@ -44,3 +44,15 @@ class EvidenceItem(Base):
     json_report = Column(Text, nullable=True)
     pdf_report = Column(Text, nullable=True)
     file_key = Column(String(500), nullable=True)
+
+class FingerprintIndex(Base):
+    __tablename__ = "fingerprint_index"
+
+    id = Column(Integer, primary_key=True, index=True)
+    case_id = Column(String(50), nullable=True, index=True)
+    evidence_id = Column(String(50), nullable=True)
+    file_name = Column(String(255), nullable=True)
+    phash = Column(String(128), nullable=True)
+    pdf_report = Column(Text, nullable=True)
+    json_report = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
