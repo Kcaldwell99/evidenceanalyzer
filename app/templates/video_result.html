@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Analysis Report — Evidentix™</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+    .back { display: inline-block; color: #7c8cf8; text-decoration: none; font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .back:hover { text-decoration: underline; }
+    .header { margin-bottom: 2rem; }
+    .header h1 { font-size: 1.6rem; font-weight: 700; color: #7c8cf8; }
+    .header p { color: #94a3b8; margin-top: 0.4rem; font-size: 0.9rem; }
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #2d3148;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .summary-item {
+      background: #0f1117;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .summary-item .value { font-size: 1.4rem; font-weight: 700; color: #7c8cf8; }
+    .summary-item .label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+    .summary-item.flagged .value { color: #f87171; }
+    .summary-item.ok .value { color: #4ade80; }
+    .assessment {
+      background: #0f1117;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      margin-top: 0.5rem;
+    }
+    .assessment.warning { border-left: 3px solid #f87171; }
+    .assessment.clear { border-left: 3px solid #4ade80; }
+    .meta-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .meta-table tr { border-bottom: 1px solid #2d3148; }
+    .meta-table tr:last-child { border-bottom: none; }
+    .meta-table td { padding: 0.5rem 0.25rem; }
+    .meta-table td:first-child { color: #64748b; width: 40%; }
+    .meta-table td:last-child { color: #e2e8f0; font-family: monospace; }
+    .frames-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .frame-card {
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 0.8rem;
+    }
+    .frame-card.flagged { border-color: #f87171; }
+    .frame-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .frame-ts { color: #64748b; }
+    .flag { color: #f87171; }
+    .ok-badge { color: #4ade80; }
+    .limitations { font-size: 0.78rem; color: #475569; line-height: 1.6; }
+    .limitations li { margin-left: 1rem; margin-bottom: 0.25rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/cases/{{ case_id }}" class="back">← Back to Case</a>
+
+    <div class="header">
+      <h1>🎬 Video Analysis Report</h1>
+      <p>{{ report.filename }} &mdash; {{ report.analysis_date[:10] }}</p>
+    </div>
+
+    <!-- Summary -->
+    <div class="card">
+      <h2>Analysis Summary</h2>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="value">{{ report.summary.total_frames_extracted }}</div>
+          <div class="label">Frames Extracted</div>
+        </div>
+        <div class="summary-item">
+          <div class="value">{{ report.summary.frames_analyzed }}</div>
+          <div class="label">Frames Analyzed</div>
+        </div>
+        <div class="summary-item {% if report.summary.frames_flagged > 0 %}flagged{% else %}ok{% endif %}">
+          <div class="value">{{ report.summary.frames_flagged }}</div>
+          <div class="label">Frames Flagged</div>
+        </div>
+      </div>
+      <div class="assessment {% if report.summary.frames_flagged > 0 %}warning{% else %}clear{% endif %}">
+        <strong>Overall Assessment:</strong> {{ report.summary.overall_assessment }}
+      </div>
+    </div>
+
+    <!-- Video Metadata -->
+    <div class="card">
+      <h2>Video Metadata</h2>
+      <table class="meta-table">
+        <tr><td>Duration</td><td>{{ report.summary.duration }}</td></tr>
+        <tr><td>Resolution</td><td>{{ report.summary.resolution }}</td></tr>
+        <tr><td>Video Codec</td><td>{{ report.summary.video_codec }}</td></tr>
+        <tr><td>Format</td><td>{{ report.metadata.format }}</td></tr>
+        <tr><td>File Size</td><td>{{ report.metadata.file_size_display }}</td></tr>
+        <tr><td>Bit Rate</td><td>{{ report.metadata.bit_rate }}</td></tr>
+        <tr><td>Frame Rate</td><td>{{ report.metadata.frame_rate }}</td></tr>
+        <tr><td>Audio Codec</td><td>{{ report.metadata.audio_codec }}</td></tr>
+        {% if report.summary.creation_time %}
+        <tr><td>Creation Time</td><td>{{ report.summary.creation_time }}</td></tr>
+        {% endif %}
+        {% if report.metadata.encoder %}
+        <tr><td>Encoder</td><td>{{ report.metadata.encoder }}</td></tr>
+        {% endif %}
+      </table>
+    </div>
+
+    <!-- Frame Analysis -->
+    <div class="card">
+      <h2>Frame-by-Frame Analysis</h2>
+      <div class="frames-grid">
+        {% for fa in report.frame_analyses %}
+        <div class="frame-card {% if fa.analysis.manipulation_detected %}flagged{% endif %}">
+          <div class="frame-header">
+            <span>Frame {{ fa.frame_number }}</span>
+            <span class="frame-ts">{{ fa.timestamp }}</span>
+          </div>
+          {% if fa.analysis.manipulation_detected %}
+            <div class="flag">⚠️ Flagged</div>
+            {% for indicator in fa.analysis.manipulation_indicators %}
+            <div style="color:#f87171; font-size:0.75rem;">• {{ indicator }}</div>
+            {% endfor %}
+          {% else %}
+            <div class="ok-badge">✓ No issues detected</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Limitations -->
+    <div class="card">
+      <h2>Limitations & Disclaimers</h2>
+      <ul class="limitations">
+        {% for limitation in report.limitations %}
+        <li>{{ limitation }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+  </div>
+</body>
+</html>
