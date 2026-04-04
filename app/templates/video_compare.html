@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compare Videos — Evidentix™</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .container { max-width: 700px; margin: 0 auto; padding: 2rem 1rem; }
+    .back { display: inline-block; color: #7c8cf8; text-decoration: none; font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .back:hover { text-decoration: underline; }
+    .header { margin-bottom: 2rem; }
+    .header h1 { font-size: 1.6rem; font-weight: 700; color: #7c8cf8; }
+    .header p { color: #94a3b8; margin-top: 0.4rem; font-size: 0.9rem; }
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 { font-size: 1rem; font-weight: 600; color: #e2e8f0; margin-bottom: 1.25rem; }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    select, input[type="file"] {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 7px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      padding: 0.65rem 0.9rem;
+      margin-bottom: 1.2rem;
+      outline: none;
+    }
+    select:focus { border-color: #7c8cf8; }
+    .file-note { font-size: 0.78rem; color: #475569; margin-top: -0.9rem; margin-bottom: 1.2rem; }
+    .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.2rem; }
+    .video-slot {
+      background: #0f1117;
+      border: 1px dashed #2d3148;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .video-slot h3 { font-size: 0.85rem; font-weight: 600; color: #7c8cf8; margin-bottom: 0.75rem; }
+    button[type="submit"] {
+      width: 100%;
+      background: #7c8cf8;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button[type="submit"]:hover { background: #6470e6; }
+    .loading { display: none; text-align: center; padding: 1rem; color: #94a3b8; font-size: 0.9rem; }
+    .info-box {
+      background: #0f1117;
+      border-left: 3px solid #7c8cf8;
+      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin-bottom: 1.2rem;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back">← Back to Dashboard</a>
+
+    <div class="header">
+      <h1>🎬 Compare Two Videos</h1>
+      <p>Upload two video files to perform a forensic similarity comparison.</p>
+    </div>
+
+    <div class="card">
+      <h2>How It Works</h2>
+      <div class="info-box">
+        <strong>Phase 1:</strong> Extracts 20 frames from each video and compares them at the same positions using perceptual hashing.<br><br>
+        <strong>Phase 2:</strong> For any frames flagged as similar, performs a full cross-comparison to detect offset or reordered content.<br><br>
+        Analysis typically takes 2-4 minutes depending on video length.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Upload Videos for Comparison</h2>
+
+      <form method="post" action="/compare-video" enctype="multipart/form-data" onsubmit="showLoading()">
+
+        <label for="case_id">Select Case</label>
+        <select id="case_id" name="case_id" required>
+          <option value="">— Select a case —</option>
+          {% for case in cases %}
+          <option value="{{ case.case_id }}">{{ case.case_id }} — {{ case.case_name }}</option>
+          {% endfor %}
+        </select>
+
+        <div class="video-grid">
+          <div class="video-slot">
+            <h3>Video A — Original</h3>
+            <label for="video_a">Select File</label>
+            <input type="file" id="video_a" name="video_a" accept=".mp4,.mov,.avi,.mkv,.wmv" required />
+            <p class="file-note">Max {{ max_size_mb }}MB</p>
+          </div>
+          <div class="video-slot">
+            <h3>Video B — Suspect</h3>
+            <label for="video_b">Select File</label>
+            <input type="file" id="video_b" name="video_b" accept=".mp4,.mov,.avi,.mkv,.wmv" required />
+            <p class="file-note">Max {{ max_size_mb }}MB</p>
+          </div>
+        </div>
+
+        <button type="submit">Compare Videos</button>
+      </form>
+
+      <div class="loading" id="loading">
+        ⏳ Comparing videos — this may take 2-4 minutes. Please wait...
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showLoading() {
+      document.getElementById('loading').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
