@@ -1415,6 +1415,10 @@ STRIPE_PRICES = {
     "bundle": "price_1THUiNHVHQNKUlwkJG0v91C7",
     "professional": "price_1THV2DHVHQNKUlwkZ5lyCBsE",
     "firm": "price_1THV6cHVHQNKUlwkViPyHk4f",
+    "video-single": "price_1TIqApHVHQNKUlwksbqqdsqA",
+    "video-bundle": "price_1TIqCcHVHQNKUlwk6tJXz5Uo",
+    "video-image-bundle": "price_1TIqE7HVHQNKUlwk8v4FmJnP",
+    "integrity-report": "price_1TIqGdHVHQNKUlwk4oPa5cRp",
 }
 
 @app.get("/checkout/{product}", response_class=HTMLResponse)
