@@ -128,8 +128,7 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
             e.user_email or "system",
             e.action or "",
             e.evidence_id or "",
-            (e.detail or "")[:80],
-        ])
+                    ])
 
     if len(custody_data) == 1:
         custody_data.append(["No custody events recorded.", "", ""])
