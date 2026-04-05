@@ -1437,3 +1437,21 @@ async def checkout_success(request: Request):
 @app.get("/checkout/cancel", response_class=HTMLResponse)
 async def checkout_cancel(request: Request):
     return templates.TemplateResponse("checkout_cancel.html", {"request": request})
+
+
+@app.get("/integrity-report/{case_id}")
+async def download_integrity_report(
+    case_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.integrity_report import generate_integrity_report
+    from fastapi.responses import FileResponse
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
+    assert_case_ownership(case_obj, current_user)
+    pdf_path = generate_integrity_report(case_id, generated_by=current_user.email)
+    filename = f"Evidentix_Integrity_Report_{case_id}.pdf"
+    return FileResponse(pdf_path, media_type="application/pdf", filename=filename)
+
