@@ -120,7 +120,7 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
         body_style
     ))
 
-    custody_data = [["Timestamp (UTC)", "User / Role", "Action", "Detail"]]
+    custody_data = [["Timestamp (UTC)", "User / Role", "Action"]]
     for e in custody_entries:
         ts = e.created_at.strftime("%Y-%m-%d %H:%M") if e.created_at else ""
         custody_data.append([
@@ -132,9 +132,9 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
         ])
 
     if len(custody_data) == 1:
-        custody_data.append(["No custody events recorded.", "", "", ""])
+        custody_data.append(["No custody events recorded.", "", ""])
 
-    custody_table = Table(custody_data, colWidths=[1.1*inch, 1.9*inch, 1.5*inch, 2.9*inch])
+    custody_table = Table(custody_data, colWidths=[1.3*inch, 2.5*inch, 3.2*inch])
     custody_table.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,0), colors.black),
         ("TEXTCOLOR", (0,0), (-1,0), colors.white),
