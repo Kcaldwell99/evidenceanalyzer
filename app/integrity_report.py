@@ -132,7 +132,7 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
         ])
 
     if len(custody_data) == 1:
-        custody_data.append(["No custody events recorded.", "", "", "", ""])
+        custody_data.append(["No custody events recorded.", "", "", ""])
 
     custody_table = Table(custody_data, colWidths=[1.1*inch, 1.9*inch, 1.5*inch, 2.9*inch])
     custody_table.setStyle(TableStyle([
