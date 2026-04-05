@@ -128,7 +128,7 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
             e.user_email or "system",
             e.action or "",
             e.evidence_id or "",
-            (e.detail or "")[:40],
+            (e.detail or "")[:60],
         ])
 
     if len(custody_data) == 1:
@@ -166,10 +166,16 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.grey))
     story.append(Spacer(1, 6))
     story.append(Paragraph(
-        "Evidentix™ is a trademark of Caldwell Law Firm, P.C. This report is generated automatically and is not a substitute for testimony by a qualified forensic examiner. "
+
+        "Evidentix™ is a trademark of CLF The Woodlands, LLC. dba Evidence Analyzer. This report is generated automatically and is not a substitute for testimony by a qualified forensic examiner. "
         "Hash verification proves file integrity from the point of ingest forward; it does not establish the authenticity of the source prior to collection.",
         disclaimer_style
     ))
-
+    story.append(Paragraph(
+            f"© {now.year} Evidence Analyzer All rights reserved. 
+            "Evidentix™ is an Evidence Analyzer trademark.
+            Unauthorized reproduction or distribution of this report is prohibited.",
+            disclaimer_style
+        ))
     doc.build(story)
     return output_path
