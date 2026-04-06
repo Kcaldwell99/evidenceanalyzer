@@ -462,13 +462,7 @@ async def analyze_file_route(
         file_path = tmp.name
 
     file_key = upload_file(open(file_path, "rb"), file.filename, file.content_type)
-    log_audit_event(
-        event_type="file_uploaded",
-        case_id=case_id,
-        file_name=file.filename,
-        user=current_user.email,
-        notes="Evidence file uploaded",
-    )
+   
 
     report, json_path, pdf_path = analyze_file(
         str(file_path),
@@ -490,6 +484,14 @@ async def analyze_file_route(
     db.add(evidence_item)
     db.commit()
 
+    log_audit_event(
+        event_type="file_uploaded",
+        case_id=case_id,
+        evidence_id=evidence_item.evidence_id,
+        file_name=file.filename,
+        user=current_user.email,
+        notes="Evidence file uploaded",
+    )
     os.remove(file_path)
 
     log_audit_event(
