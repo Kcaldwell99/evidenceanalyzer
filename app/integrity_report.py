@@ -118,21 +118,17 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
         "The following log records all access, upload, analysis, and export events for this case.",
         body_style
     ))
-
-    custody_data = [["Timestamp (UTC)", "User / Role", "Action", "Evidence ID", "Detail"]]
+    custody_data = [["Timestamp (UTC)", "User / Role", "Action"]]
     for e in custody_entries:
         ts = e.created_at.strftime("%Y-%m-%d %H:%M") if e.created_at else ""
         custody_data.append([
             ts,
             e.user_email or "system",
             e.action or "",
-     
-            (e.detail or "")[:80],
         ])
 
     if len(custody_data) == 1:
-        custody_data.append(["No custody events recorded.", "", "", "", ""])
-
+        custody_data.append(["No custody events recorded.", "", ""])
     custody_table = Table(custody_data, colWidths=[1.65*inch, 2.1*inch, 2.6*inch])
     custody_table.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,0), colors.black),
