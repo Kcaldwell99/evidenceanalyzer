@@ -173,5 +173,5 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
         "Copyright 2026 Evidence Analyzer, LLC. All rights reserved. Evidentix is an Evidence Analyzer trademark. Unauthorized reproduction or distribution of this report is prohibited.",
         disclaimer_style
     ))
-        doc.build(story)
-        return output_path
+    doc.build(story)
+    return output_path
