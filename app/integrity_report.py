@@ -169,6 +169,6 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
         "Hash verification proves file integrity from the point of ingest forward; it does not establish the authenticity of the source prior to collection.",
         disclaimer_style
     ))
-
-    doc.build(story)
-    return output_path
+        ))
+        doc.build(story)
+        return output_path
