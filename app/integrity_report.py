@@ -90,7 +90,6 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
         status = "VERIFIED" if e.sha256 else "NO HASH"
         date = e.analysis_date or ""
         hash_data.append([
-            e.evidence_id or "",
             e.file_name or "",
             sha[:32] + "..." if sha and len(sha) > 32 else sha,
             date[:10] if date else "",
@@ -120,20 +119,21 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
         body_style
     ))
 
-    custody_data = [["Timestamp (UTC)", "User / Role", "Action"]]
+    custody_data = [["Timestamp (UTC)", "User / Role", "Action", "Evidence ID", "Detail"]]
     for e in custody_entries:
         ts = e.created_at.strftime("%Y-%m-%d %H:%M") if e.created_at else ""
         custody_data.append([
             ts,
             e.user_email or "system",
             e.action or "",
-            e.evidence_id or "",
-                    ])
+     
+            (e.detail or "")[:80],
+        ])
 
     if len(custody_data) == 1:
-        custody_data.append(["No custody events recorded.", "", ""])
+        custody_data.append(["No custody events recorded.", "", "", "", ""])
 
-    custody_table = Table(custody_data, colWidths=[1.2*inch, 2.3*inch, 3.0*inch])
+    custody_table = Table(custody_data, colWidths=[1.65*inch, 2.1*inch, 2.6*inch])
     custody_table.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,0), colors.black),
         ("TEXTCOLOR", (0,0), (-1,0), colors.white),
@@ -165,10 +165,16 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.grey))
     story.append(Spacer(1, 6))
     story.append(Paragraph(
-        "Evidentix™ is a trademark of CLF The Woodlands, LLC. dba Evidence Analyzer This report is generated automatically and is not a substitute for testimony by a qualified forensic examiner. "
+
+        "Evidentix™ is a trademark of CLF The Woodlands, LLC. dba Evidence Analyzer. This report is generated automatically and is not a substitute for testimony by a qualified forensic examiner. "
         "Hash verification proves file integrity from the point of ingest forward; it does not establish the authenticity of the source prior to collection.",
         disclaimer_style
     ))
-        ))
-        doc.build(story)
-        return output_path
+
+    story.append(Paragraph(
+        "Copyright 2026 Evidence Analyzer, LLC. All rights reserved. Evidentix is an Evidence Analyzer trademark. Unauthorized reproduction or distribution of this report is prohibited.",
+        disclaimer_style
+    ))
+
+    doc.build(story)
+    return output_path
