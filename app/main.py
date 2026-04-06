@@ -462,7 +462,6 @@ async def analyze_file_route(
         file_path = tmp.name
 
     file_key = upload_file(open(file_path, "rb"), file.filename, file.content_type)
-
     log_audit_event(
         event_type="file_uploaded",
         case_id=case_id,
@@ -496,6 +495,7 @@ async def analyze_file_route(
     log_audit_event(
         event_type="analysis_completed",
         case_id=case_id,
+        evidence_id=evidence_item.evidence_id,
         file_name=file.filename,
         sha256=report.get("sha256"),
         user=current_user.email,
