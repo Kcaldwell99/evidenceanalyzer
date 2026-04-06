@@ -99,7 +99,7 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
     if len(hash_data) == 1:
         hash_data.append(["No evidence files found.", "", "", "", ""])
 
-    hash_table = Table(hash_data, colWidths=[1.1*inch, 1.5*inch, 2.1*inch, 0.9*inch, 0.75*inch])
+    hash_table = Table(hash_data, colWidths=[1.25*inch, 1.85*inch, 2.1*inch, 0.75*inch])    
     hash_table.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,0), colors.black),
         ("TEXTCOLOR", (0,0), (-1,0), colors.white),
