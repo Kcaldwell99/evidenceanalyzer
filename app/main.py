@@ -616,9 +616,9 @@ async def compare_against_case_route(
             _case = _db.query(CaseModel).filter(CaseModel.id == int(case_id_raw)).first()
             case_id = _case.case_id if _case else case_id_raw
         finally:
-        _db.close()
-    else:
-        case_id = case_id_raw
+            _db.close()
+        else:
+            case_id = case_id_raw
       
 
     if not case_id or not file or not getattr(file, "filename", ""):
