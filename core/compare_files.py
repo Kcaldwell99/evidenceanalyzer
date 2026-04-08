@@ -300,22 +300,26 @@ def _build_pdf_differences(result, max_items=8):
 
     return difference_lines
 
-
 def _build_pdf_payload(result):
     return {
-        "suspect_file": result.get("suspect_file"),
-        "reference_file": result.get("original_file"),
-        "suspect_hash": result.get("suspect_sha256"),
-        "reference_hash": result.get("original_sha256"),
-        "suspect_phash": result.get("suspect_phash"),
-        "reference_phash": result.get("original_phash"),
-        "similarity_score": result.get("similarity_score"),
-        "classification": result.get("confidence_level"),
-        "phash_distance": result.get("phash_distance"),
-        "sha256_match": result.get("sha256_match"),
-        "differences": _build_pdf_differences(result),
-        "analysis_date": result.get("generated_at"),
+        "suspect_file":        result.get("suspect_file"),
+        "reference_file":      result.get("original_file"),
+        "suspect_hash":        result.get("suspect_sha256"),
+        "reference_hash":      result.get("original_sha256"),
+        "suspect_phash":       result.get("suspect_phash"),
+        "reference_phash":     result.get("original_phash"),
+        "similarity_score":    result.get("similarity_score"),
+        "phash_distance":      result.get("phash_distance"),
+        "sha256_match":        result.get("sha256_match"),
+        "confidence_level":    result.get("confidence_level"),
+        "conclusion_title":    result.get("conclusion_title"),
+        "conclusion_text":     result.get("conclusion_text"),
+        "interpretation_text": result.get("interpretation_text"),
+        "limitations_text":    result.get("limitations_text"),
+        "differences":         _build_pdf_differences(result),
+        "analysis_date":       result.get("generated_at"),
     }
+
 
 def compare_two_files(original_path, suspect_path, case_path=None, original_filename=None, suspect_filename=None):
     original_path = str(original_path)
