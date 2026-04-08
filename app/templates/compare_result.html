@@ -107,7 +107,7 @@
 
                     {% if result.best_match.comparison_pdf %}
                         <p>
-                            <a class="button" href="/{{ result.best_match.comparison_pdf }}" target="_blank">
+                            <a class="button" href="{{ result.best_match.comparison_pdf }}" target="_blank">
                                 Open Comparison PDF
                             </a>
                         </p>
@@ -132,7 +132,7 @@
 
                             {% if match.comparison_pdf %}
                                 <p>
-                                    <a class="button" href="/{{ match.comparison_pdf }}" target="_blank">
+                                    <a class="button" href="{{ match.comparison_pdf }}" target="_blank">
                                         Open PDF
                                     </a>
                                 </p>
