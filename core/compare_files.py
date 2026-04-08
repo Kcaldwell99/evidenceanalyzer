@@ -423,7 +423,11 @@ def compare_two_files(original_path, suspect_path, case_path=None):
             s3_key = f"comparison_reports/{os.path.basename(output_dir)}_{os.path.basename(comparison_pdf_path)}"
             with open(comparison_pdf_path, "rb") as pdf_file:
                 s3_client.upload_fileobj(pdf_file, AWS_S3_BUCKET, s3_key, ExtraArgs={"ContentType": "application/pdf"})
-            s3_url = f"https://{AWS_S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+            s3_url = s3_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": AWS_S3_BUCKET, "Key": s3_key},
+                ExpiresIn=3600,
+            )
             result["comparison_pdf"] = s3_url
 
         except Exception:
