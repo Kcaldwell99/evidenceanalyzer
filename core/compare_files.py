@@ -521,6 +521,7 @@ def compare_against_case(suspect_path, case_id_or_path):
                 original_filename=item.file_name,
                 suspect_filename=os.path.basename(str(suspect_path)),
 )
+            print(f"DEBUG comparison_pdf in result: {comparison.get('comparison_pdf')}", flush=True)
 
             comparison["case_id"] = case_id
             comparison["evidence_id"] = item.evidence_id
