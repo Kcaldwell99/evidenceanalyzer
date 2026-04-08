@@ -317,8 +317,7 @@ def _build_pdf_payload(result):
         "analysis_date": result.get("generated_at"),
     }
 
-
-def compare_two_files(original_path, suspect_path, case_path=None):
+def compare_two_files(original_path, suspect_path, case_path=None, original_filename=None, suspect_filename=None):
     original_path = str(original_path)
     suspect_path = str(suspect_path)
 
@@ -376,8 +375,8 @@ def compare_two_files(original_path, suspect_path, case_path=None):
 
     result = {
         "generated_at": datetime.utcnow().isoformat(),
-        "original_file": os.path.basename(original_path),
-        "suspect_file": os.path.basename(suspect_path),
+        "original_file": original_filename or os.path.basename(original_path),
+        "suspect_file": suspect_filename or os.path.basename(suspect_path),
         "original_path": _safe_relpath(original_path),
         "suspect_path": _safe_relpath(suspect_path),
         "sha256_match": sha_match,
@@ -509,7 +508,11 @@ def compare_against_case(suspect_path, case_id_or_path):
         evidence_path = download_to_tempfile(item.file_key, suffix=suffix)
 
         try:
-            comparison = compare_two_files(evidence_path, suspect_path)
+            comparison = compare_two_files(evidence_path, suspect_path,
+                original_filename=item.file_name,
+                suspect_filename=os.path.basename(str(suspect_path)),
+)
+
             comparison["case_id"] = case_id
             comparison["evidence_id"] = item.evidence_id
             comparison["reference_file"] = item.file_name
