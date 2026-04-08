@@ -589,7 +589,7 @@ async def compare_submit(
         request,
         "compare_result.html",
         {
-            "comparison": comparison,
+            "result": comparison,
             "case_name": case_name,
             "client_name": client_name,
             "case_notes": case_notes,
