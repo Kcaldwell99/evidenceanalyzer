@@ -587,9 +587,9 @@ async def compare_submit(
 
     return templates.TemplateResponse(
         request,
-        "compare_result.html",
+        "compare_direct_result.html",
         {
-            "result": comparison,
+            "comparison": comparison,
             "case_name": case_name,
             "client_name": client_name,
             "case_notes": case_notes,
