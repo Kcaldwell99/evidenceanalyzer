@@ -38,6 +38,12 @@ from core.copyright_lookup import build_copyright_search_link
 
 app = FastAPI()
 
+from fastapi.responses import RedirectResponse
+@app.get("/sample")
+def sample_redirect():
+    return RedirectResponse(url="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/04.06.26+Sample+for+Display.pdf")
+
+
 @app.exception_handler(401)
 async def unauthorized_handler(request: Request, exc):
     return RedirectResponse(url="/login", status_code=303)
@@ -602,7 +608,18 @@ async def compare_against_case_route(
     raw_case_id = form.get("case_id")
     file = form.get("file")
 
-    case_id = str(raw_case_id).strip() if raw_case_id else ""
+    case_id_raw = str(raw_case_id).strip() if raw_case_id else ""
+    if case_id_raw.isdigit():
+        from app.models import Case as CaseModel
+        _db = SessionLocal()
+        try:
+            _case = _db.query(CaseModel).filter(CaseModel.id == int(case_id_raw)).first()
+            case_id = _case.case_id if _case else case_id_raw
+        finally:
+        _db.close()
+    else:
+        case_id = case_id_raw
+      
 
     if not case_id or not file or not getattr(file, "filename", ""):
         return templates.TemplateResponse(
