@@ -1,3 +1,4 @@
+# Evidentix comparison PDF v2 — rebuilt 2026-04-08
 import os
 from datetime import datetime
 
