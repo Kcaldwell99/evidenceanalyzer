@@ -2,350 +2,433 @@ import os
 from datetime import datetime
 
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+    HRFlowable, KeepTogether
+)
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+from reportlab.platypus import Flowable
 
 
-def classify_similarity(score: float) -> str:
-    if score >= 90:
-        return "High Confidence Match"
-    elif score >= 75:
-        return "Strong Indication of Common Source"
-    elif score >= 60:
-        return "Possible Relationship"
-    return "Inconclusive"
+# ── Brand colors ──────────────────────────────────────────────────────────────
+PURPLE       = colors.HexColor("#5B2D8E")
+PURPLE_LIGHT = colors.HexColor("#7B4DB8")
+PURPLE_BG    = colors.HexColor("#F3EEFF")
+DARK         = colors.HexColor("#1A1A2E")
+GREY_LINE    = colors.HexColor("#D8D0E8")
+GREY_TEXT    = colors.HexColor("#555555")
+WHITE        = colors.white
+
+VERDICT_COLORS = {
+    "exact":    (colors.HexColor("#1A6B2E"), colors.HexColor("#E6F4EA")),  # green
+    "high":     (colors.HexColor("#1A4D8F"), colors.HexColor("#E8F0FB")),  # blue
+    "probable": (colors.HexColor("#7A5100"), colors.HexColor("#FFF8E1")),  # amber
+    "inconc":   (colors.HexColor("#8F3800"), colors.HexColor("#FFF3E0")),  # orange
+    "no":       (colors.HexColor("#8B0000"), colors.HexColor("#FFEBEE")),  # red
+}
 
 
-def wrap_text(text, max_chars=95):
-    """
-    Simple line wrapper for ReportLab drawString output.
-    """
-    if not text:
-        return []
-
-    words = str(text).split()
-    lines = []
-    current = ""
-
-    for word in words:
-        test = f"{current} {word}".strip()
-        if len(test) <= max_chars:
-            current = test
-        else:
-            if current:
-                lines.append(current)
-            current = word
-
-    if current:
-        lines.append(current)
-
-    return lines
+def _verdict_colors(confidence_level: str):
+    cl = (confidence_level or "").lower()
+    if "exact" in cl:
+        return VERDICT_COLORS["exact"]
+    if "high" in cl:
+        return VERDICT_COLORS["high"]
+    if "probable" in cl:
+        return VERDICT_COLORS["probable"]
+    if "inconclusive" in cl:
+        return VERDICT_COLORS["inconc"]
+    return VERDICT_COLORS["no"]
 
 
-def draw_wrapped_text(c, text, x, y, max_chars=95, line_height=14):
-    """
-    Draw wrapped text and return updated y position.
-    """
-    lines = wrap_text(text, max_chars=max_chars)
-    for line in lines:
-        c.drawString(x, y, line)
-        y -= line_height
-    return y
+# ── Custom flowables ───────────────────────────────────────────────────────────
 
+class HeaderBanner(Flowable):
+    """Full-width purple header with title and subtitle."""
+    def __init__(self, title, subtitle, width):
+        Flowable.__init__(self)
+        self.banner_title = title
+        self.subtitle = subtitle
+        self.banner_width = width
+        self.height = 80
 
-def draw_section_heading(c, heading, x, y):
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(x, y, heading)
-    c.setFont("Helvetica", 10)
-    return y - 18
-
-
-def new_page_if_needed(c, y, min_y=72):
-    if y < min_y:
-        c.showPage()
+    def draw(self):
+        c = self.canv
+        # Background
+        c.setFillColor(PURPLE)
+        c.rect(0, 0, self.banner_width, self.height, fill=1, stroke=0)
+        # Title
+        c.setFillColor(WHITE)
+        c.setFont("Helvetica-Bold", 20)
+        c.drawString(24, 48, self.banner_title)
+        # Subtitle
         c.setFont("Helvetica", 10)
-        return 750
-    return y
+        c.setFillColor(colors.HexColor("#D8C8F8"))
+        c.drawString(24, 30, self.subtitle)
+        # Bottom accent line
+        c.setFillColor(PURPLE_LIGHT)
+        c.rect(0, 0, self.banner_width, 4, fill=1, stroke=0)
 
+
+class VerdictBox(Flowable):
+    """Color-coded verdict badge."""
+    def __init__(self, confidence_level, conclusion_title, width):
+        Flowable.__init__(self)
+        self.confidence_level = confidence_level
+        self.conclusion_title = conclusion_title
+        self.box_width = width
+        self.height = 52
+
+    def draw(self):
+        text_color, bg_color = _verdict_colors(self.confidence_level)
+        c = self.canv
+        # Background
+        c.setFillColor(bg_color)
+        c.roundRect(0, 0, self.box_width, self.height, 6, fill=1, stroke=0)
+        # Left accent bar
+        c.setFillColor(text_color)
+        c.rect(0, 0, 5, self.height, fill=1, stroke=0)
+        # Label
+        c.setFont("Helvetica", 8)
+        c.setFillColor(GREY_TEXT)
+        c.drawString(16, 36, "FORENSIC VERDICT")
+        # Title
+        c.setFont("Helvetica-Bold", 14)
+        c.setFillColor(text_color)
+        c.drawString(16, 14, self.conclusion_title)
+
+
+class SectionHeading(Flowable):
+    """Purple-accented section heading with horizontal rule."""
+    def __init__(self, number, title, width):
+        Flowable.__init__(self)
+        self.number = number
+        self.heading_title = title
+        self.heading_width = width
+        self.height = 26
+
+    def draw(self):
+        c = self.canv
+        # Left accent
+        c.setFillColor(PURPLE)
+        c.rect(0, 4, 3, 18, fill=1, stroke=0)
+        # Number badge
+        c.setFillColor(PURPLE_BG)
+        c.roundRect(8, 4, 22, 18, 3, fill=1, stroke=0)
+        c.setFillColor(PURPLE)
+        c.setFont("Helvetica-Bold", 9)
+        c.drawCentredString(19, 9, str(self.number))
+        # Title
+        c.setFont("Helvetica-Bold", 12)
+        c.setFillColor(DARK)
+        c.drawString(38, 8, self.heading_title)
+        # Rule
+        c.setStrokeColor(GREY_LINE)
+        c.setLineWidth(0.5)
+        c.line(0, 2, self.heading_width, 2)
+
+
+# ── Style helpers ──────────────────────────────────────────────────────────────
+
+def _styles():
+    base = getSampleStyleSheet()
+    body = ParagraphStyle(
+        "EvBody", parent=base["Normal"],
+        fontSize=9.5, leading=14,
+        textColor=DARK, spaceAfter=4,
+    )
+    small = ParagraphStyle(
+        "EvSmall", parent=body,
+        fontSize=8.5, textColor=GREY_TEXT,
+    )
+    label = ParagraphStyle(
+        "EvLabel", parent=body,
+        fontSize=8, textColor=GREY_TEXT,
+        spaceBefore=0, spaceAfter=0,
+    )
+    mono = ParagraphStyle(
+        "EvMono", parent=body,
+        fontName="Courier", fontSize=7.5,
+        textColor=GREY_TEXT,
+    )
+    footer = ParagraphStyle(
+        "EvFooter", parent=base["Normal"],
+        fontSize=7.5, textColor=GREY_TEXT,
+        alignment=TA_CENTER,
+    )
+    return body, small, label, mono, footer
+
+
+def _metric_table(rows, col_widths, zebra=True):
+    """Build a styled two-column metric table."""
+    style = [
+        ("FONTNAME",  (0, 0), (-1, -1), "Helvetica"),
+        ("FONTSIZE",  (0, 0), (-1, -1), 9),
+        ("FONTNAME",  (0, 0), (0, -1),  "Helvetica-Bold"),
+        ("TEXTCOLOR", (0, 0), (0, -1),  DARK),
+        ("TEXTCOLOR", (1, 0), (1, -1),  GREY_TEXT),
+        ("TOPPADDING",    (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 8),
+        ("GRID",      (0, 0), (-1, -1), 0.25, GREY_LINE),
+        ("ROWBACKGROUNDS", (0, 0), (-1, -1),
+         [colors.white, colors.HexColor("#FAF8FF")] if zebra else [colors.white]),
+    ]
+    t = Table(rows, colWidths=col_widths)
+    t.setStyle(TableStyle(style))
+    return t
+
+
+def _diff_table(differences, col_widths):
+    if not differences:
+        return None
+    rows = [["Field / Note", "Original → Suspect"]]
+    for d in differences:
+        if isinstance(d, dict):
+            field = d.get("field", "")
+            orig  = str(d.get("original", "—"))
+            susp  = str(d.get("suspect", "—"))
+            rows.append([field, f"{orig}  →  {susp}"])
+        else:
+            rows.append(["", str(d)])
+
+    style = [
+        ("BACKGROUND",   (0, 0), (-1, 0),  PURPLE),
+        ("TEXTCOLOR",    (0, 0), (-1, 0),  WHITE),
+        ("FONTNAME",     (0, 0), (-1, 0),  "Helvetica-Bold"),
+        ("FONTSIZE",     (0, 0), (-1, -1), 8.5),
+        ("TOPPADDING",   (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 5),
+        ("LEFTPADDING",  (0, 0), (-1, -1), 8),
+        ("GRID",         (0, 0), (-1, -1), 0.25, GREY_LINE),
+        ("ROWBACKGROUNDS",(0, 1),(-1, -1), [colors.white, colors.HexColor("#FAF8FF")]),
+        ("FONTNAME",     (0, 1), (0, -1),  "Helvetica-Bold"),
+        ("TEXTCOLOR",    (0, 1), (0, -1),  DARK),
+        ("TEXTCOLOR",    (1, 1), (1, -1),  GREY_TEXT),
+    ]
+    t = Table(rows, colWidths=col_widths)
+    t.setStyle(TableStyle(style))
+    return t
+
+
+def _page_footer(canvas_obj, doc):
+    canvas_obj.saveState()
+    canvas_obj.setFont("Helvetica", 7.5)
+    canvas_obj.setFillColor(GREY_TEXT)
+    canvas_obj.drawString(
+        0.75 * inch,
+        0.5 * inch,
+        "Evidentix™ | evidenceanalyzer.com | Confidential — For Legal Use Only",
+    )
+    canvas_obj.drawRightString(
+        letter[0] - 0.75 * inch,
+        0.5 * inch,
+        f"Page {doc.page}",
+    )
+    canvas_obj.restoreState()
+
+
+# ── Main entry point ───────────────────────────────────────────────────────────
 
 def generate_comparison_pdf(comparison_result, output_path):
     """
-    comparison_result expected structure:
+    Build a styled forensic comparison PDF.
 
-    {
-        "suspect_file": "suspect.jpg",
-        "reference_file": "reference.jpg",
-        "suspect_hash": "abc123...",
-        "reference_hash": "def456...",
-        "suspect_phash": "ffeeaa...",
-        "reference_phash": "ffeeab...",
-        "similarity_score": 92.4,
-        "classification": "High Confidence Match",   # optional
-        "phash_distance": 4,                         # optional
-        "sha256_match": False,                       # optional
-        "differences": [
-            "Resolution differs between the compared images.",
-            "Minor compression artifacts are present in the suspect file."
-        ],
-        "analysis_date": "2026-03-26 16:30:00"       # optional
-    }
+    comparison_result keys used:
+        suspect_file, reference_file
+        suspect_hash, reference_hash
+        suspect_phash, reference_phash
+        similarity_score, phash_distance, sha256_match
+        confidence_level   — from build_forensic_conclusion()
+        conclusion_title   — from build_forensic_conclusion()
+        conclusion_text    — from build_forensic_conclusion()
+        interpretation_text— from build_forensic_conclusion()
+        limitations_text   — REPORT_LIMITATIONS_TEXT constant
+        differences        — list of dicts or strings
+        analysis_date
     """
     output_dir = os.path.dirname(output_path)
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
 
-    c = canvas.Canvas(output_path, pagesize=letter)
-    width, height = letter
-    y = 750
+    body_style, small_style, label_style, mono_style, footer_style = _styles()
 
-    suspect_file = comparison_result.get("suspect_file", "Unknown")
-    reference_file = comparison_result.get("reference_file", "Unknown")
-    suspect_hash = comparison_result.get("suspect_hash", "Not Available")
-    reference_hash = comparison_result.get("reference_hash", "Not Available")
-    suspect_phash = comparison_result.get("suspect_phash", "Not Available")
-    reference_phash = comparison_result.get("reference_phash", "Not Available")
-    similarity_score = float(comparison_result.get("similarity_score", 0))
-    classification = comparison_result.get("classification") or classify_similarity(similarity_score)
-    phash_distance = comparison_result.get("phash_distance", "Not Available")
-    sha256_match = comparison_result.get("sha256_match", None)
-    differences = comparison_result.get("differences", [])
-
-    analysis_date = comparison_result.get(
-        "analysis_date",
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    doc = SimpleDocTemplate(
+        output_path,
+        pagesize=letter,
+        leftMargin=0.75 * inch,
+        rightMargin=0.75 * inch,
+        topMargin=0.5 * inch,
+        bottomMargin=0.9 * inch,
     )
+    content_width = letter[0] - 1.5 * inch
 
-    # Title
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, y, "Digital Image Comparison Report")
-    y -= 28
+    # ── Extract payload values ─────────────────────────────────────────────────
+    suspect_file    = comparison_result.get("suspect_file") or "Unknown"
+    reference_file  = comparison_result.get("reference_file") or "Unknown"
+    suspect_hash    = comparison_result.get("suspect_hash") or "Not Available"
+    reference_hash  = comparison_result.get("reference_hash") or "Not Available"
+    suspect_phash   = comparison_result.get("suspect_phash") or "Not Available"
+    reference_phash = comparison_result.get("reference_phash") or "Not Available"
+    similarity_score= float(comparison_result.get("similarity_score") or 0)
+    phash_distance  = comparison_result.get("phash_distance", "—")
+    sha256_match    = comparison_result.get("sha256_match")
 
-    c.setFont("Helvetica", 10)
-    c.drawString(50, y, f"Analysis Date: {analysis_date}")
-    y -= 24
-
-    # Section 1
-    y = draw_section_heading(c, "1. File Identification", 50, y)
-    y = new_page_if_needed(c, y)
-
-    c.drawString(60, y, f"Suspect File: {suspect_file}")
-    y -= 14
-    c.drawString(60, y, f"Reference File: {reference_file}")
-    y -= 14
-
-    y = draw_wrapped_text(c, f"Suspect SHA-256: {suspect_hash}", 60, y, max_chars=88)
-    y = draw_wrapped_text(c, f"Reference SHA-256: {reference_hash}", 60, y, max_chars=88)
-    y = draw_wrapped_text(c, f"Suspect pHash: {suspect_phash}", 60, y, max_chars=88)
-    y = draw_wrapped_text(c, f"Reference pHash: {reference_phash}", 60, y, max_chars=88)
-
-    y -= 8
-    y = new_page_if_needed(c, y)
-
-    # Section 2
-    y = draw_section_heading(c, "2. Comparison Summary", 50, y)
-    y = new_page_if_needed(c, y)
-
-    c.drawString(60, y, f"Similarity Score: {similarity_score:.2f}%")
-    y -= 14
-    c.drawString(60, y, f"Match Classification: {classification}")
-    y -= 24
-
-    # Section 3
-    y = draw_section_heading(c, "3. Technical Analysis", 50, y)
-    y = new_page_if_needed(c, y)
-
-    technical_intro = (
-        "The comparison incorporates both file-level and image-level forensic indicators, "
-        "including cryptographic hash analysis, perceptual hash comparison, and structural "
-        "image similarity evaluation."
+    # Use conclusion data passed from build_forensic_conclusion() — never re-derive
+    confidence_level    = comparison_result.get("confidence_level") or comparison_result.get("classification") or "—"
+    conclusion_title    = comparison_result.get("conclusion_title") or confidence_level
+    conclusion_text     = comparison_result.get("conclusion_text") or ""
+    interpretation_text = comparison_result.get("interpretation_text") or ""
+    limitations_text    = comparison_result.get("limitations_text") or (
+        "This report does not determine authorship, ownership, or legal infringement. "
+        "Metadata may be incomplete, absent, or altered. Conclusions are based solely "
+        "on the digital characteristics of the submitted files."
     )
-    y = draw_wrapped_text(c, technical_intro, 60, y)
-    y -= 8
+    differences = comparison_result.get("differences") or []
+    analysis_date = comparison_result.get("analysis_date") or datetime.utcnow().isoformat()
 
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(60, y, "A. Hash Analysis")
-    y -= 14
-    c.setFont("Helvetica", 10)
+    sha_label = {True: "Exact Match", False: "No Match", None: "Not Compared"}.get(sha256_match, "—")
 
-    if sha256_match is True:
-        sha_text = (
-            "The SHA-256 hash values are identical. This indicates that the compared files are "
-            "bit-for-bit exact copies."
-        )
-    elif sha256_match is False:
-        sha_text = (
-            "The SHA-256 hash values are not identical. This indicates that the compared files "
-            "are not exact binary duplicates."
-        )
-    else:
-        sha_text = "SHA-256 comparison data was reviewed as part of the file-level assessment."
+    story = []
 
-    y = draw_wrapped_text(c, sha_text, 70, y)
-    y -= 4
+    # ── Header ────────────────────────────────────────────────────────────────
+    story.append(HeaderBanner(
+        "Forensic Image Comparison Report",
+        f"Generated by Evidentix™  |  {analysis_date[:19].replace('T', '  ')}  UTC",
+        content_width,
+    ))
+    story.append(Spacer(1, 14))
 
-    phash_text = (
-        f"The perceptual hash distance is {phash_distance}. Lower distances generally indicate "
-        "greater visual similarity between the compared images."
-    )
-    y = draw_wrapped_text(c, phash_text, 70, y)
-    y -= 10
-    y = new_page_if_needed(c, y)
+    # ── Verdict box ───────────────────────────────────────────────────────────
+    story.append(VerdictBox(confidence_level, conclusion_title, content_width))
+    story.append(Spacer(1, 16))
 
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(60, y, "B. Visual Similarity Analysis")
-    y -= 14
-    c.setFont("Helvetica", 10)
+    # ── Section 1: File Identification ────────────────────────────────────────
+    story.append(SectionHeading(1, "File Identification", content_width))
+    story.append(Spacer(1, 8))
 
-    if similarity_score >= 90:
-        visual_text = (
-            "The compared images exhibit a high degree of structural similarity. The observed "
-            "features are consistent with the same source image or a modified version of that image."
-        )
-    elif similarity_score >= 75:
-        visual_text = (
-            "The compared images exhibit substantial structural similarity. The observed features "
-            "suggest a common source relationship, potentially with minor edits, recompression, "
-            "resizing, or format conversion."
-        )
-    elif similarity_score >= 60:
-        visual_text = (
-            "The compared images exhibit moderate structural similarity. The findings suggest a "
-            "possible relationship, but the available indicators are not sufficiently strong to "
-            "support a more definitive conclusion."
-        )
-    else:
-        visual_text = (
-            "The compared images do not exhibit a sufficiently strong degree of structural "
-            "similarity to support a conclusion of likely common origin."
-        )
+    col = [content_width * 0.32, content_width * 0.68]
+    id_rows = [
+        ["Suspect File",   suspect_file],
+        ["Reference File", reference_file],
+    ]
+    story.append(_metric_table(id_rows, col))
+    story.append(Spacer(1, 10))
 
-    y = draw_wrapped_text(c, visual_text, 70, y)
-    y -= 18
-    y = new_page_if_needed(c, y)
+    # Hashes in mono
+    story.append(Paragraph("SHA-256 Hashes", label_style))
+    story.append(Spacer(1, 3))
+    hash_rows = [
+        ["Suspect",   Paragraph(suspect_hash,   mono_style)],
+        ["Reference", Paragraph(reference_hash, mono_style)],
+    ]
+    story.append(_metric_table(hash_rows, col))
+    story.append(Spacer(1, 6))
 
-    # Section 4
-    y = draw_section_heading(c, "4. Observed Differences", 50, y)
-    y = new_page_if_needed(c, y)
+    story.append(Paragraph("Perceptual Hashes (pHash)", label_style))
+    story.append(Spacer(1, 3))
+    phash_rows = [
+        ["Suspect",   Paragraph(suspect_phash,   mono_style)],
+        ["Reference", Paragraph(reference_phash, mono_style)],
+    ]
+    story.append(_metric_table(phash_rows, col))
+    story.append(Spacer(1, 16))
 
+    # ── Section 2: Comparison Metrics ─────────────────────────────────────────
+    story.append(SectionHeading(2, "Comparison Metrics", content_width))
+    story.append(Spacer(1, 8))
+
+    metric_rows = [
+        ["SHA-256 Match",      sha_label],
+        ["pHash Distance",     str(phash_distance)],
+        ["Similarity Score",   f"{similarity_score:.2f}%"],
+        ["Confidence Level",   confidence_level],
+    ]
+    story.append(_metric_table(metric_rows, col))
+    story.append(Spacer(1, 16))
+
+    # ── Section 3: Forensic Conclusion ────────────────────────────────────────
+    story.append(SectionHeading(3, "Forensic Conclusion", content_width))
+    story.append(Spacer(1, 8))
+
+    if conclusion_text:
+        story.append(Paragraph(conclusion_text, body_style))
+        story.append(Spacer(1, 6))
+
+    if interpretation_text:
+        story.append(Paragraph(interpretation_text, small_style))
+
+    story.append(Spacer(1, 16))
+
+    # ── Section 4: Observed Differences ──────────────────────────────────────
+    story.append(SectionHeading(4, "Observed Differences", content_width))
+    story.append(Spacer(1, 8))
+
+    diff_col = [content_width * 0.30, content_width * 0.70]
     if differences:
-        for diff in differences:
-            y = new_page_if_needed(c, y)
-            y = draw_wrapped_text(c, f"- {diff}", 60, y)
+        diff_t = _diff_table(differences, diff_col)
+        if diff_t:
+            story.append(diff_t)
+        else:
+            for d in differences:
+                story.append(Paragraph(f"• {d}", body_style))
     else:
-        default_diff = (
+        story.append(Paragraph(
             "No significant distinguishing differences were recorded beyond those ordinarily "
-            "associated with potential recompression, resizing, or metadata variation."
-        )
-        y = draw_wrapped_text(c, default_diff, 60, y)
+            "consistent with recompression, resizing, or metadata variation.",
+            body_style,
+        ))
+    story.append(Spacer(1, 16))
 
-    y -= 12
-    y = new_page_if_needed(c, y)
+    # ── Section 5: Technical Methodology ──────────────────────────────────────
+    story.append(KeepTogether([
+        SectionHeading(5, "Technical Methodology", content_width),
+        Spacer(1, 8),
+        Paragraph(
+            "This analysis applies a multi-factor forensic methodology combining: "
+            "(1) Cryptographic hash comparison (SHA-256) for exact file identity; "
+            "(2) Perceptual hash comparison (pHash) for visual similarity under encoding variations; "
+            "(3) Structural Similarity Index (SSIM) for pixel-level image structure analysis; "
+            "(4) Metadata and EXIF differential review. "
+            "No single metric is determinative in isolation. Conclusions reflect the combined "
+            "weight of all observed indicators.",
+            body_style,
+        ),
+        Spacer(1, 16),
+    ]))
 
-    # Section 5
-    y = draw_section_heading(c, "5. Forensic Interpretation", 50, y)
-    y = new_page_if_needed(c, y)
+    # ── Section 6: Limitations ────────────────────────────────────────────────
+    story.append(KeepTogether([
+        SectionHeading(6, "Limitations & Scope", content_width),
+        Spacer(1, 8),
+        Paragraph(limitations_text, small_style),
+        Spacer(1, 16),
+    ]))
 
-    interpretation_intro = (
-        "The similarity assessment is based on converging indicators rather than any single metric. "
-        "This assessment considers both file-level and image-level characteristics."
-    )
-    y = draw_wrapped_text(c, interpretation_intro, 60, y)
-    y -= 8
+    # ── Section 7: Reproducibility ────────────────────────────────────────────
+    story.append(KeepTogether([
+        SectionHeading(7, "Reproducibility", content_width),
+        Spacer(1, 8),
+        Paragraph(
+            "All analysis steps are reproducible using identical input files within the "
+            "Evidentix™ platform (evidenceanalyzer.com). Results may differ if input files "
+            "have been further modified, re-encoded, or recompressed prior to resubmission.",
+            small_style,
+        ),
+        Spacer(1, 20),
+    ]))
 
-    if classification == "High Confidence Match":
-        interpretation = (
-            "The examined files exhibit a high degree of similarity across multiple forensic "
-            "indicators. The findings support the conclusion that the suspect image is likely "
-            "derived from the same source as the reference image, or represents a modified "
-            "version of that image."
-        )
-    elif classification == "Strong Indication of Common Source":
-        interpretation = (
-            "The compared files demonstrate substantial similarity across multiple forensic "
-            "indicators. The findings strongly suggest a common source relationship, although "
-            "minor variations are present."
-        )
-    elif classification == "Possible Relationship":
-        interpretation = (
-            "The observed similarities suggest a possible relationship between the compared files; "
-            "however, the available indicators are insufficient to conclusively determine a common origin."
-        )
-    else:
-        interpretation = (
-            "The available indicators do not support a reliable conclusion that the compared "
-            "files share a common source."
-        )
+    # ── Footer rule ───────────────────────────────────────────────────────────
+    story.append(HRFlowable(width="100%", thickness=0.5, color=GREY_LINE))
+    story.append(Spacer(1, 6))
+    story.append(Paragraph(
+        "This report was generated by Evidentix™ automated forensic analysis software. "
+        "It does not constitute legal advice. For evidentiary use, consult qualified counsel.",
+        footer_style,
+    ))
 
-    y = draw_wrapped_text(c, interpretation, 60, y)
-    y -= 12
-    y = new_page_if_needed(c, y)
-
-    # Section 6
-    y = draw_section_heading(c, "6. Methodology", 50, y)
-    y = new_page_if_needed(c, y)
-
-    methodology = (
-        "This analysis applies a multi-factor forensic methodology combining cryptographic hashing, "
-        "perceptual hashing, and comparative image structure evaluation. These techniques are widely "
-        "used in digital forensic examinations to assess file identity and similarity."
-    )
-    y = draw_wrapped_text(c, methodology, 60, y)
-    y -= 12
-    y = new_page_if_needed(c, y)
-
-    # Section 7
-    y = draw_section_heading(c, "7. Limitations", 50, y)
-    y = new_page_if_needed(c, y)
-
-    limitations = (
-        "This report does not determine authorship, ownership, or legal infringement. Metadata may "
-        "be incomplete, absent, or altered. Conclusions are based solely on the digital characteristics "
-        "of the submitted files."
-    )
-    y = draw_wrapped_text(c, limitations, 60, y)
-    y -= 12
-    y = new_page_if_needed(c, y)
-
-    # Section 8
-    y = draw_section_heading(c, "8. Reproducibility Statement", 50, y)
-    y = new_page_if_needed(c, y)
-
-    reproducibility = (
-        "All analysis steps are reproducible using identical input files within the Evidentix™ system."
-    )
-    y = draw_wrapped_text(c, reproducibility, 60, y)
-    y -= 12
-    y = new_page_if_needed(c, y)
-
-    # Section 9
-    y = draw_section_heading(c, "9. Final Conclusion", 50, y)
-    y = new_page_if_needed(c, y)
-
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(60, y, f"Conclusion: {classification}")
-    y -= 16
-    c.setFont("Helvetica", 10)
-
-    if classification == "High Confidence Match":
-        final_conclusion = (
-            "The totality of forensic indicators supports the conclusion that the suspect image "
-            "is derived from the same source as the reference image."
-        )
-    elif classification == "Strong Indication of Common Source":
-        final_conclusion = (
-            "The totality of forensic indicators strongly supports a common source relationship "
-            "between the compared images."
-        )
-    elif classification == "Possible Relationship":
-        final_conclusion = (
-            "The compared images exhibit indicators consistent with a possible relationship, "
-            "but the findings remain inconclusive."
-        )
-    else:
-        final_conclusion = (
-            "The available indicators are insufficient to support a conclusion of common origin."
-        )
-
-    y = draw_wrapped_text(c, final_conclusion, 60, y)
-
-    c.save()
+    doc.build(story, onFirstPage=_page_footer, onLaterPages=_page_footer)
     return output_path
