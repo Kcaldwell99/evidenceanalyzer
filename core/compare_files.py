@@ -416,7 +416,20 @@ def compare_two_files(original_path, suspect_path, case_path=None):
         comparison_pdf_path = None
 
     result["comparison_json"] = _safe_relpath(comparison_json_path)
-    result["comparison_pdf"] = _safe_relpath(comparison_pdf_path)
+
+    if comparison_pdf_path and os.path.exists(comparison_pdf_path):
+        try:
+            from app.storage import s3_client, AWS_S3_BUCKET, AWS_REGION
+            s3_key = f"comparison_reports/{os.path.basename(output_dir)}_{os.path.basename(comparison_pdf_path)}"
+            with open(comparison_pdf_path, "rb") as pdf_file:
+                s3_client.upload_fileobj(pdf_file, AWS_S3_BUCKET, s3_key, ExtraArgs={"ContentType": "application/pdf"})
+            s3_url = f"https://{AWS_S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+            result["comparison_pdf"] = s3_url
+
+        except Exception:
+            result["comparison_pdf"] = _safe_relpath(comparison_pdf_path)
+    else:
+        result["comparison_pdf"] = None
 
     return result
 
