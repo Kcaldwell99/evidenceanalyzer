@@ -1,3 +1,4 @@
+
 import json
 import os
 from datetime import datetime
@@ -435,9 +436,10 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
                 ExpiresIn=3600,
             )
             result["comparison_pdf"] = s3_url
-
-        except Exception:
+        except Exception as e:
+            print(f"DEBUG S3 upload failed: {e}", flush=True)
             result["comparison_pdf"] = _safe_relpath(comparison_pdf_path)
+
     else:
         result["comparison_pdf"] = None
 
