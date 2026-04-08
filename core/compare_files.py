@@ -418,9 +418,6 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
             traceback.print_exc()
             comparison_pdf_path = None
 
-        except Exception:
-            comparison_pdf_path = None
-    else:
         comparison_pdf_path = None
 
     result["comparison_json"] = _safe_relpath(comparison_json_path)
