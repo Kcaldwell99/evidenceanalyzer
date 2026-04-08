@@ -17,7 +17,8 @@ except ImportError:
 
 try:
     from core.comparison_pdf import generate_comparison_pdf
-except ImportError:
+except Exception as e:
+    print(f"DEBUG comparison_pdf import failed: {e}", flush=True)
     generate_comparison_pdf = None
 
 from app.utils.hash_utils import sha256_file
