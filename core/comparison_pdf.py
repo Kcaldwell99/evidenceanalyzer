@@ -235,6 +235,7 @@ def _page_footer(canvas_obj, doc):
 # ── Main entry point ───────────────────────────────────────────────────────────
 
 def generate_comparison_pdf(comparison_result, output_path):
+    print(f"DEBUG v2 generate_comparison_pdf called: {output_path}", flush=True)
     """
     Build a styled forensic comparison PDF.
 
