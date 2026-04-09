@@ -251,14 +251,14 @@
                 </td>
                 <td>
                     {% if m.json_report %}
-                        <a href="/case-files/{{ m.json_report }}" target="_blank">Open JSON</a>
+                        <a href="/report-file/{{ case.case_id }}/{{ m.evidence_id }}/json" target="_blank">Open JSON</a>
                     {% else %}
                         -
                     {% endif %}
                 </td>
                 <td>
                     {% if m.pdf_report %}
-                        <a href="/case-files/{{ m.pdf_report }}" target="_blank">Open PDF</a>
+                        <a href="/report-file/{{ case.case_id }}/{{ m.evidence_id }}/pdf" target="_blank">Open PDF</a>
                     {% else %}
                         -
                     {% endif %}
