@@ -411,16 +411,18 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         json.dump(result, f, indent=2)
 
     comparison_pdf_path = os.path.join(output_dir, "comparison_report.pdf")
+
+
     if generate_comparison_pdf:
         try:
             pdf_payload = _build_pdf_payload(result)
-            generate_comparison_pdf(pdf_payload, comparison_pdf_path)
+            print(f"DEBUG PDF generated, exists: {os.path.exists(comparison_pdf_path)}", flush=True)
+            
         except Exception as e:
             import traceback
             traceback.print_exc()
             comparison_pdf_path = None
-
-        comparison_pdf_path = None
+  
 
     result["comparison_json"] = _safe_relpath(comparison_json_path)
 
@@ -437,7 +439,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
             )
             result["comparison_pdf"] = s3_url
         except Exception as e:
-            print(f"DEBUG S3 upload failed: {e}", flush=True)
+            print(f"DEBUG S3 upload error: {e}", flush=True)
             result["comparison_pdf"] = _safe_relpath(comparison_pdf_path)
 
     else:
