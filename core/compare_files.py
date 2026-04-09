@@ -417,9 +417,11 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
             pdf_payload = _build_pdf_payload(result)
             generate_comparison_pdf(pdf_payload, comparison_pdf_path)
             print(f"DEBUG PDF generated, exists: {os.path.exists(comparison_pdf_path)}", flush=True)
+
         except Exception as e:
             import traceback
-            traceback.print_exc()
+            print(f"DEBUG PDF exception: {e}", flush=True)
+            print(traceback.format_exc(), flush=True)
             comparison_pdf_path = None
 
 
