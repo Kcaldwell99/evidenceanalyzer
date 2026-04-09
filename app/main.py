@@ -1367,6 +1367,56 @@ async def submit_intake(
 # DOWNLOAD HELPERS  (login required)
 # =========================================================
 
+@app.get("/download-bundle/{case_id}/{evidence_id}")
+async def download_bundle(
+    case_id: str,
+    evidence_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.storage import generate_presigned_url
+
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if case_obj:
+        assert_case_ownership(case_obj, current_user)
+
+    item = (
+        db.query(EvidenceItem)
+        .filter(
+            EvidenceItem.case_id == case_id,
+            EvidenceItem.evidence_id == evidence_id,
+        )
+        .first()
+    )
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Evidence not found.")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp:
+        zip_path = tmp.name
+
+    with zipfile.ZipFile(zip_path, "w") as zipf:
+        if item.file_key:
+            url = generate_presigned_url(item.file_key)
+            r = requests.get(url)
+            zipf.writestr(item.file_name, r.content)
+
+        if item.json_report:
+            url = generate_presigned_url(item.json_report)
+            r = requests.get(url)
+            zipf.writestr("analysis_report.json", r.content)
+
+        if item.pdf_report:
+            url = generate_presigned_url(item.pdf_report)
+            r = requests.get(url)
+            zipf.writestr("analysis_report.pdf", r.content)
+
+    return FileResponse(
+        zip_path,
+        filename=f"{case_id}_{evidence_id}_bundle.zip",
+        media_type="application/zip",
+    )
+
 @app.get("/download-case-file/{case_id}/{subfolder}/{timestamp}/{filename}")
 async def download_case_file(
     case_id: str,
