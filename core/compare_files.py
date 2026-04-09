@@ -412,17 +412,16 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
 
     comparison_pdf_path = os.path.join(output_dir, "comparison_report.pdf")
 
-
     if generate_comparison_pdf:
         try:
             pdf_payload = _build_pdf_payload(result)
+            generate_comparison_pdf(pdf_payload, comparison_pdf_path)
             print(f"DEBUG PDF generated, exists: {os.path.exists(comparison_pdf_path)}", flush=True)
-            
         except Exception as e:
             import traceback
             traceback.print_exc()
             comparison_pdf_path = None
-  
+
 
     result["comparison_json"] = _safe_relpath(comparison_json_path)
 
