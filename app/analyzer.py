@@ -338,7 +338,7 @@ def analyze_file(file_path, case_dir=None, file_key=None):
         60,
         y,
     )
-
+    c.save()
     # Upload JSON and PDF to S3
     from app.storage import upload_file as s3_upload
     with open(json_path, "rb") as f:
