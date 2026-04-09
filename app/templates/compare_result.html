@@ -70,7 +70,6 @@
 </head>
 <body>
 
-
     <div class="container">
         <h1>Comparison Result</h1>
 
@@ -85,26 +84,20 @@
                 <p><span class="label">Matches Found:</span> {{ result.match_count }}</p>
             </div>
 
-        {% if result and result.match_count == 0 %}
-            <div class="card">
-                <p>No similar evidence was identified in this case.</p>
-            </div>
-        {% endif %}
+            {% if result.match_count == 0 %}
+                <div class="card">
+                    <p>No similar evidence was identified in this case.</p>
+                </div>
+            {% endif %}
 
             {% if result.best_match %}
-                
+                <div class="card">
                     <h2>Best Match</h2>
-           
                     <p><span class="label">Reference File:</span> {{ result.best_match.reference_file }}</p>
                     <p><span class="label">Confidence:</span> {{ result.best_match.confidence_level }}</p>
                     <p><span class="label">Similarity Score:</span> {{ result.best_match.similarity_score }}%</p>
                     <p><span class="label">pHash Distance:</span> {{ result.best_match.phash_distance }}</p>
                     <p><span class="label">Conclusion:</span> {{ result.best_match.conclusion_text }}</p>
-{% if result and result.match_count == 0 %}
-    <div class="card">
-        <p>No similar evidence was identified in this case.</p>
-    </div>
-{% endif %}
 
                     {% if result.best_match.comparison_pdf %}
                         <p>
@@ -144,11 +137,11 @@
             {% endif %}
         {% endif %}
 
-<div style="margin-top: 20px;">
-    <a class="button" href="/cases/{{ result.case_id }}">
-        Back to Case
-    </a>
-</div>
+        <div style="margin-top: 20px;">
+            <a class="button" href="/cases/{{ result.case_id }}">
+                Back to Case
+            </a>
+        </div>
     </div>
 </body>
 </html>
