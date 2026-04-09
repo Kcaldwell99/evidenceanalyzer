@@ -547,6 +547,45 @@ async def evidence_file_redirect(
     url = generate_presigned_url(item.file_key)
     return RedirectResponse(url=url, status_code=302)
 
+@app.get("/report-file/{case_id}/{evidence_id}/{report_type}")
+async def report_file_redirect(
+    case_id: str,
+    evidence_id: str,
+    report_type: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.storage import generate_presigned_url
+
+    item = (
+        db.query(EvidenceItem)
+        .filter(
+            EvidenceItem.case_id == case_id,
+            EvidenceItem.evidence_id == evidence_id,
+        )
+        .first()
+    )
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Evidence not found.")
+
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if case_obj:
+        assert_case_ownership(case_obj, current_user)
+
+    if report_type == "json":
+        key = item.json_report
+    elif report_type == "pdf":
+        key = item.pdf_report
+    else:
+        raise HTTPException(status_code=400, detail="Invalid report type.")
+
+    if not key:
+        raise HTTPException(status_code=404, detail="Report not found.")
+
+    url = generate_presigned_url(key)
+    return RedirectResponse(url=url, status_code=302)
+
 
 # =========================================================
 # COMPARISON WORKFLOW  (login required)
