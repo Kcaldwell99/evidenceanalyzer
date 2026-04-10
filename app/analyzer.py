@@ -258,7 +258,7 @@ def analyze_file(file_path, case_dir=None, file_key=None):
         y = _draw_wrapped_lines(c, ["No qualifying prior matches found."], 60, y)
 
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "5. Forensic Conclusion")
+    c.drawString(50, y, "4. Forensic Conclusion")
     y -= 15
 
     c.setFont("Helvetica", 10)
@@ -278,7 +278,7 @@ def analyze_file(file_path, case_dir=None, file_key=None):
 
     y -= 8
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "6. Methodology")
+    c.drawString(50, y, "5. Methodology")
     y -= 15
 
     c.setFont("Helvetica", 10)
@@ -291,7 +291,7 @@ def analyze_file(file_path, case_dir=None, file_key=None):
 
     y -= 8
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "7. Limitations")
+    c.drawString(50, y, "6. Limitations")
     y -= 15
 
     c.setFont("Helvetica", 10)
