@@ -257,7 +257,6 @@ def analyze_file(file_path, case_dir=None, file_key=None):
     else:
         y = _draw_wrapped_lines(c, ["No qualifying prior matches found."], 60, y)
 
-       y -= 8
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y, "5. Forensic Conclusion")
     y -= 15
