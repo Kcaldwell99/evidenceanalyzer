@@ -152,7 +152,7 @@ def compare_videos(
     matching_pairs = []
 
     # For each flagged frame in A, compare against ALL frames in B
-    flagged_frames_a = [hashes_a[i] for i in flagged_indices]
+    flagged_frames_a = [hashes_a[i] for i in flagged_indices[:5]]  # cap at 5 for performance
 
     for fa in flagged_frames_a:
         if not fa["phash"]:
