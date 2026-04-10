@@ -120,13 +120,6 @@ def analyze_file(file_path, case_dir=None, file_key=None):
             "This limits file-level attribution regarding device origin, capture time, and location."
         )
 
-    report["rights_info"] = {
-        "Original Copyright Owner": "Must Request Separate Report",
-        "Copyright Registration": "Must Request Separate Report",
-        "Copyright Contact": "Must Request Separate Report",
-        "Copyright Assignments": "Must Request Separate Report",
-    }
-
     if report["similar_matches"]:
         best_match = report["similar_matches"][0]
         report["comparison_summary"] = (
@@ -199,7 +192,7 @@ def analyze_file(file_path, case_dir=None, file_key=None):
     y = height - 50
 
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(50, y, "Evidentix Analysis Report")
+    c.drawString(50, y, "Evidentix\u2122 Analysis Report")
     y -= 25
 
     c.setFont("Helvetica-Bold", 12)
@@ -264,36 +257,7 @@ def analyze_file(file_path, case_dir=None, file_key=None):
     else:
         y = _draw_wrapped_lines(c, ["No qualifying prior matches found."], 60, y)
 
-    y -= 8
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "4. Rights & Ownership (Preliminary)")
-    y -= 15
-
-    c.setFont("Helvetica", 10)
-    rights = report.get("rights_info", {})
-    for key, value in rights.items():
-        y = _draw_wrapped_lines(c, [f"{key}: {value}"], 60, y)
-
-    y = _draw_wrapped_lines(
-        c,
-        _wrap_text(
-            "Ownership information is preliminary and based solely on available file data "
-            "and observable indicators."
-        ),
-        60,
-        y - 4,
-    )
-    y = _draw_wrapped_lines(
-        c,
-        _wrap_text(
-            "No independent verification of copyright registration, transfer, assignment, "
-            "or licensing status has been performed."
-        ),
-        60,
-        y,
-    )
-
-    y -= 8
+       y -= 8
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y, "5. Forensic Conclusion")
     y -= 15
