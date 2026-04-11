@@ -181,7 +181,6 @@ def assert_case_ownership(case_obj: Case, current_user: User):
 async def register_page(request: Request):
     return templates.TemplateResponse(request, "register.html", {"error": None})
 
-
 @app.post("/register", response_class=HTMLResponse)
 async def register_submit(
     request: Request,
@@ -189,6 +188,8 @@ async def register_submit(
     email: str = Form(...),
     password: str = Form(...),
     password_confirm: str = Form(...),
+    full_name: str = Form(""),
+    firm_name: str = Form(""),
     db: Session = Depends(get_db),
 ):
     error = None
@@ -208,8 +209,11 @@ async def register_submit(
     user = User(
         email=email.lower().strip(),
         hashed_password=hash_password(password),
+        full_name=full_name.strip() if full_name else None,
+        firm_name=firm_name.strip() if firm_name else None,
         is_admin=False,
     )
+
     db.add(user)
     db.commit()
     db.refresh(user)
