@@ -394,6 +394,22 @@ def reports_page(
         {"items": items, "current_user": current_user},
     )
 
+@app.get("/admin/users", response_class=HTMLResponse)
+async def admin_users(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Access denied.")
+
+    users = db.query(User).order_by(User.created_at.desc()).all()
+
+    return templates.TemplateResponse(
+        request,
+        "admin_users.html",
+        {"users": users, "current_user": current_user},
+    )
 
 @app.get("/cases/{case_id}", response_class=HTMLResponse)
 async def case_detail(
