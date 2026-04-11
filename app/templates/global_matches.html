@@ -1,17 +1,61 @@
-@app.get("/global-matches", response_class=HTMLResponse)
-async def global_matches_dashboard(request: Request):
-    index_path = os.path.join("data", "fingerprint_index.json")
-
-    if not os.path.exists(index_path):
-        matches = []
-    else:
-        with open(index_path, "r", encoding="utf-8") as f:
-            matches = json.load(f)
-
-    return templates.TemplateResponse(
-        "global_matches.html",
-        {
-            "request": request,
-            "matches": matches,
-        },
-    )
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Global Match Dashboard</title>
+  <style>
+    body { font-family: sans-serif; background: #0f1117; color: #e2e8f0; padding: 2rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    a.back { color: #7c8cf8; text-decoration: none; display: inline-block; margin-bottom: 1.5rem; }
+    h1 { color: #7c8cf8; margin-bottom: 1rem; }
+    .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 2rem; }
+    .stat { background: #1a1d27; border: 1px solid #2d3148; border-radius: 12px; padding: 1.25rem; text-align: center; }
+    .stat .value { font-size: 1.8rem; font-weight: 700; color: #7c8cf8; }
+    .stat .label { font-size: 0.75rem; color: #64748b; }
+    .card { background: #1a1d27; border: 1px solid #2d3148; border-radius: 12px; padding: 1.5rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th { text-align: left; padding: 0.5rem; color: #64748b; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid #2d3148; }
+    td { padding: 0.6rem 0.5rem; border-bottom: 1px solid #0f1117; }
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600; }
+    .badge.high { background: #3b1f1f; color: #f87171; }
+    .badge.possible { background: #2d2a1a; color: #fcd34d; }
+    .score-high { color: #f87171; font-weight: 700; }
+    .score-possible { color: #fcd34d; }
+    .empty { color: #475569; font-style: italic; text-align: center; padding: 2rem; }
+    a { color: #7c8cf8; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back">Back to Dashboard</a>
+    <h1>Global Match Dashboard</h1>
+    <p style="color:#94a3b8; margin-bottom:1.5rem;">Cross-case similarity matches across all indexed evidence.</p>
+    <div class="stats">
+      <div class="stat"><div class="value">{{ total_indexed }}</div><div class="label">Files Indexed</div></div>
+      <div class="stat"><div class="value">{{ matches|length }}</div><div class="label">Matches Found</div></div>
+      <div class="stat"><div class="value">{{ matches|selectattr('match_level', 'equalto', 'High Match')|list|length }}</div><div class="label">High Confidence Matches</div></div>
+    </div>
+    <div class="card">
+      {% if matches %}
+      <table>
+        <thead><tr><th>File A</th><th>Case A</th><th>File B</th><th>Case B</th><th>Similarity</th><th>Match Level</th></tr></thead>
+        <tbody>
+          {% for m in matches %}
+          <tr>
+            <td>{{ m.file_a }}<br><small style="color:#64748b;">{{ m.evidence_a }}</small></td>
+            <td><a href="/cases/{{ m.case_a }}">{{ m.case_a }}</a></td>
+            <td>{{ m.file_b }}<br><small style="color:#64748b;">{{ m.evidence_b }}</small></td>
+            <td><a href="/cases/{{ m.case_b }}">{{ m.case_b }}</a></td>
+            <td class="{% if m.similarity >= 85 %}score-high{% else %}score-possible{% endif %}">{{ m.similarity }}%</td>
+            <td><span class="badge {% if m.match_level == 'High Match' %}high{% else %}possible{% endif %}">{{ m.match_level }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="empty">No cross-case matches found yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
