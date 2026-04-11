@@ -276,10 +276,44 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
         60,
         y,
     )
+y -= 8
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "4. Web Presence Detection")
+    y -= 15
 
+    c.setFont("Helvetica", 10)
+    web = report.get("web_detection", {})
+    if web.get("error"):
+        y = _draw_wrapped_lines(c, [f"Web detection unavailable: {web.get('error', '')}"], 60, y)
+    else:
+        labels = web.get("best_guess_labels", [])
+        if labels:
+            y = _draw_wrapped_lines(c, [f"Best Guess Labels: {', '.join(labels)}"], 60, y)
+
+        full = web.get("full_matches", [])
+        y = _draw_wrapped_lines(c, [f"Full Matches Found: {len(full)}"], 60, y)
+        for m in full[:3]:
+            y = _draw_wrapped_lines(c, _wrap_text(f"  - {m.get('url', '')}"), 60, y)
+
+        partial = web.get("partial_matches", [])
+        y = _draw_wrapped_lines(c, [f"Partial Matches Found: {len(partial)}"], 60, y)
+        for m in partial[:3]:
+            y = _draw_wrapped_lines(c, _wrap_text(f"  - {m.get('url', '')}"), 60, y)
+
+        pages = web.get("pages_with_image", [])
+        y = _draw_wrapped_lines(c, [f"Pages Containing Image: {len(pages)}"], 60, y)
+        for p in pages[:3]:
+            y = _draw_wrapped_lines(c, _wrap_text(f"  - {p.get('url', '')}"), 60, y)
+
+        similar = web.get("visually_similar", [])
+        y = _draw_wrapped_lines(c, [f"Visually Similar Images: {len(similar)}"], 60, y)
+
+ 
     y -= 8
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "5. Methodology")
+    c.drawString(50, y, "6. Methodology")
+
+
     y -= 15
 
     c.setFont("Helvetica", 10)
@@ -292,7 +326,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
 
     y -= 8
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "6. Limitations")
+    c.drawString(50, y, "7. Limitations")
     y -= 15
 
     c.setFont("Helvetica", 10)
