@@ -402,7 +402,7 @@ async def global_matches(
     from app.models import FingerprintIndex
     from app.utils.hash_compare import hamming_distance
 
-if current_user.is_admin:
+    if current_user.is_admin:
         records = db.query(FingerprintIndex).order_by(FingerprintIndex.created_at.desc()).all()
     else:
         user_cases = db.query(Case.case_id).filter(Case.user_id == current_user.id).all()
