@@ -535,11 +535,11 @@ async def analyze_file_route(
 
     file_key = upload_file(open(file_path, "rb"), file.filename, file.content_type)
    
-
     report, json_path, pdf_path = analyze_file(
         str(file_path),
         case_dir=str(case_dir),
         file_key=file_key,
+        original_filename=file.filename,
     )
 
     evidence_item = EvidenceItem(
