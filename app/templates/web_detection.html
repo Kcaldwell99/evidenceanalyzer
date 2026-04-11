@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Detection — Evidentix&#8482;</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; }
+    .back { display: inline-block; color: #7c8cf8; text-decoration: none; font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .back:hover { text-decoration: underline; }
+    .header { margin-bottom: 2rem; }
+    .header h1 { font-size: 1.6rem; font-weight: 700; color: #7c8cf8; }
+    .header p { color: #94a3b8; margin-top: 0.4rem; font-size: 0.9rem; }
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 { font-size: 1rem; font-weight: 600; color: #e2e8f0; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #2d3148; }
+    .label-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .label-badge {
+      background: #2d3148;
+      color: #7c8cf8;
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .match-list { list-style: none; }
+    .match-list li {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #2d3148;
+      font-size: 0.83rem;
+    }
+    .match-list li:last-child { border-bottom: none; }
+    .match-list a { color: #7c8cf8; text-decoration: none; word-break: break-all; }
+    .match-list a:hover { text-decoration: underline; }
+    .match-list .page-title { color: #94a3b8; font-size: 0.78rem; margin-top: 0.2rem; }
+    .empty { color: #475569; font-style: italic; font-size: 0.85rem; }
+    .error { background: #3b1f1f; border: 1px solid #7f1d1d; color: #fca5a5; border-radius: 8px; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/cases/{{ case_id }}" class="back">← Back to Case</a>
+
+    <div class="header">
+      <h1>Web Detection Results</h1>
+      <p>{{ file_name }} — {{ evidence_id }}</p>
+    </div>
+
+    {% if web_detection.error %}
+    <div class="error">{{ web_detection.error }}</div>
+    {% else %}
+
+    {% if web_detection.best_guess_labels %}
+    <div class="card">
+      <h2>Best Guess Labels</h2>
+      <div class="label-list">
+        {% for label in web_detection.best_guess_labels %}
+        <span class="label-badge">{{ label }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <h2>Full Matches ({{ web_detection.full_matches|length }})</h2>
+      {% if web_detection.full_matches %}
+      <ul class="match-list">
+        {% for m in web_detection.full_matches %}
+        <li><a href="{{ m.url }}" target="_blank">{{ m.url }}</a></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="empty">No full matches found.</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2>Partial Matches ({{ web_detection.partial_matches|length }})</h2>
+      {% if web_detection.partial_matches %}
+      <ul class="match-list">
+        {% for m in web_detection.partial_matches %}
+        <li><a href="{{ m.url }}" target="_blank">{{ m.url }}</a></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="empty">No partial matches found.</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2>Pages With This Image ({{ web_detection.pages_with_image|length }})</h2>
+      {% if web_detection.pages_with_image %}
+      <ul class="match-list">
+        {% for p in web_detection.pages_with_image %}
+        <li>
+          <a href="{{ p.url }}" target="_blank">{{ p.url }}</a>
+          {% if p.title %}<div class="page-title">{{ p.title }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="empty">No pages found containing this image.</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2>Visually Similar Images ({{ web_detection.visually_similar|length }})</h2>
+      {% if web_detection.visually_similar %}
+      <ul class="match-list">
+        {% for m in web_detection.visually_similar %}
+        <li><a href="{{ m.url }}" target="_blank">{{ m.url }}</a></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="empty">No visually similar images found.</p>
+      {% endif %}
+    </div>
+
+    {% endif %}
+  </div>
+</body>
+</html>
