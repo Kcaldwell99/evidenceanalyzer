@@ -359,6 +359,41 @@ async def delete_case(
 
     return RedirectResponse(url="/?deleted=1", status_code=303)
 
+@app.post("/delete-evidence/{case_id}/{evidence_id}")
+async def delete_evidence(
+    case_id: str,
+    evidence_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
+    assert_case_ownership(case_obj, current_user)
+
+    item = (
+        db.query(EvidenceItem)
+        .filter(
+            EvidenceItem.case_id == case_id,
+            EvidenceItem.evidence_id == evidence_id,
+        )
+        .first()
+    )
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Evidence not found.")
+
+    # Delete from fingerprint index
+    from app.models import FingerprintIndex
+    db.query(FingerprintIndex).filter(
+        FingerprintIndex.case_id == case_id,
+        FingerprintIndex.evidence_id == evidence_id,
+    ).delete()
+
+    db.delete(item)
+    db.commit()
+
+    return RedirectResponse(url=f"/cases/{case_id}", status_code=303)
 
 @app.get("/reports", response_class=HTMLResponse)
 def reports_page(
