@@ -694,6 +694,51 @@ async def report_file_redirect(
     url = generate_presigned_url(key)
     return RedirectResponse(url=url, status_code=302)
 
+@app.get("/web-detection/{case_id}/{evidence_id}", response_class=HTMLResponse)
+async def web_detection_page(
+    case_id: str,
+    evidence_id: str,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    import json
+    from app.storage import generate_presigned_url
+
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
+    assert_case_ownership(case_obj, current_user)
+
+    item = (
+        db.query(EvidenceItem)
+        .filter(
+            EvidenceItem.case_id == case_id,
+            EvidenceItem.evidence_id == evidence_id,
+        )
+        .first()
+    )
+
+    if not item or not item.json_report:
+        raise HTTPException(status_code=404, detail="Report not found.")
+
+    import requests as req
+    url = generate_presigned_url(item.json_report)
+    response = req.get(url, timeout=15)
+    report_data = response.json()
+    web_detection = report_data.get("web_detection", {})
+
+    return templates.TemplateResponse(
+        request,
+        "web_detection.html",
+        {
+            "case_id": case_id,
+            "evidence_id": evidence_id,
+            "file_name": item.file_name,
+            "web_detection": web_detection,
+            "current_user": current_user,
+        },
+    )
 
 # =========================================================
 # COMPARISON WORKFLOW  (login required)
