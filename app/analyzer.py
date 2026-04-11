@@ -33,8 +33,7 @@ def _draw_wrapped_lines(c, lines, x, y, line_height=12, bottom_margin=50):
         y -= line_height
     return y
 
-
-def analyze_file(file_path, case_dir=None, file_key=None):
+def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None):
     file_hash = sha256_file(file_path)
     file_size = os.path.getsize(file_path)
     image_metadata = get_image_metadata(file_path)
@@ -67,11 +66,10 @@ def analyze_file(file_path, case_dir=None, file_key=None):
             evidence_id = f"E-{existing_count + 1:03d}"
         finally:
             db.close()
-
     add_fingerprint(
         case_id=case_id_value,
         evidence_id=evidence_id,
-        file_name=os.path.basename(file_path),
+        file_name=original_filename or os.path.basename(file_path),
         phash=phash,
     )
 
