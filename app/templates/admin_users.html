@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin Users</title>
+</head>
+<body style="font-family:sans-serif;background:#0f1117;color:#e2e8f0;padding:2rem">
+<div style="max-width:1100px;margin:0 auto">
+<a href="/" style="color:#7c8cf8">Back to Dashboard</a>
+<h1 style="color:#7c8cf8;margin:1rem 0">Registered Users</h1>
+<table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+<thead>
+<tr style="border-bottom:1px solid #2d3148">
+<th style="padding:0.6rem;text-align:left;color:#64748b">ID</th>
+<th style="padding:0.6rem;text-align:left;color:#64748b">Name</th>
+<th style="padding:0.6rem;text-align:left;color:#64748b">Firm</th>
+<th style="padding:0.6rem;text-align:left;color:#64748b">Email</th>
+<th style="padding:0.6rem;text-align:left;color:#64748b">Registered</th>
+<th style="padding:0.6rem;text-align:left;color:#64748b">Role</th>
+</tr>
+</thead>
+<tbody>
+{% for user in users %}
+<tr style="border-bottom:1px solid #1a1d27">
+<td style="padding:0.65rem">{{ user.id }}</td>
+<td style="padding:0.65rem">{{ user.full_name or "-" }}</td>
+<td style="padding:0.65rem">{{ user.firm_name or "-" }}</td>
+<td style="padding:0.65rem">{{ user.email }}</td>
+<td style="padding:0.65rem">{{ user.created_at }}</td>
+<td style="padding:0.65rem">{% if user.is_admin %}Admin{% else %}User{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</body>
+</html>
