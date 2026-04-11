@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create Account — Evidentix™</title>
+  <title>Create Account - Evidentix</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #0f1117;
@@ -15,8 +14,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
     }
-
     .card {
       background: #1a1d27;
       border: 1px solid #2d3148;
@@ -25,25 +24,9 @@
       width: 100%;
       max-width: 420px;
     }
-
-    .brand {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    .brand h1 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #7c8cf8;
-      letter-spacing: -0.5px;
-    }
-
-    .brand p {
-      font-size: 0.85rem;
-      color: #64748b;
-      margin-top: 0.3rem;
-    }
-
+    .brand { text-align: center; margin-bottom: 2rem; }
+    .brand h1 { font-size: 1.6rem; font-weight: 700; color: #7c8cf8; }
+    .brand p { font-size: 0.85rem; color: #64748b; margin-top: 0.3rem; }
     .error {
       background: #3b1f1f;
       border: 1px solid #7f1d1d;
@@ -53,7 +36,6 @@
       font-size: 0.875rem;
       margin-bottom: 1.25rem;
     }
-
     label {
       display: block;
       font-size: 0.8rem;
@@ -63,11 +45,8 @@
       letter-spacing: 0.05em;
       margin-bottom: 0.4rem;
     }
-    input[type="email"],
-    input[type="password"],
-    input[type="text"] {
+    input {
       width: 100%;
-      min-height: 42px;
       background: #0f1117;
       border: 1px solid #2d3148;
       border-radius: 7px;
@@ -75,21 +54,11 @@
       font-size: 0.95rem;
       padding: 0.65rem 0.9rem;
       margin-bottom: 1.2rem;
-      transition: border-color 0.2s;
       outline: none;
+      min-height: 42px;
     }
-
-    input:focus {
-      border-color: #7c8cf8;
-    }
-
-    .hint {
-      font-size: 0.78rem;
-      color: #475569;
-      margin-top: -0.9rem;
-      margin-bottom: 1.2rem;
-    }
-
+    input:focus { border-color: #7c8cf8; }
+    .hint { font-size: 0.78rem; color: #475569; margin-top: -0.9rem; margin-bottom: 1.2rem; }
     button[type="submit"] {
       width: 100%;
       background: #7c8cf8;
@@ -100,35 +69,18 @@
       font-weight: 600;
       padding: 0.75rem;
       cursor: pointer;
-      transition: background 0.2s;
       margin-top: 0.25rem;
     }
-
-    button[type="submit"]:hover {
-      background: #6470e6;
-    }
-
-    .footer-link {
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.85rem;
-      color: #64748b;
-    }
-
-    .footer-link a {
-      color: #7c8cf8;
-      text-decoration: none;
-    }
-
-    .footer-link a:hover {
-      text-decoration: underline;
-    }
+    button[type="submit"]:hover { background: #6470e6; }
+    .footer-link { text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: #64748b; }
+    .footer-link a { color: #7c8cf8; text-decoration: none; }
+    .footer-link a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="brand">
-      <h1>Evidentix™</h1>
+      <h1>Evidentix&#8482;</h1>
       <p>Create your account</p>
     </div>
 
@@ -138,4 +90,34 @@
 
     <form method="post" action="/register">
       <label for="full_name">Full Name</label>
-      <input type="text" id="full_name" name="full_name" required autocom
+      <input type="text" id="full_name" name="full_name" required autocomplete="name" />
+
+      <label for="firm_name">Firm / Company</label>
+      <input type="text" id="firm_name" name="firm_name" autocomplete="organization" />
+      <p class="hint">Optional</p>
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required autocomplete="email" />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required minlength="8" />
+      <p class="hint">Minimum 8 characters</p>
+
+      <label for="password_confirm">Confirm Password</label>
+      <input type="password" id="password_confirm" name="password_confirm" required />
+
+      <button type="submit">Create Account</button>
+    </form>
+
+    <div class="footer-link">
+      Already have an account? <a href="/login">Sign in</a>
+    </div>
+  </div>
+
+  <footer style="text-align: center; margin-top: 24px; font-size: 13px; color: #64748b;">
+    &copy; 2026 Evidence Analyzer, LLC. &nbsp;|&nbsp;
+    <a href="/terms" style="color: #64748b;">Terms of Use</a> &nbsp;|&nbsp;
+    <a href="/privacy" style="color: #64748b;">Privacy Policy</a>
+  </footer>
+</body>
+</html>
