@@ -10,6 +10,7 @@ from app.utils.hash_utils import sha256_file
 from app.utils.metadata_utils import get_image_metadata, extract_exif
 from app.utils.c2pa_utils import check_c2pa_presence
 from app.utils.image_fingerprint import generate_phash
+from app.utils.web_detection import detect_web_presence
 from app.utils.hash_compare import hamming_distance
 
 from core.fingerprint_index import add_fingerprint, search_similar
@@ -41,6 +42,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     c2pa_info = check_c2pa_presence(file_path)
 
     phash = generate_phash(file_path)
+    web_detection = detect_web_presence(file_path)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -90,6 +92,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
         "c2pa": c2pa_info,
         "analysis_date": datetime.utcnow().isoformat(),
         "similar_matches": similar_matches[:5],
+        "web_detection": web_detection,
     }
 
     report["metadata_status"] = (
