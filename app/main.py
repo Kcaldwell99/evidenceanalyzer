@@ -393,6 +393,52 @@ def reports_page(
         "reports.html",
         {"items": items, "current_user": current_user},
     )
+@app.get("/global-matches", response_class=HTMLResponse)
+async def global_matches(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.models import FingerprintIndex
+    from app.utils.hash_compare import hamming_distance
+
+    records = db.query(FingerprintIndex).order_by(FingerprintIndex.created_at.desc()).all()
+
+    matches = []
+    for i, a in enumerate(records):
+        for b in records[i+1:]:
+            if not a.phash or not b.phash:
+                continue
+            dist = hamming_distance(a.phash, b.phash)
+            if dist <= 8:
+                similarity = max(0, 100 - (dist * 100 // 16))
+                if dist <= 4:
+                    match_level = "High Match"
+                else:
+                    match_level = "Possible Match"
+                matches.append({
+                    "case_a": a.case_id,
+                    "evidence_a": a.evidence_id,
+                    "file_a": a.file_name,
+                    "case_b": b.case_id,
+                    "evidence_b": b.evidence_id,
+                    "file_b": b.file_name,
+                    "distance": dist,
+                    "similarity": similarity,
+                    "match_level": match_level,
+                })
+
+    matches.sort(key=lambda x: x["distance"])
+
+    return templates.TemplateResponse(
+        request,
+        "global_matches.html",
+        {
+            "matches": matches,
+            "total_indexed": len(records),
+            "current_user": current_user,
+        },
+    )
 
 @app.get("/admin/users", response_class=HTMLResponse)
 async def admin_users(
