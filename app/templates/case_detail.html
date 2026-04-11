@@ -263,9 +263,15 @@
                         -
                     {% endif %}
                 </td>
+  
                 <td>
-                    <a href="/download-bundle/{{ case.case_id }}/{{ m.evidence_id }}">
-    Download Bundle
+    <a href="/download-bundle/{{ case.case_id }}/{{ m.evidence_id }}">
+        Download Bundle
+    </a>
+    <form action="/delete-evidence/{{ case.case_id }}/{{ m.evidence_id }}" method="post" style="display:inline; margin-left:8px;">
+        <button type="submit" style="background:#c62828; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;" onclick="return confirm('Delete this evidence item?')">Delete</button>
+    </form>
+</td>
 </a>
                       
                 </td>
