@@ -234,7 +234,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
             60,
             y,
         )
-c.setFont("Helvetica-Bold", 12)
+    c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y, "3. Similarity Review")
     y -= 15
 
