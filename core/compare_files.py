@@ -81,8 +81,24 @@ def build_forensic_conclusion(
             "generally consistent",
         ]
     )
+# Strong phash match should always yield high confidence regardless of SSIM
+    if phash_distance == 0:
+        return {
+            "confidence_level": "High Confidence Match",
+            "conclusion_title": "High Confidence Match",
+            "conclusion_text": (
+                "The submitted image is perceptually identical to the reference image based on "
+                "perceptual hash comparison. The files are visually indistinguishable, consistent "
+                "with the same image saved in a different format, resolution, or compression level."
+            ),
+            "interpretation_text": (
+                "A perceptual hash distance of zero indicates the images are visually identical. "
+                "The difference in SHA-256 values is consistent with format conversion, recompression, "
+                "or metadata changes rather than meaningful content alteration."
+            ),
+        }
 
-    if (ssim_score >= 0.90 and phash_distance <= 8) or (ssim_score >= 0.88 and strong_visual):
+    if (ssim_score >= 0.90 and phash_distance <= 8) or (ssim_score >= 0.88 and strong_visual) or phash_distance <= 4:
         return {
             "confidence_level": "High Confidence Match",
             "conclusion_title": "High Confidence Match",
@@ -102,6 +118,55 @@ def build_forensic_conclusion(
                 "weight of the observed indicators."
             ),
         }
+
+    if (ssim_score >= 0.75 and phash_distance <= 14) or moderate_visual or phash_distance <= 10:
+        return {
+            "confidence_level": "Probable Match",
+            "conclusion_title": "Probable Match",
+            "conclusion_text": (
+                "The submitted image exhibits substantial similarity to the reference image. "
+                "The comparison metrics and visual review support the opinion that the images "
+                "are probably related, although the observed differences suggest editing, "
+                "recompression, partial cropping, or other modification. This result is "
+                "consistent with likely derivation, but not an exact file match."
+            ),
+            "interpretation_text": (
+                "The available indicators support a meaningful relationship between the compared images, "
+                "but the differences observed prevent classification as an exact digital match."
+            ),
+        }
+
+    if ssim_score >= 0.60 and phash_distance <= 20:
+        return {
+            "confidence_level": "Inconclusive",
+            "conclusion_title": "Inconclusive Result",
+            "conclusion_text": (
+                "The comparison produced mixed indicators. Certain metrics suggest similarity, "
+                "but the available data does not support a reliable forensic conclusion that the "
+                "submitted image is the same as, or derived from, the reference image. Additional "
+                "contextual information, source files, or expert review may be necessary."
+            ),
+            "interpretation_text": (
+                "Some indicators point toward similarity, but the overall evidentiary signal is not "
+                "strong enough to support a higher-confidence conclusion."
+            ),
+        }
+
+    return {
+        "confidence_level": "No Significant Support for a Match",
+        "conclusion_title": "No Significant Support for a Match",
+        "conclusion_text": (
+            "The comparison did not reveal sufficient forensic support for a meaningful match "
+            "between the submitted image and the reference image. Based on the available metrics "
+            "and visual differential review, the images do not appear to be materially consistent "
+            "with one another."
+        ),
+        "interpretation_text": (
+            "The observed indicators do not collectively support a reliable conclusion that the "
+            "submitted image matches or was derived from the reference image."
+        ),
+    }
+
 
     if (ssim_score >= 0.75 and phash_distance <= 14) or moderate_visual:
         return {
