@@ -480,7 +480,7 @@ def _find_uploaded_evidence_file(case_path, file_name):
                 return os.path.join(root, filename)
     return None
 
-def compare_against_case(suspect_path, case_id_or_path):
+def compare_against_case(suspect_path, case_id_or_path, suspect_filename=None):
     from app.utils.image_fingerprint import generate_phash
     from app.utils.hash_compare import hamming_distance
     from core.fingerprint_index import search_similar
@@ -522,8 +522,9 @@ def compare_against_case(suspect_path, case_id_or_path):
         try:
             comparison = compare_two_files(evidence_path, suspect_path,
                 original_filename=item.file_name,
-                suspect_filename=os.path.basename(str(suspect_path)),
-)
+                suspect_filename=suspect_filename or os.path.basename(str(suspect_path)),
+            )
+
             print(f"DEBUG comparison_pdf in result: {comparison.get('comparison_pdf')}", flush=True)
 
             comparison["case_id"] = case_id
