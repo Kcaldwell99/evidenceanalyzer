@@ -89,9 +89,10 @@ def generate_integrity_report(case_id: str, generated_by: str = "system") -> str
         sha = e.sha256 or "Not recorded"
         status = "VERIFIED" if e.sha256 else "NO HASH"
         date = e.analysis_date or ""
+
         hash_data.append([
             e.evidence_id or "",
-            e.file_name or "",
+            Paragraph(e.file_name or "", body_style),
             sha[:32] + "..." if sha and len(sha) > 32 else sha,
             date[:10] if date else "",
             status,
