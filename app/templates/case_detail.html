@@ -236,7 +236,8 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
+      
+<tbody>
             {% for m in evidence_items %}
             <tr>
                 <td>{{ m.evidence_id or "-" }}</td>
@@ -264,11 +265,7 @@
                         -
                     {% endif %}
                 </td>
-    <td>
-
-</td>
-</a>
-    <td>
+                <td>
                     <a href="/download-bundle/{{ case.case_id }}/{{ m.evidence_id }}">Download Bundle</a>
                 </td>
                 <td>
@@ -276,10 +273,11 @@
                     <form action="/delete-evidence/{{ case.case_id }}/{{ m.evidence_id }}" method="post" style="display:inline; margin-left:8px;">
                         <button type="submit" style="background:#c62828; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;" onclick="return confirm('Delete this evidence item?')">Delete Evidence</button>
                     </form>
-                </td>                  
-            
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
+
     </table>
 
     <div class="small-note">
