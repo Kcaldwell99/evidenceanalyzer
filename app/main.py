@@ -874,10 +874,8 @@ async def compare_case_route(
     with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(suspect_file.filename)[1]) as tmp:
         tmp.write(file_content)
         suspect_path = tmp.name
-
-    result = compare_against_case(str(suspect_path), case_id=case_id)
+    result = compare_against_case(str(file_path), case_id, suspect_filename=original_filename)
     os.remove(suspect_path)
-
 
     log_audit_event(
         event_type="case_comparison_completed",
