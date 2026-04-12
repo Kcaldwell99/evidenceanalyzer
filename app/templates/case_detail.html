@@ -215,7 +215,10 @@
                 <a class="button" href="/">Back to Dashboard</a>
                 <a class="button secondary" href="/reports">View All Cases</a>
                 <a class="button" href="/integrity-report/{{ case.case_id }}" target="_blank" style="background:#2d6a4f; margin-left:8px;">Download Integrity Report</a>
-              
+                <form action="/clear-custody-log/{{ case.case_id }}" method="post" style="display:inline; margin-left:8px;">
+                    <button type="submit" style="background:#b45309; color:white; border:none; padding:10px 16px; border-radius:10px; font-weight:600; cursor:pointer;" onclick="return confirm('Clear all custody log history for this case?')">Clear History</button>
+                </form>
+
             </div>
         </div>
 <div class="card">
