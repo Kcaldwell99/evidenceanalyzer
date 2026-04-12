@@ -234,9 +234,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
             60,
             y,
         )
-    y -= 8
-
-    c.setFont("Helvetica-Bold", 12)
+c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y, "3. Similarity Review")
     y -= 15
 
@@ -258,25 +256,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     else:
         y = _draw_wrapped_lines(c, ["No qualifying prior matches found."], 60, y)
 
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "4. Forensic Conclusion")
-    y -= 15
-
-    c.setFont("Helvetica", 10)
-   
-    y = _draw_wrapped_lines(
-        c,
-        _wrap_text(f"Confidence Level: {report.get('similarity_assessment', 'Not available')}"),
-        60,
-        y,
-    )
-    y = _draw_wrapped_lines(
-        c,
-        _wrap_text(report.get("preliminary_conclusion", "")),
-        60,
-        y,
-    )
-y -= 8
+    y -= 8
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y, "4. Web Presence Detection")
     y -= 15
@@ -308,12 +288,28 @@ y -= 8
         similar = web.get("visually_similar", [])
         y = _draw_wrapped_lines(c, [f"Visually Similar Images: {len(similar)}"], 60, y)
 
- 
+    y -= 8
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "5. Forensic Conclusion")
+    y -= 15
+
+    c.setFont("Helvetica", 10)
+    y = _draw_wrapped_lines(
+        c,
+        _wrap_text(f"Confidence Level: {report.get('similarity_assessment', 'Not available')}"),
+        60,
+        y,
+    )
+    y = _draw_wrapped_lines(
+        c,
+        _wrap_text(report.get("preliminary_conclusion", "")),
+        60,
+        y,
+    )
+
     y -= 8
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y, "6. Methodology")
-
-
     y -= 15
 
     c.setFont("Helvetica", 10)
@@ -345,3 +341,4 @@ y -= 8
         pdf_key = s3_upload(f, "analysis_report.pdf", "application/pdf")
 
     return report, json_key, pdf_key
+
