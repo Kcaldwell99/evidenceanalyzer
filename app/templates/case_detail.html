@@ -293,9 +293,8 @@
     <p><strong>Debug Case ID:</strong> {{ case.case_id }}</p>
 
     <form action="/compare-against-case" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="case_id" value="{{ case_id or case.case_id }}">
-
-        <div style="margin-bottom: 14px;">
+        <input type="hidden" name="case_id" value="{{ case.case_id }}">
+            <div style="margin-bottom: 14px;">
             <label><strong>Select Image to Compare:</strong></label><br>
             <input type="file" id="compare_file" name="file" accept="image/*" required>
           
