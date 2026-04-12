@@ -8,7 +8,7 @@ from reportlab.pdfgen import canvas
 
 from app.utils.hash_utils import sha256_file
 from app.utils.metadata_utils import get_image_metadata, extract_exif
-from app.utils.c2pa_utils import check_c2pa_presence
+from app.c2pa_detector import read_c2pa_manifest, summarize_c2pa
 from app.utils.image_fingerprint import generate_phash
 from app.utils.web_detection import detect_web_presence
 from app.utils.hash_compare import hamming_distance
@@ -39,7 +39,8 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     file_size = os.path.getsize(file_path)
     image_metadata = get_image_metadata(file_path)
     exif_data = extract_exif(file_path)
-    c2pa_info = check_c2pa_presence(file_path)
+    c2pa_info = read_c2pa_manifest(file_path)
+    c2pa_summary = summarize_c2pa(c2pa_info)
 
     phash = generate_phash(file_path)
     web_detection = detect_web_presence(file_path)
@@ -255,10 +256,23 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
             y = _draw_wrapped_lines(c, _wrap_text(match_text), 60, y)
     else:
         y = _draw_wrapped_lines(c, ["No qualifying prior matches found."], 60, y)
+    y -= 8
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "4. C2PA Content Credentials")
+    y -= 15
+
+    c.setFont("Helvetica", 10)
+    y = _draw_wrapped_lines(c, _wrap_text(report.get("c2pa_summary", "C2PA check not available.")), 60, y)
+
+    if c2pa_info.get("flagged_ai"):
+        y = _draw_wrapped_lines(c, ["WARNING: AI-generated content indicators detected in manifest."], 60, y)
+    if c2pa_info.get("flagged_no_credentials"):
+        y = _draw_wrapped_lines(c, ["NOTE: No Content Credentials found. File provenance cannot be verified."], 60, y)
 
     y -= 8
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "4. Web Presence Detection")
+    c.drawString(50, y, "5. Web Presence Detection")
+
     y -= 15
 
     c.setFont("Helvetica", 10)
@@ -290,7 +304,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
 
     y -= 8
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "5. Forensic Conclusion")
+    c.drawString(50, y, "6. Forensic Conclusion")
     y -= 15
 
     c.setFont("Helvetica", 10)
@@ -309,7 +323,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
 
     y -= 8
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "6. Methodology")
+    c.drawString(50, y, "7. Methodology")
     y -= 15
 
     c.setFont("Helvetica", 10)
@@ -322,7 +336,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
 
     y -= 8
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "7. Limitations")
+    c.drawString(50, y, "8. Limitations")
     y -= 15
 
     c.setFont("Helvetica", 10)
