@@ -19,3 +19,4 @@ imageio[ffmpeg]
 reportlab>=4.4.10
 pypdfium2
 google-cloud-vision
+c2pa-python
