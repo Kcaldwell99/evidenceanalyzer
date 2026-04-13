@@ -39,10 +39,10 @@ from core.copyright_lookup import build_copyright_search_link
 app = FastAPI()
 
 from fastapi.responses import RedirectResponse
+
 @app.get("/sample")
 def sample_redirect():
-    return RedirectResponse(url="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/04.06.26+Sample+for+Display.pdf")
-
+    return RedirectResponse(url="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/04.13.26+Evidentix_Integrity_Report_CASE-0002+%287%29_Redacted.pdf")
 
 @app.exception_handler(401)
 async def unauthorized_handler(request: Request, exc):
