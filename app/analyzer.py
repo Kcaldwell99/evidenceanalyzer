@@ -262,8 +262,8 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     y -= 15
 
     c.setFont("Helvetica", 10)
-    y = _draw_wrapped_lines(c, _wrap_text(report.get("c2pa_summary", "C2PA check not available.")), 60, y)
-
+    y = _draw_wrapped_lines(c, _wrap_text(report.get("c2pa_summary", "Content Credentials not detected.")), 60, y)
+    
     if c2pa_info.get("flagged_ai"):
         y = _draw_wrapped_lines(c, ["WARNING: AI-generated content indicators detected in manifest."], 60, y)
     if c2pa_info.get("flagged_no_credentials"):
