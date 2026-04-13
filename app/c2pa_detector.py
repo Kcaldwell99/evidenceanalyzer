@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 
 try:
     import c2pa
@@ -9,10 +8,6 @@ except ImportError:
 
 
 def read_c2pa_manifest(file_path: str) -> dict:
-    """
-    Attempts to read a C2PA manifest from the given file.
-    Returns a dict with keys: has_manifest, verified, manifest_data, error, flagged_ai
-    """
     result = {
         "has_manifest": False,
         "verified": False,
@@ -34,22 +29,16 @@ def read_c2pa_manifest(file_path: str) -> dict:
         result["has_manifest"] = True
         result["manifest_data"] = manifest_data
 
-        # Check for AI-generated content assertions
         manifests = manifest_data.get("manifests", {})
         for manifest_key, manifest in manifests.items():
             assertions = manifest.get("assertions", [])
             for assertion in assertions:
                 label = assertion.get("label", "").lower()
                 data = assertion.get("data", {})
-
-                # Flag AI-generated content
                 if "ai.generated" in label or "ai_generated" in label:
                     result["flagged_ai"] = True
-
                 if "training-mining" in label:
                     result["flagged_ai"] = True
-
-                # Check actions for AI creation
                 actions = data.get("actions", [])
                 for action in actions:
                     if "ai" in action.get("softwareAgent", "").lower():
@@ -69,7 +58,6 @@ def read_c2pa_manifest(file_path: str) -> dict:
 
 
 def summarize_c2pa(result: dict) -> str:
-    """Returns a plain-English summary for the forensic report."""
     if not C2PA_AVAILABLE:
         return "C2PA detection unavailable."
 
@@ -91,8 +79,6 @@ def summarize_c2pa(result: dict) -> str:
             "AI-modified content. This file should be treated with heightened scrutiny."
         )
     else:
-        summary += (
-            " No AI-generation assertions were identified in the manifest."
-        )
+        summary += " No AI-generation assertions were identified in the manifest."
 
     return summary
