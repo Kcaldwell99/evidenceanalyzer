@@ -56,7 +56,6 @@ def read_c2pa_manifest(file_path: str) -> dict:
 
     return result
 
-
 def summarize_c2pa(result: dict) -> str:
     if not C2PA_AVAILABLE:
         return "C2PA detection unavailable."
@@ -66,12 +65,14 @@ def summarize_c2pa(result: dict) -> str:
 
     if not result.get("has_manifest"):
         return (
-            "No C2PA Content Credentials manifest was detected in this file. "
-            "The absence of credentials does not confirm manipulation, but the file "
-            "cannot be verified as originating from a credentialed capture device or software."
+            "Content Credentials not detected. This file does not contain embedded C2PA "
+            "provenance data. The absence of Content Credentials does not confirm tampering, "
+            "but the file's origin and editing history cannot be verified through this standard."
         )
 
-    summary = "C2PA Content Credentials manifest detected and read successfully."
+    summary = (
+        "Content Credentials detected. This file contains embedded C2PA provenance data."
+    )
 
     if result.get("flagged_ai"):
         summary += (
@@ -79,6 +80,8 @@ def summarize_c2pa(result: dict) -> str:
             "AI-modified content. This file should be treated with heightened scrutiny."
         )
     else:
-        summary += " No AI-generation assertions were identified in the manifest."
+        summary += (
+            " No AI-generation assertions were identified in the manifest."
+        )
 
     return summary
