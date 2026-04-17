@@ -50,8 +50,6 @@ def sample_redirect():
 
 @app.exception_handler(401)
 async def unauthorized_handler(request: Request, exc):
-    if request.url.path == "/":
-        return templates.TemplateResponse(request, "index.html", {})
     return RedirectResponse(url="/login", status_code=303)
 
 # =========================================================
