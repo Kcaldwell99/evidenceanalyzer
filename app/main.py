@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import shutil
 import hashlib
@@ -258,7 +258,6 @@ async def register_submit(
     )
     return resp
 
-ce
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse(request, "login.html", {"error": None})
