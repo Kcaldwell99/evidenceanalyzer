@@ -40,6 +40,10 @@ app = FastAPI()
 
 from fastapi.responses import RedirectResponse
 
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap():
+    return FileResponse("sitemap.xml", media_type="application/xml")
+
 @app.get("/sample")
 def sample_redirect():
     return RedirectResponse(url="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/04.13.26+Evidentix_Integrity_Report_CASE-0002+%287%29_Redacted.pdf")
@@ -280,8 +284,11 @@ async def logout():
 @app.get("/", response_class=HTMLResponse)
 async def home(
     request: Request,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_optional_user),
 ):
+    if not current_user:
+        return templates.TemplateResponse(request, "index.html", {})
+
     cases = load_cases_for_user(current_user)
     deleted = request.query_params.get("deleted")
 
@@ -294,11 +301,6 @@ async def home(
             "message": "Case deleted successfully." if deleted else None,
         },
     )
-
-
-
-
-
 
 
 @app.post("/create-case", response_class=HTMLResponse)
