@@ -170,8 +170,10 @@ def verify_checkout_session(session_id: str):
         raise HTTPException(status_code=403, detail="Stripe payment not completed.")
     return session
 
-
 def assert_case_ownership(case_obj: Case, current_user: User):
+    """Raise 403 if the user doesn't own the case (unless admin)."""
+    if not current_user.is_admin and case_obj.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied.")
 
 # HOME ROUTE
 @app.get("/", response_class=HTMLResponse)
@@ -302,7 +304,6 @@ async def logout():
 # =========================================================
 # BASIC CASE WORKFLOW  (all routes now require login)
 # =========================================================
-
 @app.get("/", response_class=HTMLResponse)
 async def home(
     request: Request,
@@ -310,10 +311,8 @@ async def home(
 ):
     if not current_user:
         return templates.TemplateResponse(request, "index.html", {})
-
     cases = load_cases_for_user(current_user)
     deleted = request.query_params.get("deleted")
-
     return templates.TemplateResponse(
         request,
         "upload.html",
@@ -323,6 +322,7 @@ async def home(
             "message": "Case deleted successfully." if deleted else None,
         },
     )
+
 # =========================================================
 # HOME ROUTE
 # =========================================================
