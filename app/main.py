@@ -302,6 +302,45 @@ async def logout():
 
 # =========================================================
 # BASIC CASE WORKFLOW  (all routes now require login)
+
+@app.get("/", response_class=HTMLResponse)
+async def home(
+    request: Request,
+    current_user: User = Depends(get_optional_user),
+):
+    if not current_user:
+        return templates.TemplateResponse(request, "index.html", {})
+    cases = load_cases_for_user(current_user)
+    deleted = request.query_params.get("deleted")
+    return templates.TemplateResponse(
+        request,
+        "upload.html",
+        {
+            "cases": cases,
+            "current_user": current_user,
+            "message": "Case deleted successfully." if deleted else None,
+        },
+    )
+
+@app.get("/", response_class=HTMLResponse)
+async def home(
+    request: Request,
+    current_user: User = Depends(get_optional_user),
+):
+    if not current_user:
+        return templates.TemplateResponse(request, "index.html", {})
+    cases = load_cases_for_user(current_user)
+    deleted = request.query_params.get("deleted")
+    return templates.TemplateResponse(
+        request,
+        "upload.html",
+        {
+            "cases": cases,
+            "current_user": current_user,
+            "message": "Case deleted successfully." if deleted else None,
+        },
+    )
+
 # =========================================================
 @app.get("/", response_class=HTMLResponse)
 async def home(
