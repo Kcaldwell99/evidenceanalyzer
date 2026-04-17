@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import shutil
 import hashlib
@@ -1394,7 +1394,7 @@ async def privacy(request: Request):
 
 
 # =========================================================
-# STRIPE CHECKOUT  â€”  add these routes to main.py
+# STRIPE CHECKOUT  ???  add these routes to main.py
 # Paste this block just before the PAID INTAKE WORKFLOW section
 # =========================================================
 
@@ -1470,7 +1470,7 @@ async def checkout_cancel(
 
 # =========================================================
 
-# PAID INTAKE WORKFLOW  (no auth required â€” public intake)
+# PAID INTAKE WORKFLOW  (no auth required ??? public intake)
 # =========================================================
 
 @app.get("/intake", response_class=HTMLResponse)
@@ -1815,6 +1815,8 @@ async def download_integrity_report(
     filename = f"Evidentix_Integrity_Report_{case_id}.pdf"
     return FileResponse(pdf_path, media_type="application/pdf", filename=filename)
 
-#   d e p l o y  
- #   d e p l o y  
- 
+# deploy
+
+# deploy
+
+
