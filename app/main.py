@@ -177,6 +177,7 @@ def assert_case_ownership(case_obj: Case, current_user: User):
         raise HTTPException(status_code=403, detail="Access denied.")
 
 
+
 # =========================================================
 # AUTH ROUTES
 # =========================================================
@@ -234,7 +235,7 @@ async def register_submit(
     )
     return resp
 
-
+ce
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse(request, "login.html", {"error": None})
@@ -301,7 +302,30 @@ async def home(
             "message": "Case deleted successfully." if deleted else None,
         },
     )
+# =========================================================
+# HOME ROUTE
+# =========================================================
 
+@app.get("/", response_class=HTMLResponse)
+async def home(
+    request: Request,
+    current_user: User = Depends(get_optional_user),
+):
+    if not current_user:
+        return templates.TemplateResponse(request, "index.html", {})
+
+    cases = load_cases_for_user(current_user)
+    deleted = request.query_params.get("deleted")
+
+    return templates.TemplateResponse(
+        request,
+        "upload.html",
+        {
+            "cases": cases,
+            "current_user": current_user,
+            "message": "Case deleted successfully." if deleted else None,
+        },
+    )
 
 @app.post("/create-case", response_class=HTMLResponse)
 async def create_case(
