@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import shutil
 import hashlib
@@ -172,6 +172,27 @@ def verify_checkout_session(session_id: str):
 
 
 def assert_case_ownership(case_obj: Case, current_user: User):
+
+# HOME ROUTE
+@app.get("/", response_class=HTMLResponse)
+async def home(
+    request: Request,
+    current_user: User = Depends(get_optional_user),
+):
+    if not current_user:
+        return templates.TemplateResponse(request, "index.html", {})
+    cases = load_cases_for_user(current_user)
+    deleted = request.query_params.get("deleted")
+    return templates.TemplateResponse(
+        request,
+        "upload.html",
+        {
+            "cases": cases,
+            "current_user": current_user,
+            "message": "Case deleted successfully." if deleted else None,
+        },
+    )
+
     """Raise 403 if the user doesn't own the case (unless admin)."""
     if not current_user.is_admin and case_obj.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied.")
@@ -313,10 +334,8 @@ async def home(
 ):
     if not current_user:
         return templates.TemplateResponse(request, "index.html", {})
-
     cases = load_cases_for_user(current_user)
     deleted = request.query_params.get("deleted")
-
     return templates.TemplateResponse(
         request,
         "upload.html",
@@ -1337,7 +1356,7 @@ async def privacy(request: Request):
 
 
 # =========================================================
-# STRIPE CHECKOUT  —  add these routes to main.py
+# STRIPE CHECKOUT  â€”  add these routes to main.py
 # Paste this block just before the PAID INTAKE WORKFLOW section
 # =========================================================
 
@@ -1413,7 +1432,7 @@ async def checkout_cancel(
 
 # =========================================================
 
-# PAID INTAKE WORKFLOW  (no auth required — public intake)
+# PAID INTAKE WORKFLOW  (no auth required â€” public intake)
 # =========================================================
 
 @app.get("/intake", response_class=HTMLResponse)
