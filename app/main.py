@@ -296,10 +296,9 @@ async def login_submit(
 
 @app.get("/logout")
 async def logout():
-    resp = RedirectResponse(url="/login", status_code=303)
+    resp = RedirectResponse(url="/", status_code=303)
     resp.delete_cookie("access_token")
     return resp
-
 
 # =========================================================
 # BASIC CASE WORKFLOW  (all routes now require login)
