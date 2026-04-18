@@ -805,6 +805,30 @@ async def copyright_search_submit(
         },
     )
 # =========================================================
+# ADMIN ROUTES
+# =========================================================
+
+@app.get("/admin/users", response_class=HTMLResponse)
+async def admin_users(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required.")
+
+    users = db.query(User).order_by(User.created_at.desc()).all()
+
+    return templates.TemplateResponse(
+        request,
+        "admin_users.html",
+        {
+            "current_user": current_user,
+            "users": users,
+        },
+    )
+
+# =========================================================
 # STRIPE CHECKOUT ROUTES
 # =========================================================
 
