@@ -804,7 +804,79 @@ async def copyright_search_submit(
             "current_user": current_user,
         },
     )
+# =========================================================
+# STRIPE CHECKOUT ROUTES
+# =========================================================
 
+STRIPE_PRICES = {
+    "single": "price_1THUZ2HVHQNKUlwkBfHnsoDj",
+    "bundle": "price_1THUiNHVHQNKUlwkJG0v91C7",
+    "professional": "price_1THV2DHVHQNKUlwkZ5lyCBsE",
+    "firm": "price_1THV6cHVHQNKUlwkViPyHk4f",
+}
+
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
+
+
+@app.get("/checkout/{product}", response_class=HTMLResponse)
+async def checkout(
+    request: Request,
+    product: str,
+    current_user: User = Depends(get_current_user),
+):
+    if product not in STRIPE_PRICES:
+        raise HTTPException(status_code=404, detail="Product not found.")
+
+    if not stripe.api_key:
+        raise HTTPException(status_code=500, detail="Stripe not configured.")
+
+    base_url = str(request.base_url).rstrip("/")
+
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        line_items=[
+            {
+                "price": STRIPE_PRICES[product],
+                "quantity": 1,
+            }
+        ],
+        mode="subscription" if product in ("professional", "firm") else "payment",
+        success_url=f"{base_url}/success?session_id={{CHECKOUT_SESSION_ID}}&product={product}",
+        cancel_url=f"{base_url}/cancel",
+        customer_email=current_user.email,
+    )
+
+    return RedirectResponse(url=session.url, status_code=303)
+
+
+@app.get("/success", response_class=HTMLResponse)
+async def checkout_success(
+    request: Request,
+    session_id: str = "",
+    product: str = "",
+    current_user: User = Depends(get_current_user),
+):
+    return templates.TemplateResponse(
+        request,
+        "checkout_success.html",
+        {
+            "current_user": current_user,
+            "product": product,
+            "session_id": session_id,
+        },
+    )
+
+
+@app.get("/cancel", response_class=HTMLResponse)
+async def checkout_cancel(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    return templates.TemplateResponse(
+        request,
+        "checkout_cancel.html",
+        {"current_user": current_user},
+    )
 
 # =========================================================
 # PAID INTAKE WORKFLOW  (no auth required — public intake)
