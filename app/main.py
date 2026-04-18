@@ -864,8 +864,12 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
 STRIPE_PRICES = {
     "single": "price_1THUZ2HVHQNKUlwkBfHnsoDj",
+    "integrity": "price_1TIqGdHVHQNKUlwk4oPa5cRp",
+    "video_single": "price_1TIqApHVHQNKUlwksbqqdsqA",
     "bundle": "price_1THUiNHVHQNKUlwkJG0v91C7",
+    "video_image_bundle": "price_1TIqE7HVHQNKUlwk8v4FmJnP",
     "professional": "price_1THV2DHVHQNKUlwkZ5lyCBsE",
+    "video_bundle": "price_1TIqCcHVHQNKUlwk6tJXz5Uo",
     "firm": "price_1THV6cHVHQNKUlwkViPyHk4f",
 }
 
