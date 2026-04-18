@@ -842,15 +842,18 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
+customer_details = session.get("customer_details") or {}
+        metadata = session.get("metadata") or {}
 
         payment = Payment(
-            stripe_session_id=session.get("id"),
-            stripe_customer_email=session.get("customer_details", {}).get("email"),
+            stripe_session_id=session["id"],
+            stripe_customer_email=customer_details.get("email"),
             stripe_amount_total=session.get("amount_total"),
             stripe_currency=session.get("currency"),
-            product=session.get("metadata", {}).get("product"),
+            product=metadata.get("product"),
             status="paid",
         )
+
         db.add(payment)
         db.commit()
 
