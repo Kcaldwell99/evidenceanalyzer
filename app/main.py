@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import List, Optional
 
 import requests
+from sqlalchemy import event
+from sqlalchemy import event
 import stripe
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Depends, Response
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
@@ -839,9 +841,9 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid payload")
     except stripe.error.SignatureVerificationError:
         raise HTTPException(status_code=400, detail="Invalid signature")
-
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
+if event["type"] == "checkout.session.completed":
+        event_dict = json.loads(payload)
+        session = event_dict["data"]["object"]
         customer_details = session.get("customer_details") or {}
         metadata = session.get("metadata") or {}
 
@@ -853,12 +855,8 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
             product=metadata.get("product"),
             status="paid",
         )
-
         db.add(payment)
         db.commit()
-
-    return {"status": "ok"}
-
 # =========================================================
 # STRIPE CHECKOUT ROUTES
 # =========================================================
