@@ -38,8 +38,8 @@
         }
 
         .beta-notice {
-            background-color: #6b21a8;
-            color: white;
+            background: #fff3cd;
+            color: #856404;
             padding: 12px 16px;
             border-radius: 6px;
             margin-top: 16px;
@@ -173,22 +173,83 @@
             margin-bottom: 20px;
         }
 
+        .pricing-section-label {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6b7280;
+            margin: 24px 0 12px 0;
+        }
+
         .pricing-grid {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            flex-wrap: wrap;
+        }
+
+        .pricing-grid.subscriptions {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 700px;
         }
 
         .price-card {
-            border: 1px solid #ccc;
+            border: 1px solid #e5e7eb;
             padding: 20px;
             border-radius: 10px;
-            width: 250px;
             background: white;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .price-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .price-card .price-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 14px 0;
+        }
+
+        .price-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 16px 0;
+            color: #4b5563;
+            font-size: 14px;
+            flex-grow: 1;
+        }
+
+        .price-card ul li {
+            padding: 3px 0;
+        }
+
+        .price-card .button {
+            margin-top: auto;
+            text-align: center;
         }
 
         .price-card.featured {
-            border: 2px solid #2d6cdf;
+            border: 2px solid #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+        }
+
+        .price-card.featured .badge {
+            position: absolute;
+            top: -10px;
+            right: 16px;
+            background: #2563eb;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 999px;
+            letter-spacing: 0.04em;
         }
 
         .delete-button {
@@ -206,8 +267,22 @@
             background: #b71c1c;
         }
 
+        @media (max-width: 900px) {
+            .pricing-grid,
+            .pricing-grid.subscriptions {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         @media (max-width: 850px) {
             .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .pricing-grid,
+            .pricing-grid.subscriptions {
                 grid-template-columns: 1fr;
             }
         }
@@ -221,10 +296,7 @@
 
 <div style="text-align:right; margin-top:0.5rem;">
   <span style="font-size:0.85rem; color:#64748b;">{{ current_user.email }}</span>
-{% if current_user.is_admin %}
-<a href="/admin/users" style="margin-left:1rem; font-size:0.85rem; color:#7c8cf8;">Admin</a>
-{% endif %}
-<a href="/logout" style="margin-left:1rem; font-size:0.85rem; color:#7c8cf8;">Sign out</a>
+  <a href="/logout" style="margin-left:1rem; font-size:0.85rem; color:#7c8cf8;">Sign out</a>
 </div>
 
             <div class="beta-notice">
@@ -314,6 +386,7 @@
             <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:1rem;">Forensic similarity comparison using perceptual hashing.</p>
             <a href="/compare-video" class="button">Compare Videos</a>
         </div>
+
 <div class="card full-width">
                 <h2>Existing Cases</h2>
                 {% if cases %}
@@ -348,41 +421,97 @@
 
             <div class="card full-width">
                 <h2>Pricing</h2>
-                            <div class="pricing-grid">
+
+                <div class="pricing-section-label">One-time purchases</div>
+                <div class="pricing-grid">
                     <div class="price-card">
-                        <h3>Single Report</h3>
-                        <h2>$79</h2>
-                        <p>Per analysis</p>
-                        <p>PDF report included</p>
+                        <h3>Single Image Report</h3>
+                        <div class="price-amount">$79</div>
+                        <ul>
+                            <li>Per image analysis</li>
+                            <li>PDF report included</li>
+                        </ul>
                         <a href="/checkout/single" class="button">Buy Now</a>
                     </div>
 
                     <div class="price-card">
+                        <h3>Integrity &amp; Custody Report</h3>
+                        <div class="price-amount">$149</div>
+                        <ul>
+                            <li>Per case</li>
+                            <li>SHA-256 verification + custody log</li>
+                            <li>Exhibit-ready declaration</li>
+                        </ul>
+                        <a href="/checkout/integrity" class="button">Buy Now</a>
+                    </div>
+
+                    <div class="price-card">
+                        <h3>Single Video Analysis</h3>
+                        <div class="price-amount">$199</div>
+                        <ul>
+                            <li>Per video</li>
+                            <li>20-frame extraction + metadata</li>
+                            <li>PDF report</li>
+                        </ul>
+                        <a href="/checkout/video_single" class="button">Buy Now</a>
+                    </div>
+
+                    <div class="price-card">
                         <h3>Case Bundle</h3>
-                        <h2>$299</h2>
-                        <p>Up to 10 analyses</p>
-                        <p>PDF reports included</p>
+                        <div class="price-amount">$299</div>
+                        <ul>
+                            <li>Up to 10 image analyses</li>
+                            <li>PDF reports included</li>
+                        </ul>
                         <a href="/checkout/bundle" class="button">Buy Now</a>
                     </div>
 
                     <div class="price-card">
-                        <h3>Professional</h3>
-                        <h2>$399/mo</h2>
-                        <p>Up to 150 analyses</p>
-                        <p>Unlimited cases</p>
-                        <a href="/checkout/professional" class="button">Buy Now</a>
+                        <h3>Video + Image Bundle</h3>
+                        <div class="price-amount">$399</div>
+                        <ul>
+                            <li>Combined video + image analysis</li>
+                            <li>Per case</li>
+                            <li>PDF reports included</li>
+                        </ul>
+                        <a href="/checkout/video_image_bundle" class="button">Buy Now</a>
                     </div>
 
-                    <div class="price-card featured">
-                        <h3>Firm License</h3>
-                        <h2>$7,500/yr</h2>
-                        <p>Unlimited analyses</p>
-                        <p>Unlimited reports</p>
-                        <a href="/checkout/firm" class="button">Buy Now</a>
+                    <div class="price-card">
+                        <h3>Video Bundle</h3>
+                        <div class="price-amount">$599</div>
+                        <ul>
+                            <li>Up to 5 videos</li>
+                            <li>Frame + metadata per file</li>
+                            <li>PDF reports included</li>
+                        </ul>
+                        <a href="/checkout/video_bundle" class="button">Buy Now</a>
                     </div>
                 </div>
 
+                <div class="pricing-section-label">Subscriptions</div>
+                <div class="pricing-grid subscriptions">
+                    <div class="price-card featured">
+                        <span class="badge">Most Popular</span>
+                        <h3>Professional</h3>
+                        <div class="price-amount">$399/mo</div>
+                        <ul>
+                            <li>Up to 150 analyses / month</li>
+                            <li>Unlimited cases</li>
+                        </ul>
+                        <a href="/checkout/professional" class="button">Buy Now</a>
+                    </div>
 
+                    <div class="price-card">
+                        <h3>Firm License</h3>
+                        <div class="price-amount">$7,500/yr</div>
+                        <ul>
+                            <li>Unlimited analyses</li>
+                            <li>Unlimited reports</li>
+                            <li>Unlimited cases</li>
+                        </ul>
+                        <a href="/checkout/firm" class="button">Buy Now</a>
+                    </div>
                 </div>
 
                 <div style="margin-top:30px;">
@@ -395,7 +524,7 @@
     </div>
 
 <footer style="text-align:center; padding:2rem; font-size:0.8rem; color:#64748b; border-top:1px solid #2d3148; margin-top:2rem;">
-  &copy; 2026 Evidentix™. All rights reserved. Evidentix™ is a trademark of Caldwell Law Firm, P.C., CLF The Woodlands, LLC. and Evidence Analyzer.
+  &copy; 2026 Evidentix&trade;. All rights reserved. Evidentix&trade; is a trademark of Caldwell Law Firm, P.C., CLF The Woodlands, LLC. and Evidence Analyzer.
 </footer>
 
 
