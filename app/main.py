@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
 from app.db import SessionLocal, engine
-from app.models import Base, Case, EvidenceItem, User
+from app.models import Base, Case, EvidenceItem, Payment, User
 from app.storage import upload_file
 from app.auth import (
     hash_password,
@@ -827,6 +827,34 @@ async def admin_users(
             "users": users,
         },
     )
+@app.post("/webhook/stripe")
+async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid payload")
+    except stripe.error.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+
+        payment = Payment(
+            stripe_session_id=session.get("id"),
+            stripe_customer_email=session.get("customer_details", {}).get("email"),
+            stripe_amount_total=session.get("amount_total"),
+            stripe_currency=session.get("currency"),
+            product=session.get("metadata", {}).get("product"),
+            status="paid",
+        )
+        db.add(payment)
+        db.commit()
+
+    return {"status": "ok"}
 
 # =========================================================
 # STRIPE CHECKOUT ROUTES
