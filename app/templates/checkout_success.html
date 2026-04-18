@@ -4,6 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Payment Successful — Evidentix™</title>
+{% if GOOGLE_ADS_ID %}
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ADS_ID }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ GOOGLE_ADS_ID }}');
+    </script>
+    {% endif %}
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -51,5 +62,15 @@
     <p>If you purchased a report service, our team will be in touch shortly to collect your evidence files.</p>
     <a href="/" class="btn">Go to Dashboard</a>
   </div>
+{% if GOOGLE_ADS_ID and GOOGLE_ADS_LABEL_PURCHASE %}
+    <!-- Google Ads conversion: Purchase -->
+    <script>
+      gtag('event', 'conversion', {
+          'send_to': '{{ GOOGLE_ADS_ID }}/{{ GOOGLE_ADS_LABEL_PURCHASE }}',
+          'transaction_id': '{{ session_id }}'
+      });
+    </script>
+    {% endif %}
+
 </body>
 </html>
