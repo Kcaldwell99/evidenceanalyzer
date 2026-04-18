@@ -841,22 +841,23 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid payload")
     except stripe.error.SignatureVerificationError:
         raise HTTPException(status_code=400, detail="Invalid signature")
-if event["type"] == "checkout.session.completed":
-        event_dict = json.loads(payload)
-        session = event_dict["data"]["object"]
-        customer_details = session.get("customer_details") or {}
-        metadata = session.get("metadata") or {}
+    if event["type"] == "checkout.session.completed":
+            event_dict = json.loads(payload)
+            session = event_dict["data"]["object"]
+            customer_details = session.get("customer_details") or {}
+            metadata = session.get("metadata") or {}
 
-        payment = Payment(
-            stripe_session_id=session["id"],
-            stripe_customer_email=customer_details.get("email"),
-            stripe_amount_total=session.get("amount_total"),
-            stripe_currency=session.get("currency"),
-            product=metadata.get("product"),
-            status="paid",
-        )
-        db.add(payment)
-        db.commit()
+            payment = Payment(
+                stripe_session_id=session["id"],
+                stripe_customer_email=customer_details.get("email"),
+                stripe_amount_total=session.get("amount_total"),
+                stripe_currency=session.get("currency"),
+                product=metadata.get("product"),
+                status="paid",
+            )
+            db.add(payment)
+            db.commit()
+            return {"status": "ok"}
 # =========================================================
 # STRIPE CHECKOUT ROUTES
 # =========================================================
