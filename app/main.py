@@ -42,6 +42,11 @@ app = FastAPI()
 
 @app.exception_handler(401)
 async def unauthorized_handler(request: Request, exc):
+    next_path = request.url.path
+    if request.url.query:
+        next_path += "?" + request.url.query
+    if next_path and next_path != "/login":
+        return RedirectResponse(url=f"/login?next={next_path}", status_code=303)
     return RedirectResponse(url="/login", status_code=303)
 
 # =========================================================
@@ -229,8 +234,8 @@ async def register_submit(
 
 
 @app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    return templates.TemplateResponse(request, "login.html", {"error": None})
+async def login_page(request: Request, next: Optional[str] = None):
+    return templates.TemplateResponse(request, "login.html", {"error": None, "next": next})
 
 
 @app.post("/login", response_class=HTMLResponse)
@@ -238,6 +243,7 @@ async def login_submit(
     request: Request,
     email: str = Form(...),
     password: str = Form(...),
+    next: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.email == email.lower().strip()).first()
@@ -246,12 +252,13 @@ async def login_submit(
         return templates.TemplateResponse(
             request,
             "login.html",
-            {"error": "Invalid email or password."},
+            {"error": "Invalid email or password.", "next": next},
             status_code=401,
         )
 
     token = create_access_token(user.id, user.email)
-    resp = RedirectResponse(url="/", status_code=303)
+    redirect_to = next if next and next.startswith("/") and not next.startswith("//") else "/"
+    resp = RedirectResponse(url=redirect_to, status_code=303)
     resp.set_cookie(
         key="access_token",
         value=token,
