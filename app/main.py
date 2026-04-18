@@ -844,6 +844,7 @@ async def checkout(
         success_url=f"{base_url}/success?session_id={{CHECKOUT_SESSION_ID}}&product={product}",
         cancel_url=f"{base_url}/cancel",
         customer_email=current_user.email,
+        allow_promotion_codes=True,
     )
 
     return RedirectResponse(url=session.url, status_code=303)
