@@ -126,14 +126,4 @@
         <button type="submit">Submit Intake</button>
     </form>
 </div>
-{% if GOOGLE_ADS_ID and GOOGLE_ADS_LABEL_PURCHASE %}
-    <!-- Google Ads conversion: Purchase -->
-    <script>
-      gtag('event', 'conversion', {
-          'send_to': '{{ GOOGLE_ADS_ID }}/{{ GOOGLE_ADS_LABEL_PURCHASE }}',
-          'transaction_id': '{{ session_id }}'
-      });
-    </script>
-    {% endif %}
-
 </body>
