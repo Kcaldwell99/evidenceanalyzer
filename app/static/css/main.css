@@ -1,0 +1,7 @@
+/* Evidence Analyzer by Evidentix - shared styles */
+/* Phase 1: pricing.html only. Phase 2 will refactor upload.html to use this. */
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
