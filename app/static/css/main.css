@@ -192,3 +192,150 @@ html {
         padding: 56px 20px;
     }
 }
+/* ---------- Pricing grid ---------- */
+
+.pricing {
+    background: var(--brand-bg);
+    padding: 80px 32px;
+}
+
+.pricing-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.pricing-section-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--brand-purple-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 20px;
+}
+
+.pricing-section-label.subscriptions {
+    margin-top: 56px;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.pricing-grid.subscriptions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 760px;
+}
+
+.price-card {
+    background: var(--brand-bg);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 28px 26px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.price-card:hover {
+    border-color: var(--brand-purple-mid);
+}
+
+.price-card.featured {
+    border: 2px solid var(--brand-purple-mid);
+    padding: 27px 25px;
+}
+
+.price-card .badge {
+    position: absolute;
+    top: -12px;
+    left: 26px;
+    background: var(--brand-purple-mid);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 5px 12px;
+    border-radius: 4px;
+}
+
+.price-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--brand-purple-dark);
+    margin: 0 0 12px;
+}
+
+.price-card .price-amount {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--brand-text);
+    margin: 0 0 18px;
+    letter-spacing: -0.01em;
+}
+
+.price-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+    flex-grow: 1;
+}
+
+.price-card li {
+    font-size: 14px;
+    color: #475569;
+    padding: 6px 0 6px 22px;
+    position: relative;
+    line-height: 1.5;
+}
+
+.price-card li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 12px;
+    height: 6px;
+    border-left: 2px solid var(--brand-purple-mid);
+    border-bottom: 2px solid var(--brand-purple-mid);
+    transform: rotate(-45deg);
+}
+
+.price-card .button {
+    display: block;
+    text-align: center;
+    background: var(--brand-purple-link);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 11px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background 0.15s ease;
+}
+
+.price-card .button:hover {
+    background: var(--brand-purple-dark);
+}
+
+@media (max-width: 900px) {
+    .pricing-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .pricing-grid.subscriptions {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .pricing {
+        padding: 56px 20px;
+    }
+    .pricing-grid,
+    .pricing-grid.subscriptions {
+        grid-template-columns: 1fr;
+    }
+}
