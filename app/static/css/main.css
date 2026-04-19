@@ -1,7 +1,82 @@
 /* Evidence Analyzer by Evidentix - shared styles */
 /* Phase 1: pricing.html only. Phase 2 will refactor upload.html to use this. */
 
+:root {
+    --brand-purple-dark: #3b0764;
+    --brand-purple-mid: #8b5cf6;
+    --brand-purple-link: #6d28d9;
+    --brand-purple-light: #e9d5ff;
+    --brand-text: #1f2937;
+    --brand-text-muted: #64748b;
+    --brand-bg: #ffffff;
+    --brand-bg-alt: #f8fafc;
+}
+
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--brand-text);
+    background: var(--brand-bg);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Header ---------- */
+
+.site-header-wrap {
+    background: var(--brand-bg);
+    border-bottom: 2px solid var(--brand-purple-mid);
+}
+
+.site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.brand {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+    text-decoration: none;
+}
+
+.brand-name {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--brand-purple-dark);
+}
+
+.brand-tag {
+    font-size: 12px;
+    margin-top: 4px;
+    color: var(--brand-purple-mid);
+}
+
+.sign-in {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--brand-purple-link);
+    text-decoration: none;
+}
+
+.sign-in:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .site-header {
+        padding: 14px 20px;
+    }
+    .brand-name {
+        font-size: 18px;
+    }
 }
