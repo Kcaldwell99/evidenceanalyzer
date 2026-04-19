@@ -237,6 +237,9 @@ async def register_submit(
 async def login_page(request: Request, next: Optional[str] = None):
     return templates.TemplateResponse(request, "login.html", {"error": None, "next": next})
 
+@app.get("/pricing")
+async def pricing(request: Request):
+    return templates.TemplateResponse(request, "pricing.html", {})
 
 @app.post("/login", response_class=HTMLResponse)
 async def login_submit(
