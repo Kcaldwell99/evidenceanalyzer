@@ -80,3 +80,56 @@ body {
         font-size: 18px;
     }
 }
+/* ---------- Hero ---------- */
+
+html {
+    scroll-behavior: smooth;
+}
+
+.hero {
+    padding: 80px 32px;
+    text-align: center;
+    background: var(--brand-bg);
+}
+
+.hero-headline {
+    font-size: 44px;
+    font-weight: 600;
+    color: var(--brand-purple-dark);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    max-width: 800px;
+    margin: 0 auto 24px;
+}
+
+.hero-subhead {
+    font-size: 17px;
+    line-height: 1.65;
+    color: #475569;
+    max-width: 640px;
+    margin: 0 auto 28px;
+}
+
+.hero-cta {
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--brand-purple-link);
+    text-decoration: none;
+}
+
+.hero-cta:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .hero {
+        padding: 56px 20px;
+    }
+    .hero-headline {
+        font-size: 30px;
+    }
+    .hero-subhead {
+        font-size: 16px;
+    }
+}
