@@ -19,8 +19,7 @@ except ImportError:
 try:
     from core.comparison_pdf import generate_comparison_pdf
 except Exception as e:
-    print(f"DEBUG comparison_pdf import failed: {e}", flush=True)
-    generate_comparison_pdf = None
+        generate_comparison_pdf = None
 
 from app.utils.hash_utils import sha256_file
 from app.utils.metadata_utils import get_image_metadata, extract_exif
@@ -481,11 +480,9 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         try:
             pdf_payload = _build_pdf_payload(result)
             generate_comparison_pdf(pdf_payload, comparison_pdf_path)
-            print(f"DEBUG PDF generated, exists: {os.path.exists(comparison_pdf_path)}", flush=True)
-
         except Exception as e:
             import traceback
-            print(f"DEBUG PDF exception: {e}", flush=True)
+            print(f"PDF generation failed: {e}", flush=True)
             print(traceback.format_exc(), flush=True)
             comparison_pdf_path = None
 
@@ -505,7 +502,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
             )
             result["comparison_pdf"] = s3_url
         except Exception as e:
-            print(f"DEBUG S3 upload error: {e}", flush=True)
+            print(f"S3 upload failed: {e}", flush=True)
             result["comparison_pdf"] = _safe_relpath(comparison_pdf_path)
 
     else:
@@ -589,9 +586,6 @@ def compare_against_case(suspect_path, case_id_or_path, suspect_filename=None):
                 original_filename=item.file_name,
                 suspect_filename=suspect_filename or os.path.basename(str(suspect_path)),
             )
-
-            print(f"DEBUG comparison_pdf in result: {comparison.get('comparison_pdf')}", flush=True)
-
             comparison["case_id"] = case_id
             comparison["evidence_id"] = item.evidence_id
             comparison["reference_file"] = item.file_name
