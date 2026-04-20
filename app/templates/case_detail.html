@@ -216,9 +216,10 @@
                 <a class="button secondary" href="/reports">View All Cases</a>
                 {# STOPGAP disabled 2026-04-20: route /integrity-report/{case_id} does not exist. See priority stack for proper fix. #}
                 {# <a class="button" href="/integrity-report/{{ case.case_id }}" target="_blank" style="background:#2d6a4f; margin-left:8px;">Download Integrity Report</a> #}
-                <form action="/clear-custody-log/{{ case.case_id }}" method="post" style="display:inline; margin-left:8px;">
+                {# STOPGAP disabled 2026-04-20: route POST /clear-custody-log/{case_id} does not exist. See priority stack. #}
+                {# <form action="/clear-custody-log/{{ case.case_id }}" method="post" style="display:inline; margin-left:8px;">
                     <button type="submit" style="background:#b45309; color:white; border:none; padding:10px 16px; border-radius:10px; font-weight:600; cursor:pointer;" onclick="return confirm('Clear all custody log history for this case?')">Clear History</button>
-                </form>
+                </form> #}
 
             </div>
         </div>
