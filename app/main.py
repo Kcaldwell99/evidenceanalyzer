@@ -241,6 +241,10 @@ async def login_page(request: Request, next: Optional[str] = None):
 async def pricing(request: Request):
     return templates.TemplateResponse(request, "pricing.html", {})
 
+@app.get("/sample")
+async def sample():
+    return RedirectResponse(url="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/04.06.26+Sample+for+Display.pdf", status_code=303)
+
 @app.post("/login", response_class=HTMLResponse)
 async def login_submit(
     request: Request,
