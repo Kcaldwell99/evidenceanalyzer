@@ -245,6 +245,14 @@ async def pricing(request: Request):
 async def sample():
     return RedirectResponse(url="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/04.06.26+Sample+for+Display.pdf", status_code=303)
 
+@app.get("/privacy")
+async def privacy(request: Request):
+    return templates.TemplateResponse(request, "privacy.html", {})
+
+@app.get("/terms")
+async def terms(request: Request):
+    return templates.TemplateResponse(request, "terms.html", {})
+
 @app.post("/login", response_class=HTMLResponse)
 async def login_submit(
     request: Request,
