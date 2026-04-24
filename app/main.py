@@ -17,11 +17,10 @@ from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-
 from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
 from app.db import SessionLocal, engine
-from app.models import Base, Case, EvidenceItem, Payment, User
+from app.models import Base, Case, Certificate, EvidenceItem, Payment, Subscription, User
 from app.storage import upload_file
 from app.auth import (
     hash_password,
@@ -177,7 +176,6 @@ def assert_case_ownership(case_obj: Case, current_user: User):
     """Raise 403 if the user doesn't own the case (unless admin)."""
     if not current_user.is_admin and case_obj.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied.")
-
 
 # =========================================================
 # AUTH ROUTES
@@ -351,11 +349,14 @@ async def create_case(
 
 
 @app.post("/delete-case/{case_id}")
+
 async def delete_case(
     case_id: str,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+
     case_obj = db.query(Case).filter(Case.case_id == case_id).first()
 
     if not case_obj:
@@ -363,10 +364,18 @@ async def delete_case(
 
     assert_case_ownership(case_obj, current_user)
 
+    log_audit_event(
+        event_type="case_deleted",
+        case_id=case_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes="Case and all evidence deleted by authenticated user",
+    )
+
     db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).delete()
     db.delete(case_obj)
     db.commit()
-
+  
     case_dir = CASES_DIR / case_id
     if case_dir.exists():
         shutil.rmtree(case_dir)
@@ -425,7 +434,16 @@ async def case_detail(
 
     assert_case_ownership(case_obj, current_user)
 
+    log_audit_event(
+        event_type="file_viewed",
+        case_id=case_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes="Case detail page viewed",
+    )
+
     case_record = {
+
         "case_id": case_obj.case_id,
         "case_name": case_obj.case_name,
         "description": case_obj.description or "",
@@ -482,6 +500,9 @@ async def analyze_file_route(
     case_upload_dir = case_dir / "uploads"
     case_upload_dir.mkdir(parents=True, exist_ok=True)
 
+    import uuid
+    evidence_id = str(uuid.uuid4())
+
     file_path = case_upload_dir / file.filename
 
     with file_path.open("wb") as buffer:
@@ -490,12 +511,13 @@ async def analyze_file_route(
     file.file.seek(0)
 
     file_key = upload_file(file.file, file.filename, file.content_type)
-
     log_audit_event(
         event_type="file_uploaded",
         case_id=case_id,
+        evidence_id=evidence_id,
         file_name=file.filename,
         user=current_user.email,
+        ip_address=request.client.host,
         notes="Evidence file uploaded",
     )
 
@@ -504,13 +526,28 @@ async def analyze_file_route(
         case_dir=str(case_dir),
         file_key=file_key,
     )
-
     log_audit_event(
         event_type="analysis_completed",
         case_id=case_id,
         file_name=file.filename,
         sha256=report.get("sha256"),
         user=current_user.email,
+        ip_address=request.client.host,
+        notes="Image analysis and forensic report generated",
+        extra={
+            "json_report": json_path,
+            "pdf_report": pdf_path,
+            "s3_file_key": file_key,
+        },
+    )
+    log_audit_event(
+        event_type="analysis_completed",
+        case_id=case_id,
+        evidence_id=evidence_id,
+        file_name=file.filename,
+        sha256=report.get("sha256"),
+        user=current_user.email,
+        ip_address=request.client.host,
         notes="Image analysis and forensic report generated",
         extra={
             "json_report": json_path,
@@ -520,7 +557,6 @@ async def analyze_file_route(
     )
 
     return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
-
 
 @app.get("/evidence-file/{case_id}/{evidence_id}")
 async def evidence_file_redirect(
@@ -548,9 +584,17 @@ async def evidence_file_redirect(
     if case_obj:
         assert_case_ownership(case_obj, current_user)
 
+    log_audit_event(
+        event_type="file_accessed",
+        case_id=case_id,
+        evidence_id=evidence_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes=f"Original evidence file accessed: {item.file_name}",
+    )
+
     url = generate_presigned_url(item.file_key)
     return RedirectResponse(url=url, status_code=302)
-
 
 # =========================================================
 # COMPARISON WORKFLOW  (login required)
@@ -589,6 +633,14 @@ async def compare_submit(
 
     comparison = compare_two_files(str(original_path), str(suspected_path), str(case_path))
 
+    log_audit_event(
+        event_type="comparison_performed",
+        case_id="COMPARE",
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes=f"Two-file comparison performed: {original_file.filename} vs {suspected_file.filename}",
+    )
+
     return templates.TemplateResponse(
         request,
         "compare_result.html",
@@ -600,7 +652,6 @@ async def compare_submit(
             "current_user": current_user,
         },
     )
-
 
 @app.post("/compare-against-case", response_class=HTMLResponse)
 async def compare_against_case_route(
@@ -642,6 +693,15 @@ async def compare_against_case_route(
         f.write(await file.read())
 
     try:
+    result = compare_against_case(str(file_path), case_id)
+        log_audit_event(
+            event_type="comparison_performed",
+            case_id=case_id,
+            user=current_user.email,
+            ip_address=request.client.host,
+            notes=f"File compared against case {case_id}",
+        )
+
         result = compare_against_case(str(file_path), case_id)
         return templates.TemplateResponse(
             request,
@@ -679,11 +739,12 @@ async def compare_case_route(
 
     result = compare_against_case(str(suspect_path), case_id=case_id)
 
-    log_audit_event(
+log_audit_event(
         event_type="case_comparison_completed",
         case_id=case_id,
         file_name=suspect_file.filename,
         user=current_user.email,
+        ip_address=request.client.host,
         notes="Suspect image compared against evidence in selected case",
         extra={
             "best_match_file": result.get("comparison", {}).get("original_file") if result.get("comparison") else None,
@@ -705,7 +766,6 @@ async def compare_case_route(
         },
     )
 
-
 @app.post("/compare-global", response_class=HTMLResponse)
 async def compare_global_route(
     request: Request,
@@ -722,11 +782,12 @@ async def compare_global_route(
 
     result = compare_against_all_cases(str(suspect_path))
 
-    log_audit_event(
+log_audit_event(
         event_type="global_comparison_completed",
         case_id="GLOBAL",
         file_name=suspect_file.filename,
         user=current_user.email,
+        ip_address=request.client.host,
         notes="Image compared against all cases",
         extra={"match_count": len(result.get("matches", []))},
     )
@@ -741,7 +802,6 @@ async def compare_global_route(
             "current_user": current_user,
         },
     )
-
 
 # =========================================================
 # BATCH SCAN  (login required)
@@ -853,6 +913,8 @@ async def admin_users(
     )
 @app.post("/webhook/stripe")
 async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
+    from app.models import Subscription
+
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
     webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
@@ -863,36 +925,125 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid payload")
     except stripe.error.SignatureVerificationError:
         raise HTTPException(status_code=400, detail="Invalid signature")
-    if event["type"] == "checkout.session.completed":
-            event_dict = json.loads(payload)
-            session = event_dict["data"]["object"]
-            customer_details = session.get("customer_details") or {}
-            metadata = session.get("metadata") or {}
 
-            payment = Payment(
-                stripe_session_id=session["id"],
-                stripe_customer_email=customer_details.get("email"),
-                stripe_amount_total=session.get("amount_total"),
-                stripe_currency=session.get("currency"),
-                product=metadata.get("product"),
-                status="paid",
-            )
-            db.add(payment)
+    event_type = event["type"]
+    event_id = event["id"]
+    data_object = event["data"]["object"]
+
+    # Idempotency guard — skip if we've already processed this event
+    existing = db.query(Payment).filter(Payment.stripe_event_id == event_id).first()
+    if existing:
+        return {"status": "already_processed"}
+
+    if event_type == "checkout.session.completed":
+        customer_details = data_object.get("customer_details") or {}
+        metadata = data_object.get("metadata") or {}
+
+        payment = Payment(
+            stripe_session_id=data_object["id"],
+            stripe_event_id=event_id,
+            stripe_customer_email=customer_details.get("email"),
+            stripe_amount_total=data_object.get("amount_total"),
+            stripe_currency=data_object.get("currency"),
+            product=metadata.get("product"),
+            status="paid",
+        )
+        db.add(payment)
+        db.commit()
+
+    elif event_type == "invoice.paid":
+        subscription_id = data_object.get("subscription")
+        customer_id = data_object.get("customer")
+        customer_email = data_object.get("customer_email")
+
+        if subscription_id:
+            sub = db.query(Subscription).filter(
+                Subscription.stripe_subscription_id == subscription_id
+            ).first()
+
+            if sub:
+                sub.status = "active"
+                sub.updated_at = datetime.utcnow()
+                db.commit()
+            else:
+                # First invoice.paid for this subscription — create the record
+                stripe_sub = stripe.Subscription.retrieve(subscription_id)
+                product_id = stripe_sub["items"]["data"][0]["price"]["id"] if stripe_sub["items"]["data"] else None
+
+                new_sub = Subscription(
+                    stripe_subscription_id=subscription_id,
+                    stripe_customer_id=customer_id,
+                    stripe_customer_email=customer_email,
+                    product=product_id,
+                    status="active",
+                )
+                db.add(new_sub)
+                db.commit()
+
+    elif event_type == "customer.subscription.updated":
+        subscription_id = data_object.get("id")
+        sub = db.query(Subscription).filter(
+            Subscription.stripe_subscription_id == subscription_id
+        ).first()
+
+        if sub:
+            sub.status = data_object.get("status", sub.status)
+            sub.updated_at = datetime.utcnow()
             db.commit()
-            return {"status": "ok"}
+
+    elif event_type == "customer.subscription.deleted":
+        subscription_id = data_object.get("id")
+        sub = db.query(Subscription).filter(
+            Subscription.stripe_subscription_id == subscription_id
+        ).first()
+
+        if sub:
+            sub.status = "canceled"
+            sub.updated_at = datetime.utcnow()
+            db.commit()
+
+    elif event_type == "invoice.payment_failed":
+        subscription_id = data_object.get("subscription")
+        if subscription_id:
+            sub = db.query(Subscription).filter(
+                Subscription.stripe_subscription_id == subscription_id
+            ).first()
+
+            if sub:
+                sub.status = "past_due"
+                sub.updated_at = datetime.utcnow()
+                db.commit()
+
+    return {"status": "ok"}
+
 # =========================================================
 # STRIPE CHECKOUT ROUTES
 # =========================================================
-
 STRIPE_PRICES = {
+    # Active SKUs
     "single": "price_1THUZ2HVHQNKUlwkBfHnsoDj",
-    "integrity": "price_1TIqGdHVHQNKUlwk4oPa5cRp",
     "video_single": "price_1TIqApHVHQNKUlwksbqqdsqA",
     "bundle": "price_1THUiNHVHQNKUlwkJG0v91C7",
     "video_image_bundle": "price_1TIqE7HVHQNKUlwk8v4FmJnP",
-    "professional": "price_1THV2DHVHQNKUlwkZ5lyCBsE",
     "video_bundle": "price_1TIqCcHVHQNKUlwk6tJXz5Uo",
+    "professional": "price_1THV2DHVHQNKUlwkZ5lyCBsE",
     "firm": "price_1THV6cHVHQNKUlwkViPyHk4f",
+
+    # New Phase 2 SKUs — replace placeholder values with real Stripe price IDs
+    # after creating them in the Stripe dashboard
+    "integrity_certificate": "price_1TPknOHVHQNKUlwkTbhQdEgN",
+    "custody_record": "price_1TPmDkHVHQNKUlwkj0AweJ9g",
+    "monitoring_small": "price_1TPmFhHVHQNKUlwkRHoGFIyF",
+    "monitoring_standard": "price_1TPmGvHVHQNKUlwkfr5LTk9G",
+    "monitoring_large": "price_1TPmISHVHQNKUlwkcyt08yd4",
+
+    # Retired — do not use in new checkouts
+    # "integrity": "price_1TIqGdHVHQNKUlwk4oPa5cRp",
+}
+
+# Subscription products — used to determine checkout mode
+SUBSCRIPTION_PRODUCTS = {
+    "professional", "firm", "monitoring_small", "monitoring_standard", "monitoring_large"
 }
 
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
@@ -920,7 +1071,7 @@ async def checkout(
                 "quantity": 1,
             }
         ],
-        mode="subscription" if product in ("professional", "firm") else "payment",
+        mode="subscription" if product in SUBSCRIPTION_PRODUCTS else "payment",
         success_url=f"{base_url}/success?session_id={{CHECKOUT_SESSION_ID}}&product={product}",
         cancel_url=f"{base_url}/cancel",
         customer_email=current_user.email,
@@ -1080,14 +1231,19 @@ async def submit_intake(
 
     with (case_dir / "intake.json").open("w", encoding="utf-8") as f:
         json.dump(intake_data, f, indent=2)
+    log_audit_event(
+        event_type="intake_submitted",
+        case_id=case_id,
+        user=client_email,
+        ip_address=request.client.host,
+        notes=f"Paid intake received: {SERVICE_MAP[service]['name']}, {len(uploaded_items)} file(s)",
+        extra={
+            "stripe_session_id": session_id,
+            "service": service,
+            "file_count": len(uploaded_items),
+        },
+    )
 
-    audit_event = {
-        "event": "intake_submitted",
-        "utc": datetime.utcnow().isoformat(),
-        "stripe_session_id": session_id,
-        "service": service,
-        "file_count": len(uploaded_items),
-    }
     with (audit_dir / "intake_submitted.json").open("w", encoding="utf-8") as f:
         json.dump(audit_event, f, indent=2)
 
@@ -1105,7 +1261,139 @@ async def submit_intake(
             "client_email": client_email,
         },
     )
+# =========================================================
+# INTEGRITY CERTIFICATE  (login required)
+# =========================================================
 
+@app.post("/generate/integrity/{case_id}/{evidence_id}")
+async def generate_integrity_certificate_route(
+    case_id: str,
+    evidence_id: str,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.pdf_integrity_certificate import generate_integrity_certificate
+    from app.storage import upload_file as s3_upload
+    import io
+
+    # Verify case ownership
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
+    assert_case_ownership(case_obj, current_user)
+
+    # Load evidence item
+    item = (
+        db.query(EvidenceItem)
+        .filter(
+            EvidenceItem.case_id == case_id,
+            EvidenceItem.evidence_id == evidence_id,
+        )
+        .first()
+    )
+    if not item:
+        raise HTTPException(status_code=404, detail="Evidence item not found.")
+
+    # Load report data
+    report = {}
+    if item.json_report:
+        try:
+            from app.storage import get_file
+            report = json.loads(get_file(item.json_report).decode("utf-8"))
+        except Exception:
+            report = {}
+
+    report["file_name"] = report.get("file_name") or item.file_name
+    report["sha256"] = report.get("sha256") or item.sha256
+    report["analysis_date"] = report.get("analysis_date") or (
+        item.analysis_date or datetime.utcnow().isoformat()
+    )
+
+    base_url = str(request.base_url).rstrip("/")
+
+    certificate_id, pdf_bytes = generate_integrity_certificate(
+        report=report,
+        case_id=case_id,
+        evidence_id=evidence_id,
+        generated_by=current_user.email,
+        base_url=base_url,
+    )
+
+    # Upload PDF to S3
+    pdf_key = s3_upload(
+        io.BytesIO(pdf_bytes),
+        f"integrity_certificate_{certificate_id}.pdf",
+        "application/pdf",
+    )
+
+    # Save certificate record
+    cert = Certificate(
+        certificate_id=certificate_id,
+        type="integrity",
+        case_id=case_id,
+        evidence_id=evidence_id,
+        generated_by=current_user.email,
+        pdf_key=pdf_key,
+        file_hash_at_generation=item.sha256,
+    )
+    db.add(cert)
+    db.commit()
+
+    # Log it
+    log_audit_event(
+        event_type="report_generated",
+        case_id=case_id,
+        evidence_id=evidence_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes=f"Integrity Certificate generated: {certificate_id}",
+    )
+
+    # Return the PDF directly
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename=integrity_certificate_{certificate_id}.pdf"
+        },
+    )
+
+
+@app.get("/verify/{certificate_id}", response_class=HTMLResponse)
+async def verify_certificate(
+    request: Request,
+    certificate_id: str,
+    db: Session = Depends(get_db),
+):
+    cert = db.query(Certificate).filter(
+        Certificate.certificate_id == certificate_id
+    ).first()
+
+    if not cert:
+        return templates.TemplateResponse(
+            request,
+            "verify.html",
+            {"cert": None, "certificate_id": certificate_id},
+            status_code=404,
+        )
+
+    return templates.TemplateResponse(
+        request,
+        "verify.html",
+        {
+            "cert": {
+                "certificate_id": cert.certificate_id,
+                "type": cert.type,
+                "case_id": cert.case_id,
+                "evidence_id": cert.evidence_id,
+                "file_hash_at_generation": cert.file_hash_at_generation,
+                "created_at": cert.created_at.strftime("%B %d, %Y at %H:%M:%S UTC") if cert.created_at else "—",
+            },
+            "certificate_id": certificate_id,
+        },
+    )
 
 # =========================================================
 # DOWNLOAD HELPERS  (login required)
@@ -1129,6 +1417,13 @@ async def download_case_file(
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found.")
 
+    log_audit_event(
+        event_type="file_downloaded",
+        case_id=case_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes=f"File downloaded: {filename}",
+    )
     return FileResponse(str(file_path), filename=filename)
 
 @app.get("/download-bundle/{case_id}/{evidence_id}")
@@ -1174,6 +1469,23 @@ async def download_bundle(
             url = generate_presigned_url(item.pdf_report)
             r = requests.get(url)
             zipf.writestr("analysis_report.pdf", r.content)
+    log_audit_event(
+        event_type="file_downloaded",
+        case_id=case_id,
+        evidence_id=evidence_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes=f"Evidence bundle downloaded: {case_id}_{evidence_id}_bundle.zip",
+    )
+
+    log_audit_event(
+        event_type="report_downloaded",
+        case_id=case_id,
+        evidence_id=evidence_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes="Analysis report downloaded as part of evidence bundle",
+    )
 
     return FileResponse(
         zip_path,

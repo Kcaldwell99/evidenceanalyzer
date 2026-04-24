@@ -16,7 +16,6 @@ class User(Base):
     firm_name = Column(String(255), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-
     cases = relationship("Case", back_populates="owner")
 
 
@@ -29,7 +28,6 @@ class Case(Base):
     description = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    # --- NEW: owner foreign key ---
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     owner = relationship("User", back_populates="cases")
 
@@ -48,6 +46,7 @@ class EvidenceItem(Base):
     pdf_report = Column(Text, nullable=True)
     file_key = Column(String(500), nullable=True)
 
+
 class FingerprintIndex(Base):
     __tablename__ = "fingerprint_index"
 
@@ -59,17 +58,38 @@ class FingerprintIndex(Base):
     pdf_report = Column(Text, nullable=True)
     json_report = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class Payment(Base):
     __tablename__ = "payments"
 
     id = Column(Integer, primary_key=True, index=True)
     stripe_session_id = Column(String(255), unique=True, nullable=False, index=True)
+    stripe_event_id = Column(String(255), unique=True, nullable=True, index=True)
     stripe_customer_email = Column(String(255), nullable=True)
     stripe_amount_total = Column(Integer, nullable=True)
     stripe_currency = Column(String(10), nullable=True)
     product = Column(String(50), nullable=True)
     status = Column(String(50), nullable=False, default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    stripe_subscription_id = Column(String(255), unique=True, nullable=False, index=True)
+    stripe_customer_id = Column(String(255), nullable=True, index=True)
+    stripe_customer_email = Column(String(255), nullable=True)
+    product = Column(String(50), nullable=True)
+    tier = Column(String(50), nullable=True)
+    status = Column(String(50), nullable=False, default="active")
+    file_count = Column(Integer, nullable=True)
+    current_period_end = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
 
 class CustodyLog(Base):
     __tablename__ = "custody_log"
@@ -82,4 +102,19 @@ class CustodyLog(Base):
     action = Column(String(100), nullable=False)
     detail = Column(Text, nullable=True)
     ip_address = Column(String(50), nullable=True)
+    chain_hash = Column(String(64), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Certificate(Base):
+    __tablename__ = "certificates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    certificate_id = Column(String(36), unique=True, nullable=False, index=True)
+    type = Column(String(50), nullable=False)
+    case_id = Column(String(50), nullable=False, index=True)
+    evidence_id = Column(String(50), nullable=True)
+    generated_by = Column(String(255), nullable=True)
+    pdf_key = Column(String(500), nullable=True)
+    chain_verified_at_generation = Column(Boolean, nullable=True)
+    file_hash_at_generation = Column(String(128), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
