@@ -3,67 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evidentix™ | Digital Evidence Intelligence</title>
-    <meta name="description" content="Evidentix™ provides forensic-grade analysis of digital images, including metadata extraction, authenticity indicators, provenance review, and structured reports for litigation, claims, and rights disputes.">
+    <title>Evidentix™ | Digital Evidence Authentication for Litigators</title>
+    <meta name="description" content="Evidentix™ generates forensic-grade chain-of-custody reports, SHA-256 hash fingerprints, and tamper-detection analysis for digital evidence — no expert required. Built for attorneys, claims professionals, and forensic specialists.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg: #0f172a;
-            --bg-soft: #111827;
-            --panel: #1e293b;
-            --panel-soft: #0b1220;
-            --text: #e5e7eb;
-            --muted: #94a3b8;
-            --muted-2: #cbd5e1;
-            --line: #334155;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --success: #0f766e;
-            --white: #ffffff;
-            --shadow: 0 10px 30px rgba(0,0,0,0.20);
-            --radius: 14px;
-            --maxw: 1160px;
+            --bg:          #080e1c;
+            --bg-soft:     #0c1425;
+            --panel:       #111e33;
+            --panel-2:     #0f1a2e;
+            --text:        #dde4f0;
+            --muted:       #7a90b0;
+            --muted-2:     #a8bcd4;
+            --line:        rgba(168,188,212,0.12);
+            --primary:     #2f6ff5;
+            --primary-h:   #1d5ce8;
+            --accent:      #00c9a7;
+            --accent-dim:  rgba(0,201,167,0.12);
+            --white:       #ffffff;
+            --shadow:      0 12px 40px rgba(0,0,0,0.35);
+            --shadow-sm:   0 4px 16px rgba(0,0,0,0.22);
+            --radius:      14px;
+            --maxw:        1140px;
+            --font-display: 'DM Serif Display', Georgia, serif;
+            --font-body:    'DM Sans', system-ui, sans-serif;
+            --font-mono:    'DM Mono', 'Courier New', monospace;
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(180deg, #0b1020 0%, #0f172a 40%, #111827 100%);
+            font-family: var(--font-body);
+            background: var(--bg);
             color: var(--text);
-            line-height: 1.6;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
         }
 
-        a {
-            color: inherit;
-        }
+        a { color: inherit; }
 
         .container {
             max-width: var(--maxw);
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
         }
 
         .topbar {
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(15, 23, 42, 0.92);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+            background: rgba(8,14,28,0.90);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--line);
         }
 
         .topbar-inner {
             max-width: var(--maxw);
             margin: 0 auto;
-            padding: 14px 20px;
+            padding: 14px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -71,25 +73,27 @@
         }
 
         .brand {
-            font-weight: bold;
-            letter-spacing: 0.3px;
-            font-size: 20px;
+            font-family: var(--font-display);
+            font-size: 22px;
             color: var(--white);
             text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
         }
 
         .brand small {
-            display: block;
-            font-weight: normal;
-            font-size: 11px;
+            font-family: var(--font-body);
+            font-size: 10px;
+            font-weight: 500;
             color: var(--muted);
-            letter-spacing: 0.6px;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
         }
 
         .nav {
             display: flex;
-            gap: 18px;
+            gap: 20px;
             align-items: center;
             flex-wrap: wrap;
         }
@@ -98,97 +102,112 @@
             text-decoration: none;
             color: var(--muted-2);
             font-size: 14px;
+            font-weight: 500;
+            transition: color 0.15s;
         }
 
-        .nav a:hover {
-            color: var(--white);
-        }
+        .nav a:hover { color: var(--white); }
 
         .nav-cta {
-            display: inline-block;
-            text-decoration: none;
             background: var(--primary);
-            color: var(--white);
-            padding: 10px 16px;
-            border-radius: 10px;
-            font-weight: bold;
+            color: var(--white) !important;
+            padding: 9px 18px;
+            border-radius: 9px;
+            font-weight: 600;
             font-size: 14px;
+            transition: background 0.15s;
         }
 
-        .nav-cta:hover {
-            background: var(--primary-hover);
-        }
+        .nav-cta:hover { background: var(--primary-h) !important; }
 
         .hero {
             padding: 72px 0 56px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -120px; left: -120px;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(47,111,245,0.10) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .hero-grid {
             display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 28px;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 24px;
             align-items: stretch;
         }
 
-        .hero-copy,
-        .hero-side {
-            background: rgba(30, 41, 59, 0.65);
-            border: 1px solid rgba(148, 163, 184, 0.14);
+        .hero-copy, .hero-trust {
+            background: rgba(17,30,51,0.70);
+            border: 1px solid var(--line);
             border-radius: 20px;
             box-shadow: var(--shadow);
         }
 
-        .hero-copy {
-            padding: 42px;
-        }
+        .hero-copy { padding: 44px; }
 
         .eyebrow {
-            display: inline-block;
-            margin-bottom: 14px;
-            padding: 8px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 18px;
+            padding: 7px 13px;
             border-radius: 999px;
-            background: rgba(37, 99, 235, 0.16);
-            color: #bfdbfe;
-            font-size: 13px;
-            font-weight: bold;
-            letter-spacing: 0.3px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .eyebrow::before {
+            content: '';
+            display: inline-block;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.5; transform: scale(0.85); }
         }
 
         .hero h1 {
-            margin: 0 0 16px;
-            font-size: 46px;
-            line-height: 1.14;
+            margin: 0 0 18px;
+            font-family: var(--font-display);
+            font-size: 48px;
+            line-height: 1.10;
             color: var(--white);
+            font-weight: 400;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: #8ab4ff;
         }
 
         .hero p.lead {
             margin: 0;
-            max-width: 760px;
             color: var(--muted-2);
-            font-size: 18px;
-        }
-
-        .hero-points {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 22px;
-        }
-
-        .hero-points span {
-            display: inline-block;
-            padding: 8px 12px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.06);
-            color: var(--muted-2);
-            font-size: 13px;
+            font-size: 17px;
+            max-width: 640px;
+            line-height: 1.7;
         }
 
         .hero-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 14px;
-            margin-top: 28px;
+            gap: 12px;
+            margin-top: 32px;
+            align-items: center;
         }
 
         .btn {
@@ -197,726 +216,719 @@
             border: none;
             cursor: pointer;
             border-radius: 10px;
-            padding: 14px 22px;
-            font-weight: bold;
+            padding: 14px 24px;
+            font-family: var(--font-body);
+            font-weight: 600;
             font-size: 15px;
-            transition: 0.18s ease;
+            transition: 0.15s ease;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: var(--white);
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-        }
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--primary-h); }
 
         .btn-secondary {
             background: transparent;
             color: var(--white);
-            border: 1px solid rgba(148, 163, 184, 0.35);
+            border: 1px solid rgba(168,188,212,0.30);
         }
 
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.05);
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
+
+        .promo-nudge {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 14px;
         }
 
-        .hero-side {
-            padding: 28px;
+        .promo-nudge strong {
+            font-family: var(--font-mono);
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-trust {
+            padding: 32px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            gap: 24px;
         }
 
-        .hero-side h2 {
-            margin: 0 0 10px;
-            font-size: 24px;
+        .hero-trust h2 {
+            margin: 0 0 6px;
+            font-family: var(--font-display);
+            font-size: 22px;
             color: var(--white);
+            font-weight: 400;
         }
 
-        .hero-side p {
-            margin: 0 0 16px;
-            color: var(--muted-2);
-            font-size: 15px;
-        }
-
-        .capture-form {
-            display: grid;
+        .trust-features {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
             gap: 12px;
-            margin-top: 12px;
         }
 
-        .capture-form input,
-        .capture-form select {
-            width: 100%;
-            padding: 13px 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(148, 163, 184, 0.22);
-            background: rgba(15, 23, 42, 0.82);
-            color: var(--text);
-            font-size: 15px;
-        }
-
-        .capture-note {
-            margin-top: 12px;
-            color: var(--muted);
-            font-size: 12px;
+        .trust-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+            color: var(--muted-2);
+            font-size: 14.5px;
             line-height: 1.5;
         }
 
-        .mini-proof {
-            margin-top: 20px;
-            padding-top: 18px;
-            border-top: 1px solid rgba(148, 163, 184, 0.14);
+        .trust-features li::before {
+            content: '✓';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 1px;
+        }
+
+        .trust-divider {
+            border: none;
+            border-top: 1px solid var(--line);
+            margin: 0;
+        }
+
+        .trust-cta-block {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .trust-cta-block .btn { text-align: center; width: 100%; }
+
+        .trust-sample-link {
+            display: block;
+            text-align: center;
+            font-size: 13px;
+            color: #8ab4ff;
+            text-decoration: none;
+            padding: 8px;
+        }
+
+        .trust-sample-link:hover { text-decoration: underline; }
+
+        .trust-note {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .proof-bar {
+            padding: 22px 0;
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .proof-bar-inner {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .proof-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 13px;
             color: var(--muted-2);
-            font-size: 14px;
         }
 
-        .section {
-            padding: 28px 0;
-        }
+        .section { padding: 56px 0; }
 
-        .section-head {
-            max-width: 780px;
-            margin-bottom: 22px;
-        }
+        .section-head { max-width: 680px; margin-bottom: 32px; }
 
         .section-head h2 {
             margin: 0 0 10px;
-            font-size: 34px;
+            font-family: var(--font-display);
+            font-size: 36px;
             color: var(--white);
+            font-weight: 400;
+            line-height: 1.2;
         }
 
-        .section-head p {
-            margin: 0;
-            color: var(--muted-2);
-        }
+        .section-head p { margin: 0; color: var(--muted-2); font-size: 16px; }
 
-        .grid-3,
-        .grid-4 {
-            display: grid;
-            gap: 20px;
-        }
-
-        .grid-3 {
-            grid-template-columns: repeat(3, 1fr);
-        }
-
-        .grid-4 {
-            grid-template-columns: repeat(4, 1fr);
-        }
+        .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
 
         .card {
-            background: rgba(30, 41, 59, 0.72);
-            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: var(--panel);
+            border: 1px solid var(--line);
             border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow);
+            padding: 26px;
+            box-shadow: var(--shadow-sm);
         }
+
+        .card-icon { font-size: 26px; margin-bottom: 14px; }
 
         .card h3 {
             margin: 0 0 10px;
             color: var(--white);
-            font-size: 22px;
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 400;
         }
 
-        .card p {
-            margin: 0;
-            color: var(--muted-2);
+        .card p { margin: 0; color: var(--muted-2); font-size: 14.5px; line-height: 1.65; }
+
+        .segment-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+
+        .segment-card {
+            background: var(--panel-2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 28px;
+        }
+
+        .segment-card .seg-label {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .segment-card h3 {
+            margin: 0 0 12px;
+            font-family: var(--font-display);
+            font-size: 21px;
+            color: var(--white);
+            font-weight: 400;
+        }
+
+        .segment-card p { margin: 0; color: var(--muted-2); font-size: 14px; line-height: 1.65; }
+
+        .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+
+        .step-num {
+            display: inline-flex;
+            width: 36px; height: 36px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(47,111,245,0.14);
+            color: #8ab4ff;
+            font-weight: 700;
             font-size: 15px;
+            margin-bottom: 16px;
         }
 
-        .pricing {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
+        .pricing { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
 
         .price-card {
-            background: linear-gradient(180deg, rgba(17,24,39,0.95), rgba(15,23,42,0.95));
-            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: linear-gradient(180deg, rgba(17,30,51,0.95), rgba(11,18,32,0.98));
+            border: 1px solid var(--line);
             border-radius: 16px;
-            padding: 26px;
-            box-shadow: var(--shadow);
+            padding: 30px;
+            box-shadow: var(--shadow-sm);
             display: flex;
             flex-direction: column;
         }
 
         .price-card.featured {
-            border-color: rgba(37, 99, 235, 0.55);
-            box-shadow: 0 14px 34px rgba(37, 99, 235, 0.16);
+            border-color: rgba(47,111,245,0.50);
+            box-shadow: 0 0 0 1px rgba(47,111,245,0.20), var(--shadow);
         }
 
         .price-tag {
             display: inline-block;
-            margin-bottom: 12px;
-            padding: 7px 10px;
+            margin-bottom: 14px;
+            padding: 5px 10px;
             border-radius: 999px;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
             color: #bfdbfe;
-            background: rgba(37, 99, 235, 0.16);
+            background: rgba(47,111,245,0.14);
         }
 
         .price-card h3 {
-            margin: 0 0 10px;
+            margin: 0 0 8px;
             color: var(--white);
-            font-size: 24px;
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 400;
         }
 
         .price {
-            font-size: 38px;
-            font-weight: bold;
+            font-size: 40px;
+            font-weight: 700;
             color: var(--white);
-            margin: 6px 0 10px;
+            margin: 6px 0 12px;
+            letter-spacing: -1px;
         }
 
         .price-card .desc {
             color: var(--muted-2);
-            margin-bottom: 18px;
-            min-height: 72px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 60px;
         }
 
         .feature-list {
-            margin: 0 0 24px;
-            padding-left: 20px;
+            margin: 0 0 26px;
+            padding: 0;
+            list-style: none;
             color: var(--muted-2);
             line-height: 1.7;
             flex-grow: 1;
+            font-size: 14px;
         }
 
         .feature-list li {
-            margin-bottom: 4px;
-        }
-
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-
-        .step-num {
-            display: inline-flex;
-            width: 34px;
-            height: 34px;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--line);
+            display: flex;
             align-items: center;
-            justify-content: center;
-            border-radius: 999px;
-            background: rgba(37, 99, 235, 0.16);
-            color: #bfdbfe;
-            font-weight: bold;
-            margin-bottom: 14px;
+            gap: 9px;
         }
 
-        .cta-band {
-            margin-top: 18px;
-            margin-bottom: 12px;
+        .feature-list li::before { content: '–'; color: var(--primary); font-weight: 700; }
+
+        .promo-banner {
+            background: linear-gradient(135deg, rgba(0,201,167,0.10), rgba(47,111,245,0.08));
+            border: 1px solid rgba(0,201,167,0.25);
+            border-radius: var(--radius);
+            padding: 22px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
         }
+
+        .promo-banner-text { font-size: 15px; color: var(--muted-2); }
+        .promo-banner-text strong { color: var(--white); }
+
+        .promo-code-display {
+            font-family: var(--font-mono);
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 8px 18px;
+            border-radius: 8px;
+            letter-spacing: 1.5px;
+            border: 1px solid rgba(0,201,167,0.25);
+            white-space: nowrap;
+        }
+
+        .cta-band { padding: 12px 0 48px; }
 
         .cta-band-inner {
-            background: linear-gradient(135deg, rgba(37,99,235,0.18), rgba(15,23,42,0.98));
-            border: 1px solid rgba(37, 99, 235, 0.28);
+            background: linear-gradient(135deg, rgba(47,111,245,0.14), rgba(8,14,28,0.98));
+            border: 1px solid rgba(47,111,245,0.25);
             border-radius: 18px;
-            padding: 34px;
+            padding: 40px;
             display: grid;
             grid-template-columns: 1fr auto;
-            gap: 20px;
+            gap: 24px;
             align-items: center;
             box-shadow: var(--shadow);
         }
 
         .cta-band h2 {
-            margin: 0 0 8px;
+            margin: 0 0 10px;
+            font-family: var(--font-display);
             color: var(--white);
             font-size: 32px;
+            font-weight: 400;
         }
 
-        .cta-band p {
-            margin: 0;
-            color: var(--muted-2);
-            max-width: 760px;
+        .cta-band p { margin: 0; color: var(--muted-2); max-width: 680px; }
+
+        .cta-band-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 200px;
         }
 
-        .faq {
-            display: grid;
-            gap: 16px;
+        .cta-band-actions .btn { width: 100%; text-align: center; }
+
+        .cta-band-actions .promo-note {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 0.5px;
         }
+
+        .faq { display: grid; gap: 14px; }
 
         .faq-item {
-            background: rgba(30, 41, 59, 0.72);
-            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: var(--panel);
+            border: 1px solid var(--line);
             border-radius: var(--radius);
-            padding: 22px;
+            padding: 24px;
         }
 
         .faq-item h3 {
             margin: 0 0 8px;
             color: var(--white);
-            font-size: 19px;
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 400;
         }
 
-        .faq-item p {
-            margin: 0;
-            color: var(--muted-2);
-        }
+        .faq-item p { margin: 0; color: var(--muted-2); font-size: 14.5px; }
 
         .final-note {
-            background: rgba(15, 23, 42, 0.82);
-            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(11,18,32,0.80);
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--primary);
             border-radius: var(--radius);
-            padding: 22px;
+            padding: 20px 24px;
             color: var(--muted-2);
+            font-size: 14.5px;
         }
 
         footer {
-            margin-top: 30px;
+            margin-top: 16px;
             padding: 28px 0 48px;
             color: var(--muted);
             font-size: 12px;
             text-align: center;
-            line-height: 1.7;
+            line-height: 1.8;
+            border-top: 1px solid var(--line);
         }
 
+        footer a { color: var(--muted); text-decoration: underline; }
+
         @media (max-width: 1024px) {
-            .hero-grid,
-            .pricing,
-            .steps,
-            .grid-4,
-            .grid-3,
-            .cta-band-inner {
-                grid-template-columns: 1fr;
-            }
-
-            .hero h1 {
-                font-size: 38px;
-            }
-
-            .hero-copy,
-            .hero-side {
-                padding: 28px;
-            }
+            .hero-grid, .pricing, .steps, .grid-4, .grid-3,
+            .segment-grid, .cta-band-inner { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 38px; }
+            .hero-copy { padding: 32px; }
+            .hero-trust { padding: 28px; }
         }
 
         @media (max-width: 760px) {
-            .topbar-inner {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .nav {
-                gap: 12px;
-            }
-
-            .hero {
-                padding-top: 42px;
-            }
-
-            .hero h1 {
-                font-size: 31px;
-            }
-
-            .section-head h2,
-            .cta-band h2 {
-                font-size: 28px;
-            }
-
-            .hero-copy,
-            .hero-side,
-            .card,
-            .price-card,
-            .faq-item,
-            .final-note {
-                padding: 20px;
-            }
+            .topbar-inner { flex-direction: column; align-items: flex-start; }
+            .nav { gap: 12px; }
+            .hero { padding-top: 40px; }
+            .hero h1 { font-size: 32px; }
+            .section-head h2, .cta-band h2 { font-size: 28px; }
+            .promo-banner { flex-direction: column; align-items: flex-start; }
+            .proof-bar-inner { gap: 16px; justify-content: flex-start; }
         }
     </style>
 </head>
 <body>
 
-    <header class="topbar">
-        <div class="topbar-inner">
-            <a href="/" class="brand">
-                Evidentix™
-                <small>Digital Evidence Intelligence</small>
-            </a>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a href="/" class="brand">
+            Evidentix™
+            <small>Digital Evidence Intelligence</small>
+        </a>
+        <nav class="nav">
+            <a href="#services">Services</a>
+            <a href="#who">Who It's For</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="#pricing">Pricing</a>
+            <a href="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/04.06.26+Sample+for+Display.pdf" target="_blank" rel="noopener">Sample Report</a>
+            <a href="/register" class="nav-cta">Start Free Trial</a>
+        </nav>
+    </div>
+</header>
 
-            <nav class="nav">
-                <a href="#services">Services</a>
-                <a href="#how-it-works">How It Works</a>
-                <a href="#pricing">Pricing</a>
-                <a href="/static/sample_report.pdf" target="_blank" rel="noopener">Sample Report</a>
-                <a href="/intake?service=single" class="nav-cta">Start Analysis</a>
-            </nav>
+<main>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-grid">
+
+                <div class="hero-copy">
+                    <div class="eyebrow">For litigators, claims professionals &amp; forensic specialists</div>
+                    <h1>Authenticate digital evidence <em>before</em> the other side attacks it.</h1>
+                    <p class="lead">
+                        Evidentix™ generates a forensic-grade chain-of-custody report for any digital file — SHA-256 hash fingerprint, tamper-detection analysis, and a court-ready PDF — in minutes. No retained expert required.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="/register" class="btn btn-primary">Start Free Trial</a>
+                        <a href="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/04.06.26+Sample+for+Display.pdf" target="_blank" rel="noopener" class="btn btn-secondary">View Sample Report →</a>
+                    </div>
+                    <div class="promo-nudge">
+                        Use code <strong>EVIDENTIX100</strong> at checkout — free access, no credit card required.
+                    </div>
+                </div>
+
+                <aside class="hero-trust">
+                    <div>
+                        <h2>What you get</h2>
+                        <ul class="trust-features">
+                            <li><strong>SHA-256 hash fingerprint</strong> — tamper detection from the moment of upload</li>
+                            <li><strong>Perceptual hash comparison</strong> — original vs. suspect file side-by-side</li>
+                            <li><strong>Immutable custody log</strong> — timestamped, auditable access record</li>
+                            <li><strong>Court-ready PDF report</strong> — formatted for disclosure or filing</li>
+                            <li><strong>Video frame analysis</strong> — detect edits and divergence points in footage</li>
+                        </ul>
+                    </div>
+                    <hr class="trust-divider">
+                    <div class="trust-cta-block">
+                        <a href="/register" class="btn btn-primary">Start Free — Code EVIDENTIX100</a>
+                        <a href="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/04.06.26+Sample+for+Display.pdf" target="_blank" rel="noopener" class="trust-sample-link">📄 View a sample report first →</a>
+                        <p class="trust-note">No expert required. Results in minutes. Built by a civil litigator.</p>
+                    </div>
+                </aside>
+
+            </div>
         </div>
-    </header>
+    </section>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <div class="hero-grid">
-                    <div class="hero-copy">
-                        <div class="eyebrow">For litigation, claims, and rights disputes</div>
-                        <h1>Know whether your digital evidence is authentic before the other side attacks it.</h1>
-                        <p class="lead">
-                            Evidentix™ delivers forensic-grade analysis of digital images, including metadata extraction,
-                            authenticity indicators, provenance review, and structured reporting designed to help evaluate
-                            whether a file appears original, altered, stripped, re-saved, or otherwise limited.
-                        </p>
+    <div class="proof-bar">
+        <div class="container">
+            <div class="proof-bar-inner">
+                <div class="proof-item">🔒 SHA-256 hash fingerprinting</div>
+                <div class="proof-item">📋 Immutable chain-of-custody log</div>
+                <div class="proof-item">🎥 Video frame-level analysis</div>
+                <div class="proof-item">⚖️ Court-ready PDF output</div>
+                <div class="proof-item">🔬 No retained expert required</div>
+            </div>
+        </div>
+    </div>
 
-                        <div class="hero-points">
-                            <span>Metadata Review</span>
-                            <span>Manipulation Indicators</span>
-                            <span>C2PA / Provenance Check</span>
-                            <span>Structured PDF Report</span>
-                            <span>Case-Based File Handling</span>
-                        </div>
-
-                        <div class="hero-actions">
-                            <a href="/intake?service=single" class="btn btn-primary">Analyze Your Evidence Now</a>
-                            <a href="/static/sample_report.pdf" target="_blank" rel="noopener" class="btn btn-secondary">View Sample Report</a>
-                        </div>
-                    </div>
-            <div style="text-align: center; margin: 2rem 0;">
-                <a href="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/04.06.26+Sample+for+Display.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                style="display: inline-block; background-color: #6b21a8; color: white; padding: 0.75rem 1.75rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 1rem;">
-    📄 Download Sample Integrity Report
-  </a>
-</div>
-
-                    <aside class="hero-side">
-                        <div>
-                            <h2>Not ready to submit yet?</h2>
-                            <p>
-                                Get the Evidentix™ checklist:
-                                <strong>7 warning signs a photo may not be the original file</strong>.
-                                We will also send service information and a sample report link.
-                            </p>
-
-                            <form method="POST" action="/lead-capture" class="capture-form">
-                                <input type="text" name="full_name" placeholder="Your name" required>
-                                <input type="email" name="email" placeholder="Email address" required>
-                                <select name="interest">
-                                    <option value="single_image">Single Image Analysis</option>
-                                    <option value="comparison">Comparison Report</option>
-                                    <option value="investigation">Evidentix Investigation</option>
-                                    <option value="general">General Information</option>
-                                </select>
-                                <input type="hidden" name="source_page" value="homepage">
-                                <button type="submit" class="btn btn-primary">Send Me the Checklist</button>
-                            </form>
-
-                            <div class="capture-note">
-                                By submitting, you agree to receive follow-up emails about Evidentix™ services,
-                                sample reports, and digital evidence guidance. You may unsubscribe at any time.
-                            </div>
-                        </div>
-
-                        <div class="mini-proof">
-                            <strong>Best results come from the original file.</strong><br>
-                            Screenshots, emailed copies, and social-media downloads often lose or alter important metadata.
-                        </div>
-                    </aside>
+    <section class="section" id="services">
+        <div class="container">
+            <div class="section-head">
+                <h2>What Evidentix™ does</h2>
+                <p>Built for digital-evidence disputes where authenticity, source, timing, or manipulation may affect liability, credibility, or outcome.</p>
+            </div>
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-icon">🛡️</div>
+                    <h3>Integrity Verification</h3>
+                    <p>Generates a SHA-256 fingerprint at upload. Any subsequent alteration produces a different hash — creating an objective, documentable tamper-detection baseline from the moment evidence is received.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔍</div>
+                    <h3>Comparison Analysis</h3>
+                    <p>Runs perceptual hash comparison between two files — original and suspect. Flags divergence points, similarity percentage, and visual differences in a structured side-by-side report.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📄</div>
+                    <h3>Chain-of-Custody Reporting</h3>
+                    <p>Every access, upload, and analysis action is timestamped and logged. The output is a formatted PDF report — suitable for use as an exhibit, discovery response, or expert disclosure foundation.</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="section" id="services">
-            <div class="container">
-                <div class="section-head">
-                    <h2>What Evidentix™ does</h2>
-                    <p>
-                        The platform is built for digital-image disputes where authenticity, source, timing, ownership,
-                        or manipulation may matter.
-                    </p>
+    <section class="section" id="who">
+        <div class="container">
+            <div class="section-head">
+                <h2>Who uses Evidentix™</h2>
+                <p>Three buyer segments. One platform.</p>
+            </div>
+            <div class="segment-grid">
+                <div class="segment-card">
+                    <span class="seg-label">Segment 1</span>
+                    <h3>Civil Litigators</h3>
+                    <p>Employment, civil rights, personal injury, commercial — any matter where a digital file may become a contested exhibit. Get a defensible authentication record without retaining a forensic expert.</p>
                 </div>
-
-                <div class="grid-3">
-                    <div class="card">
-                        <h3>Authenticity Review</h3>
-                        <p>
-                            Reviews available indicators of manipulation, re-saving, recompression, file inconsistency,
-                            and other signs that a file may not be the untouched original.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <h3>Metadata Extraction</h3>
-                        <p>
-                            Extracts and organizes available timestamp, device, file, GPS, and provenance-related data
-                            for efficient review and reporting.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <h3>Structured Reporting</h3>
-                        <p>
-                            Generates a professional report summarizing findings, limitations, and preliminary conclusions
-                            in a format useful for attorneys, claims professionals, investigators, and decision makers.
-                        </p>
-                    </div>
+                <div class="segment-card">
+                    <span class="seg-label">Segment 2</span>
+                    <h3>Claims &amp; Insurance</h3>
+                    <p>Disputed photo and video evidence is increasingly common in bodily injury, property loss, and liability claims. Evidentix gives adjusters and coverage counsel an objective, documented analysis in the claims file.</p>
+                </div>
+                <div class="segment-card">
+                    <span class="seg-label">Segment 3</span>
+                    <h3>Forensic Specialists</h3>
+                    <p>Not a replacement for deep forensic examination — a clean baseline. Evidentix handles intake-level authentication so examiners start with a documented chain of custody already in place.</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="section">
-            <div class="container">
-                <div class="section-head">
-                    <h2>Who uses Evidentix™</h2>
-                    <p>
-                        Evidentix™ is designed for higher-stakes matters where a digital image may affect liability,
-                        credibility, valuation, leverage, or outcome.
-                    </p>
+    <section class="section" id="how-it-works">
+        <div class="container">
+            <div class="section-head">
+                <h2>How it works</h2>
+                <p>Three steps. No software to install. No expert to retain.</p>
+            </div>
+            <div class="steps">
+                <div class="card">
+                    <div class="step-num">1</div>
+                    <h3>Create an account &amp; select a service</h3>
+                    <p>Register free with promo code <strong style="font-family: var(--font-mono); color: var(--accent);">EVIDENTIX100</strong>. Choose a single-file integrity report, a two-file comparison, or a full investigation depending on the matter.</p>
                 </div>
-
-                <div class="grid-4">
-                    <div class="card">
-                        <h3>Attorneys</h3>
-                        <p>
-                            For litigation, pre-suit evaluation, discovery strategy, motion practice, and evidence review
-                            where a digital image may become a contested exhibit.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <h3>Insurance and Claims</h3>
-                        <p>
-                            For disputed loss submissions, condition photographs, timeline questions, and image-based
-                            credibility concerns in claims handling.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <h3>Property and Investigations</h3>
-                        <p>
-                            For condition disputes, damage documentation, occupancy questions, chronology issues, and
-                            competing photo narratives.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <h3>Creators and Rights Holders</h3>
-                        <p>
-                            For questions involving origin, ownership, reposting, unauthorized use, and preliminary
-                            rights-analysis concerns.
-                        </p>
-                    </div>
+                <div class="card">
+                    <div class="step-num">2</div>
+                    <h3>Upload your file</h3>
+                    <p>Upload the best available original. The platform immediately generates a SHA-256 fingerprint, timestamps the upload, and begins logging custody entries. Use the original native file whenever possible.</p>
+                </div>
+                <div class="card">
+                    <div class="step-num">3</div>
+                    <h3>Download your report</h3>
+                    <p>Within minutes, download a formatted PDF containing the hash fingerprint, custody log, analysis findings, and — for comparison orders — a side-by-side verdict with color-coded match indicators.</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="section" id="how-it-works">
-            <div class="container">
-                <div class="section-head">
-                    <h2>How it works</h2>
-                    <p>
-                        The process is designed to be straightforward, secure, and fast.
-                    </p>
+    <section class="section" id="pricing">
+        <div class="container">
+            <div class="section-head">
+                <h2>Choose your analysis</h2>
+                <p>Each service is built around a distinct decision point — one file, two files, or a larger factual investigation.</p>
+            </div>
+            <div class="promo-banner">
+                <div class="promo-banner-text"><strong>Free trial available.</strong> Use promo code at checkout to access the platform at no cost.</div>
+                <div class="promo-code-display">EVIDENTIX100</div>
+            </div>
+            <div class="pricing">
+                <div class="price-card">
+                    <div class="price-tag">Focused review</div>
+                    <h3>Single Image Analysis</h3>
+                    <div class="price">$250</div>
+                    <p class="desc">For one digital file where authenticity, metadata, or source integrity may matter.</p>
+                    <ul class="feature-list">
+                        <li>SHA-256 hash fingerprint</li>
+                        <li>Metadata extraction &amp; review</li>
+                        <li>Authenticity indicators</li>
+                        <li>C2PA / provenance check</li>
+                        <li>Chain-of-custody log</li>
+                        <li>Structured PDF report</li>
+                    </ul>
+                    <a href="/register" class="btn btn-primary">Start — Use EVIDENTIX100</a>
                 </div>
-
-                <div class="steps">
-                    <div class="card">
-                        <div class="step-num">1</div>
-                        <h3>Select a service</h3>
-                        <p>
-                            Choose a focused single-image analysis, a side-by-side comparison, or a broader investigation
-                            depending on the stakes and complexity of the matter.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <div class="step-num">2</div>
-                        <h3>Submit intake and upload files</h3>
-                        <p>
-                            Provide the dispute background, identify the question you want addressed, and upload the best
-                            available original file or files.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <div class="step-num">3</div>
-                        <h3>Receive findings</h3>
-                        <p>
-                            Your report includes organized metadata findings, authenticity indicators, provenance review,
-                            and a structured summary of observations and limitations.
-                        </p>
-                    </div>
+                <div class="price-card featured">
+                    <div class="price-tag">Best for disputes</div>
+                    <h3>Comparison Report</h3>
+                    <div class="price">$500</div>
+                    <p class="desc">For two files that may be duplicates, altered versions, or competing originals.</p>
+                    <ul class="feature-list">
+                        <li>Perceptual hash comparison</li>
+                        <li>Frame-level video analysis</li>
+                        <li>Metadata side-by-side review</li>
+                        <li>Similarity verdict &amp; score</li>
+                        <li>Divergence flagging</li>
+                        <li>Color-coded PDF report</li>
+                    </ul>
+                    <a href="/register" class="btn btn-primary">Start — Use EVIDENTIX100</a>
+                </div>
+                <div class="price-card">
+                    <div class="price-tag">Higher-stakes matters</div>
+                    <h3>Evidentix Investigation</h3>
+                    <div class="price">$1,500</div>
+                    <p class="desc">For larger or more consequential matters requiring expanded investigative scope.</p>
+                    <ul class="feature-list">
+                        <li>Expanded forensic review</li>
+                        <li>Multi-file evidence indexing</li>
+                        <li>Fingerprint index analysis</li>
+                        <li>Rights / ownership screening</li>
+                        <li>Enhanced report package</li>
+                        <li>Priority turnaround</li>
+                    </ul>
+                    <a href="/register" class="btn btn-primary">Start — Use EVIDENTIX100</a>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="section" id="pricing">
-            <div class="container">
-                <div class="section-head">
-                    <h2>Choose your analysis</h2>
-                    <p>
-                        Each service is designed around a distinct decision point: one file, two files, or a larger factual investigation.
-                    </p>
+    <section class="section cta-band">
+        <div class="container">
+            <div class="cta-band-inner">
+                <div>
+                    <h2>Need clarity before a hearing, claim decision, or demand letter?</h2>
+                    <p>Start with the file you have now. A structured review creates a documented authentication baseline — and can identify whether evidence appears original, altered, or in need of deeper examination.</p>
                 </div>
-
-                <div class="pricing">
-                    <div class="price-card">
-                        <div class="price-tag">Focused review</div>
-                        <h3>Single Image Analysis</h3>
-                        <div class="price">$250</div>
-                        <p class="desc">
-                            For one digital image where authenticity, metadata, or source may matter.
-                        </p>
-                        <ul class="feature-list">
-                            <li>SHA-256 hashing</li>
-                            <li>Metadata review</li>
-                            <li>Authenticity indicators</li>
-                            <li>C2PA / provenance check</li>
-                            <li>Structured PDF report</li>
-                        </ul>
-                        <a href="/intake?service=single" class="btn btn-primary">Start Single Analysis</a>
-                    </div>
-
-                    <div class="price-card featured">
-                        <div class="price-tag">Best for disputes</div>
-                        <h3>Comparison Report</h3>
-                        <div class="price">$500</div>
-                        <p class="desc">
-                            For two files that may be duplicates, altered versions, competing originals, or suspicious derivatives.
-                        </p>
-                        <ul class="feature-list">
-                            <li>Perceptual comparison</li>
-                            <li>Metadata side-by-side review</li>
-                            <li>Similarity indicators</li>
-                            <li>Comparative findings report</li>
-                            <li>Clearer dispute framing</li>
-                        </ul>
-                        <a href="/intake?service=comparison" class="btn btn-primary">Start Comparison</a>
-                    </div>
-
-                    <div class="price-card">
-                        <div class="price-tag">Higher-stakes matters</div>
-                        <h3>Evidentix Investigation</h3>
-                        <div class="price">$1500</div>
-                        <p class="desc">
-                            For larger or more consequential matters requiring a broader investigative approach and more extensive findings.
-                        </p>
-                        <ul class="feature-list">
-                            <li>Expanded forensic review</li>
-                            <li>Evidence indexing</li>
-                            <li>Fingerprint indexing</li>
-                            <li>Enhanced report package</li>
-                            <li>Rights / ownership screening</li>
-                        </ul>
-                        <a href="/intake?service=investigation" class="btn btn-primary">Start Investigation</a>
-                    </div>
+                <div class="cta-band-actions">
+                    <a href="/register" class="btn btn-primary">Start Free Trial</a>
+                    <span class="promo-note">CODE: EVIDENTIX100</span>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="section cta-band">
-            <div class="container">
-                <div class="cta-band-inner">
-                    <div>
-                        <h2>Need clarity before a hearing, claim decision, or demand letter?</h2>
-                        <p>
-                            Start with the file you have now. A structured review can help identify whether the image appears
-                            original, limited, altered, stripped, or in need of deeper investigation.
-                        </p>
-                    </div>
-                    <div>
-                        <a href="/intake?service=single" class="btn btn-primary">Start Your Intake</a>
-                    </div>
+    <section class="section">
+        <div class="container">
+            <div class="section-head"><h2>Common questions</h2></div>
+            <div class="faq">
+                <div class="faq-item">
+                    <h3>Can Evidentix™ tell whether an image or video was altered?</h3>
+                    <p>The platform reviews available metadata, file characteristics, and hash-level comparison signals, then reports its findings and the limits of what can be concluded from the submitted file. It does not replace a retained forensic examiner for high-stakes testimony, but provides a defensible, documented baseline at a fraction of the cost.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>What file formats are supported?</h3>
+                    <p>Images (JPEG, PNG, TIFF, HEIC, WebP), video files (MP4, MOV, AVI, MKV), and PDFs. For best results, upload the original native file rather than a screenshot, texted copy, or social-media download.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Is the report usable in court?</h3>
+                    <p>Reports are formatted for use as an exhibit, discovery response, or foundation for expert disclosure. Admissibility depends on the jurisdiction, rules of evidence, and specific matter. The platform does not provide legal advice.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Does purchasing a report create an attorney-client relationship?</h3>
+                    <p>No. Purchase of a report or submission of information does not, by itself, create an attorney-client relationship or legal engagement with any attorney.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>How does the free trial work?</h3>
+                    <p>Create an account, enter promo code <strong style="font-family: var(--font-mono); color: var(--accent);">EVIDENTIX100</strong> at checkout, and access the platform at no cost. No credit card required to start.</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="section">
-            <div class="container">
-                <div class="section-head">
-                    <h2>Common questions</h2>
-                </div>
-
-                <div class="faq">
-                    <div class="faq-item">
-                        <h3>Can Evidentix™ tell whether an image was altered?</h3>
-                        <p>
-                            The platform reviews available metadata, file characteristics, comparison signals, and authenticity
-                            indicators, then reports the findings and limits of what can be concluded from the submitted file.
-                        </p>
-                    </div>
-
-                    <div class="faq-item">
-                        <h3>Can it determine ownership?</h3>
-                        <p>
-                            Ownership conclusions are often limited unless supported by stronger provenance, surrounding facts,
-                            or additional investigation. Rights and ownership findings are generally preliminary unless otherwise supported.
-                        </p>
-                    </div>
-
-                    <div class="faq-item">
-                        <h3>What file should I upload?</h3>
-                        <p>
-                            Upload the original native file whenever possible. Screenshots, texted copies, emailed attachments,
-                            and social-media downloads frequently lose important metadata or change file characteristics.
-                        </p>
-                    </div>
-
-                    <div class="faq-item">
-                        <h3>Does buying a report create an attorney-client relationship?</h3>
-                        <p>
-                            No. Purchase of a report or submission of information does not, by itself, create an attorney-client
-                            relationship or legal engagement.
-                        </p>
-                    </div>
-                </div>
+    <section class="section" style="padding-top: 0;">
+        <div class="container">
+            <div class="final-note">
+                <strong>Submission tip:</strong> If you have both an original file and a copy received by email, text, or social media — preserve and submit both. That pairing can materially improve the usefulness and defensibility of the analysis.
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="section">
-            <div class="container">
-                <div class="final-note">
-                    <strong>Practical submission tip:</strong> If you have both an original file and a copy received by email,
-                    text, or social media, preserve and upload both. That can materially improve the usefulness of the analysis.
-                </div>
-            </div>
-        </section>
-    </main>
+</main>
 
-    <footer>
-        Evidentix™ is a service offering associated with Caldwell Law Firm, P.C. dba Caldwell-IP-Group. © 2026 All Rights Reserved.<br>
+<footer>
+    <div class="container">
+        Evidentix™ is a product of Evidence Analyzer, LLC. © 2026 All Rights Reserved.<br>
         Submission of information, purchase of a report, or use of this site does not, by itself, create an attorney-client relationship.<br>
-        For expert witness testimony or legal representation, contact the firm directly through the email address listed on the site.
-    </footer>
+        <a href="/terms">Terms of Use</a> &nbsp;·&nbsp; <a href="/privacy">Privacy Policy</a>
+        &nbsp;·&nbsp; Evidence Analyzer, LLC | 6710 Spring Stuebner Rd, Ste 709 #292, Spring, TX 77389
+    </div>
+</footer>
 
-    <!-- Optional analytics placeholders -->
-
-    <script>
-        /*
-        Example: capture UTM parameters for lead tracking
-        You can later save these into hidden fields if desired.
-        */
-        (function () {
-            const params = new URLSearchParams(window.location.search);
-            const utmSource = params.get('utm_source') || '';
-            const utmCampaign = params.get('utm_campaign') || '';
-            const utmMedium = params.get('utm_medium') || '';
-
-            const form = document.querySelector('form[action="/lead-capture"]');
-            if (form) {
-                const fields = [
-                    { name: 'utm_source', value: utmSource },
-                    { name: 'utm_campaign', value: utmCampaign },
-                    { name: 'utm_medium', value: utmMedium }
-                ];
-
-                fields.forEach(function (item) {
+<script>
+    (function () {
+        const p = new URLSearchParams(window.location.search);
+        const utmFields = ['utm_source','utm_campaign','utm_medium','utm_term','utm_content'];
+        document.querySelectorAll('form').forEach(function(form) {
+            utmFields.forEach(function(key) {
+                if (p.get(key)) {
                     const input = document.createElement('input');
                     input.type = 'hidden';
-                    input.name = item.name;
-                    input.value = item.value;
+                    input.name = key;
+                    input.value = p.get(key);
                     form.appendChild(input);
-                });
-            }
-        })();
-    </script>
+                }
+            });
+        });
+    })();
+</script>
 
 </body>
 </html>

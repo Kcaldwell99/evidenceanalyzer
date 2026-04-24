@@ -1,0 +1,17 @@
+@app.get("/global-matches", response_class=HTMLResponse)
+async def global_matches_dashboard(request: Request):
+    index_path = os.path.join("data", "fingerprint_index.json")
+
+    if not os.path.exists(index_path):
+        matches = []
+    else:
+        with open(index_path, "r", encoding="utf-8") as f:
+            matches = json.load(f)
+
+    return templates.TemplateResponse(
+        "global_matches.html",
+        {
+            "request": request,
+            "matches": matches,
+        },
+    )

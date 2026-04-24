@@ -38,8 +38,8 @@
         }
 
         .beta-notice {
-            background: #fff3cd;
-            color: #856404;
+            background-color: #6b21a8;
+            color: white;
             padding: 12px 16px;
             border-radius: 6px;
             margin-top: 16px;
@@ -172,154 +172,23 @@
             border-radius: 6px;
             margin-bottom: 20px;
         }
- .pricing-section-label {
-            font-size: 13px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #6b7280;
-            margin: 24px 0 12px 0;
-        }
- 
+
         .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            display: flex;
             gap: 20px;
+            flex-wrap: wrap;
         }
- 
-        .pricing-grid.subscriptions {
-            grid-template-columns: repeat(2, 1fr);
-            max-width: 700px;
-        }
- 
+
         .price-card {
-            border: 1px solid #e5e7eb;
+            border: 1px solid #ccc;
             padding: 20px;
             border-radius: 10px;
+            width: 250px;
             background: white;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
- 
-        .price-card h3 {
-            margin: 0 0 8px 0;
-            font-size: 18px;
-            color: #111827;
-        }
- 
-        .price-card .price-amount {
-            font-size: 28px;
-            font-weight: 700;
-            color: #111827;
-            margin: 0 0 14px 0;
-        }
- 
-        .price-card ul {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 16px 0;
-            color: #4b5563;
-            font-size: 14px;
-            flex-grow: 1;
-        }
- 
-        .price-card ul li {
-            padding: 3px 0;
-        }
- 
-        .price-card .button {
-            margin-top: auto;
-            text-align: center;
-        }
- 
-        .price-card.featured {
-            border: 2px solid #2563eb;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
-        }
- 
-        .price-card.featured .badge {
-            position: absolute;
-            top: -10px;
-            right: 16px;
-            background: #2563eb;
-            color: white;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 3px 10px;
-            border-radius: 999px;
-            letter-spacing: 0.04em;
-        }
- 
-        @media (max-width: 900px) {
-            .pricing-grid,
-            .pricing-grid.subscriptions {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
- 
-        @media (max-width: 600px) {
-            .pricing-grid,
-            .pricing-grid.subscriptions {
-                grid-template-columns: 1fr;
-            }
-        }
- 
-        .price-card .price-amount {
-            font-size: 28px;
-            font-weight: 700;
-            color: #111827;
-            margin: 0 0 14px 0;
-        }
-
-        .price-card ul {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 16px 0;
-            color: #4b5563;
-            font-size: 14px;
-            flex-grow: 1;
-        }
-
-        .price-card ul li {
-            padding: 3px 0;
-        }
-
-        .price-card .button {
-            margin-top: auto;
-            text-align: center;
         }
 
         .price-card.featured {
-            border: 2px solid #2563eb;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
-        }
-
-        .price-card.featured .badge {
-            position: absolute;
-            top: -10px;
-            right: 16px;
-            background: #2563eb;
-            color: white;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 3px 10px;
-            border-radius: 999px;
-            letter-spacing: 0.04em;
-        }
-
-        @media (max-width: 900px) {
-            .pricing-grid,
-            .pricing-grid.subscriptions {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .pricing-grid,
-            .pricing-grid.subscriptions {
-                grid-template-columns: 1fr;
-            }
+            border: 2px solid #2d6cdf;
         }
 
         .delete-button {
@@ -352,7 +221,10 @@
 
 <div style="text-align:right; margin-top:0.5rem;">
   <span style="font-size:0.85rem; color:#64748b;">{{ current_user.email }}</span>
-  <a href="/logout" style="margin-left:1rem; font-size:0.85rem; color:#7c8cf8;">Sign out</a>
+{% if current_user.is_admin %}
+<a href="/admin/users" style="margin-left:1rem; font-size:0.85rem; color:#7c8cf8;">Admin</a>
+{% endif %}
+<a href="/logout" style="margin-left:1rem; font-size:0.85rem; color:#7c8cf8;">Sign out</a>
 </div>
 
             <div class="beta-notice">
@@ -432,17 +304,6 @@
             </div>
 
             
-        <div class="card">
-            <h2>Video Forensic Analysis</h2>
-            <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:1rem;">Analyze a single video for manipulation indicators.</p>
-            <a href="/analyze-video" class="button">Analyze Video</a>
-        </div>
-        <div class="card">
-            <h2>Compare Two Videos</h2>
-            <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:1rem;">Forensic similarity comparison using perceptual hashing.</p>
-            <a href="/compare-video" class="button">Compare Videos</a>
-        </div>
-
         <div class="card">
             <h2>Video Forensic Analysis</h2>
             <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:1rem;">Analyze a single video for manipulation indicators.</p>
@@ -534,7 +395,10 @@
     </div>
 
 <footer style="text-align:center; padding:2rem; font-size:0.8rem; color:#64748b; border-top:1px solid #2d3148; margin-top:2rem;">
-  &copy; 2026 Evidentix™. All rights reserved. /footer>
+  &copy; 2026 Evidentix™. All rights reserved. Evidentix™ is a trademark of Caldwell Law Firm, P.C., CLF The Woodlands, LLC. and Evidence Analyzer.
+</footer>
+
+
 
 </body>
 </html>
