@@ -226,3 +226,6 @@ def generate_integrity_certificate(
         "independently confirm the accuracy of the events or content depicted.",
         styles["disclaimer"]
     ))
+# ── BUILD & RETURN ────────────────────────────────────
+    pdf_bytes = build_document(content, certificate_id, verify_url)
+    return certificate_id, pdf_bytes
