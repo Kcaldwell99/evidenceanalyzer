@@ -781,7 +781,7 @@ async def compare_global_route(
 
     result = compare_against_all_cases(str(suspect_path))
 
-log_audit_event(
+    log_audit_event(
         event_type="global_comparison_completed",
         case_id="GLOBAL",
         file_name=suspect_file.filename,
@@ -794,13 +794,13 @@ log_audit_event(
     return templates.TemplateResponse(
             request,
             "compare_global_result.html",
-        {
-            "suspect_file": suspect_file.filename,
-            "suspect_phash": result.get("suspect_phash"),
-            "matches": result.get("matches", []),
-            "current_user": current_user,
-        },
-    )
+            {
+                "suspect_file": suspect_file.filename,
+                "suspect_phash": result.get("suspect_phash"),
+                "matches": result.get("matches", []),
+                "current_user": current_user,
+            },
+        )
 
 # =========================================================
 # BATCH SCAN  (login required)
