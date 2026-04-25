@@ -792,8 +792,8 @@ log_audit_event(
     )
 
     return templates.TemplateResponse(
-        request,
-        "compare_global_result.html",
+            request,
+            "compare_global_result.html",
         {
             "suspect_file": suspect_file.filename,
             "suspect_phash": result.get("suspect_phash"),
