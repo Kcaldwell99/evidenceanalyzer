@@ -693,7 +693,7 @@ async def compare_against_case_route(
         f.write(await file.read())
 
     try:
-    result = compare_against_case(str(file_path), case_id)
+        result = compare_against_case(str(file_path), case_id)
         log_audit_event(
             event_type="comparison_performed",
             case_id=case_id,
@@ -702,7 +702,6 @@ async def compare_against_case_route(
             notes=f"File compared against case {case_id}",
         )
 
-        result = compare_against_case(str(file_path), case_id)
         return templates.TemplateResponse(
             request,
             "compare_result.html",
