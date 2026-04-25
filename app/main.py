@@ -1309,10 +1309,26 @@ async def generate_integrity_certificate_route(
     report["analysis_date"] = report.get("analysis_date") or (
         item.analysis_date or datetime.utcnow().isoformat()
     )
-
     base_url = str(request.base_url).rstrip("/")
 
+    # Run C2PA analysis and inject into report
+    try:
+        from app.c2pa_analysis import analyze_file, summarize_for_certificate
+        from app.storage import get_file as s3_get_file
+        import tempfile, os
+        raw_bytes = s3_get_file(item.file_key)
+        ext = (item.file_name or "file.bin").rsplit(".", 1)[-1]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}") as tmp:
+            tmp.write(raw_bytes)
+            tmp_path = tmp.name
+        c2pa_result = analyze_file(tmp_path)
+        os.unlink(tmp_path)
+        report["c2pa"] = summarize_for_certificate(c2pa_result)
+    except Exception as e:
+        report["c2pa"] = {"state": "UNAVAILABLE", "state_label": "C2PA Analysis Unavailable", "plain_english": f"Analysis could not be completed: {str(e)}", "error_detail": str(e)}
+
     certificate_id, pdf_bytes = generate_integrity_certificate(
+
         report=report,
         case_id=case_id,
         evidence_id=evidence_id,

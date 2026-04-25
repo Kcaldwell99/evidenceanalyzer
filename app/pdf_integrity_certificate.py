@@ -163,35 +163,66 @@ def generate_integrity_certificate(
         styles["disclaimer"]
     ))
 
-    # ── SECTION 3: C2PA (conditional) ─────────────────────
-    if c2pa_present:
-        content.append(hr(styles))
-        content.append(Paragraph("Section 3 — Content Credentials (C2PA) Findings", styles["h2"]))
+# ── SECTION 3: C2PA ───────────────────────────────────
+    c2pa_state = c2pa.get("state", "ABSENT")
+    c2pa_has_manifest = c2pa_state in ("VALID", "INVALID")
 
+    content.append(hr(styles))
+    content.append(Paragraph("Section 3 — Content Credentials (C2PA) Analysis", styles["h2"]))
+
+    # State banner
+    state_label = c2pa.get("state_label", "No Content Credentials Detected")
+    content.append(Paragraph(f"<b>Result: {state_label}</b>", styles["body"]))
+    content.append(section_spacer())
+
+    if c2pa_has_manifest:
         # 3a — Manifest Summary
         content.append(Paragraph("<b>3a — Manifest Summary</b>", styles["body"]))
-        manifest = c2pa.get("manifest", {})
-        if manifest:
-            manifest_rows = [(k, str(v)) for k, v in manifest.items()]
-            content.append(build_metadata_table(manifest_rows))
-        else:
-            content.append(Paragraph("Manifest data not available.", styles["body"]))
-
+        manifest_rows = [
+            ("Claim Generator",   c2pa.get("claim_generator") or "—"),
+            ("Generator Version", c2pa.get("claim_generator_version") or "—"),
+            ("Signing Time",      c2pa.get("signature_time") or "—"),
+            ("Signing Issuer",    c2pa.get("signature_issuer") or "—"),
+            ("Total Assertions",  str(c2pa.get("num_assertions", "—"))),
+            ("Ingredients",       str(c2pa.get("num_ingredients", "—"))),
+        ]
+        content.append(build_metadata_table(manifest_rows))
         content.append(section_spacer())
 
-        # 3b — Trust Validation
-        content.append(Paragraph("<b>3b — Trust Validation</b>", styles["body"]))
-        trust = c2pa.get("trust", {})
-        if trust:
-            trust_rows = [(k, str(v)) for k, v in trust.items()]
-            content.append(build_metadata_table(trust_rows))
-        else:
-            content.append(Paragraph("Trust validation data not available.", styles["body"]))
-
+        # 3b — Trust & Signature Validation
+        content.append(Paragraph("<b>3b — Trust & Signature Validation</b>", styles["body"]))
+        sig_valid = c2pa.get("signature_valid")
+        trust_rows = [
+            ("Signature Valid",   "Yes" if sig_valid is True else "No" if sig_valid is False else "Unknown"),
+            ("Trust List Status", c2pa.get("trust_list_status") or "—"),
+            ("Revocation Status", c2pa.get("revocation_status") or "—"),
+        ]
+        content.append(build_metadata_table(trust_rows))
         content.append(section_spacer())
 
-        # 3c — Temporal Integrity
-        content.append(Paragraph("<b>3c — Temporal Integrity</b>", styles["body"]))
-        content.append(build_metadata_table([
-            ("Hash at C2PA Signing (T0)", c2pa.get("signing_hash", "—")),
-            ("Hash at Upload (T1)",       hash_at_u
+        # 3c — AI & Content Assertions
+        content.append(Paragraph("<b>3c — AI & Content Assertions</b>", styles["body"]))
+        ai_rows = [
+            ("AI Generated",      "YES — See findings below" if c2pa.get("has_ai_generation") else "Not detected"),
+            ("AI Modified",       "YES — See findings below" if c2pa.get("has_ai_modification") else "Not detected"),
+            ("AI Agents Found",   ", ".join(c2pa.get("ai_agents_found", [])) or "None"),
+            ("Training/Mining",   "Present" if c2pa.get("has_training_mining") else "Not present"),
+        ]
+        content.append(build_metadata_table(ai_rows))
+        content.append(section_spacer())
+
+    # 3d — Plain English Findings (always shown)
+    content.append(Paragraph("<b>3d — Expert Summary</b>", styles["body"]))
+    content.append(Paragraph(
+        c2pa.get("plain_english", "Content Credentials analysis not available."),
+        styles["body"]
+    ))
+    content.append(section_spacer())
+
+    content.append(Paragraph(
+        "Content Credentials (C2PA) is an open technical standard developed by Adobe, Microsoft, "
+        "the BBC, and others to embed tamper-evident provenance data into digital files. "
+        "Verification confirms the embedded record is cryptographically intact; it does not "
+        "independently confirm the accuracy of the events or content depicted.",
+        styles["disclaimer"]
+    ))
