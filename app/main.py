@@ -556,6 +556,19 @@ async def analyze_file_route(
         },
     )
 
+    # Save EvidenceItem to DB
+    new_item = EvidenceItem(
+        evidence_id=evidence_id,
+        case_id=case_id,
+        file_name=file.filename,
+        file_key=file_key,
+        json_report=json_path,
+        sha256=report.get("sha256"),
+        analysis_date=datetime.utcnow().isoformat(),
+    )
+    db.add(new_item)
+    db.commit()
+
     return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
 
 @app.get("/evidence-file/{case_id}/{evidence_id}")
