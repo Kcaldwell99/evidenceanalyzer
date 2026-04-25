@@ -738,32 +738,32 @@ async def compare_case_route(
 
     result = compare_against_case(str(suspect_path), case_id=case_id)
 
-log_audit_event(
-        event_type="case_comparison_completed",
-        case_id=case_id,
-        file_name=suspect_file.filename,
-        user=current_user.email,
-        ip_address=request.client.host,
-        notes="Suspect image compared against evidence in selected case",
-        extra={
-            "best_match_file": result.get("comparison", {}).get("original_file") if result.get("comparison") else None,
-            "similarity_score": result.get("comparison", {}).get("similarity_score") if result.get("comparison") else None,
-            "match_count": len(result.get("matches", [])),
-        },
-    )
+    log_audit_event(
+            event_type="case_comparison_completed",
+            case_id=case_id,
+            file_name=suspect_file.filename,
+            user=current_user.email,
+            ip_address=request.client.host,
+            notes="Suspect image compared against evidence in selected case",
+            extra={
+                "best_match_file": result.get("comparison", {}).get("original_file") if result.get("comparison") else None,
+                "similarity_score": result.get("comparison", {}).get("similarity_score") if result.get("comparison") else None,
+                "match_count": len(result.get("matches", [])),
+            },
+        )
 
     return templates.TemplateResponse(
-        request,
-        "compare_case_result.html",
-        {
-            "case_id": case_id,
-            "suspect_file": suspect_file.filename,
-            "suspect_phash": result.get("suspect_phash"),
-            "comparison": result.get("comparison"),
-            "matches": result.get("matches", []),
-            "current_user": current_user,
-        },
-    )
+            request,
+            "compare_case_result.html",
+            {
+                "case_id": case_id,
+                "suspect_file": suspect_file.filename,
+                "suspect_phash": result.get("suspect_phash"),
+                "comparison": result.get("comparison"),
+                "matches": result.get("matches", []),
+                "current_user": current_user,
+            },
+        )
 
 @app.post("/compare-global", response_class=HTMLResponse)
 async def compare_global_route(
