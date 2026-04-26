@@ -210,19 +210,21 @@
                     {% endif %}
                 </div>
             </div>
-
             <div class="actions">
                 <a class="button" href="/">Back to Dashboard</a>
                 <a class="button secondary" href="/reports">View All Cases</a>
-                {# STOPGAP disabled 2026-04-20: route /integrity-report/{case_id} does not exist. See priority stack for proper fix. #}
-                {# <a class="button" href="/integrity-report/{{ case.case_id }}" target="_blank" style="background:#2d6a4f; margin-left:8px;">Download Integrity Report</a> #}
-                {# STOPGAP disabled 2026-04-20: route POST /clear-custody-log/{case_id} does not exist. See priority stack. #}
-                {# <form action="/clear-custody-log/{{ case.case_id }}" method="post" style="display:inline; margin-left:8px;">
-                    <button type="submit" style="background:#b45309; color:white; border:none; padding:10px 16px; border-radius:10px; font-weight:600; cursor:pointer;" onclick="return confirm('Clear all custody log history for this case?')">Clear History</button>
-                </form> #}
+                <form action="/generate/custody/{{ case.case_id }}" method="post" style="display:inline;">
+                    <button type="submit" class="button" style="background:#5B2D8E;">
+                        Generate Custody Record
+                    </button>
+                </form>
+                <form action="/generate/custody/{{ case.case_id }}?redacted=false" method="post" style="display:inline;">
+                    <button type="submit" class="button" style="background:#7c3aed;">
+                         Custody Record (Unredacted)
+                    </button>
+                </form>
+</div>
 
-            </div>
-        </div>
 <div class="card">
     <h2>Evidence Index</h2>
 
@@ -275,6 +277,10 @@
                 </td>
                 <td>
                     <a href="/web-detection/{{ case.case_id }}/{{ m.evidence_id }}" style="color:#7c8cf8; font-size:13px;">Web Detection</a>
+                    <form action="/generate/integrity/{{ case.case_id }}/{{ m.evidence_id }}" method="post" style="display:inline; margin-left:8px;">
+                        <button type="submit" style="background:#5B2D8E; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">Integrity Cert</button>
+                    </form> 
+
                     <form action="/delete-evidence/{{ case.case_id }}/{{ m.evidence_id }}" method="post" style="display:inline; margin-left:8px;">
                         <button type="submit" style="background:#c62828; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;" onclick="return confirm('Delete this evidence item?')">Delete Evidence</button>
                     </form>
