@@ -1520,3 +1520,166 @@ async def download_bundle(
         filename=f"{case_id}_{evidence_id}_bundle.zip",
         media_type="application/zip",
     )
+# =========================================================
+# CUSTODY RECORD  (login required)
+# =========================================================
+
+@app.post("/generate/custody/{case_id}")
+async def generate_custody_record_route(
+    case_id: str,
+    request: Request,
+    scope: str = "case",
+    evidence_id: Optional[str] = None,
+    redacted: bool = True,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.pdf_custody_record import generate_custody_record
+    from app.storage import upload_file as s3_upload
+    from app.utils.audit_log import verify_chain
+    from app.models import CustodyLog
+    import io
+
+    # Verify case ownership
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
+    assert_case_ownership(case_obj, current_user)
+
+    if scope == "file" and not evidence_id:
+        raise HTTPException(status_code=400, detail="evidence_id is required when scope=file.")
+
+    # Pull custody events
+    audit_query = db.query(CustodyLog).filter(CustodyLog.case_id == case_id)
+    if scope == "file" and evidence_id:
+        audit_query = audit_query.filter(CustodyLog.evidence_id == evidence_id)
+    audit_rows = audit_query.order_by(CustodyLog.id.asc()).all()
+
+    custody_events = [
+        {
+            "event_type":  row.action or "—",
+            "timestamp":   row.created_at.isoformat() if row.created_at else "—",
+            "user":        row.user_email or "—",
+            "ip_address":  row.ip_address or "—",
+            "evidence_id": row.evidence_id or "—",
+            "notes":       row.detail or "",
+        }
+        for row in audit_rows
+    ]
+
+    # Pull evidence items
+    evidence_query = db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id)
+    if scope == "file" and evidence_id:
+        evidence_query = evidence_query.filter(EvidenceItem.evidence_id == evidence_id)
+    evidence_rows = evidence_query.order_by(EvidenceItem.id.asc()).all()
+
+    evidence_items = [
+        {
+            "evidence_id":   e.evidence_id,
+            "file_name":     e.file_name,
+            "sha256":        e.sha256,
+            "file_key":      e.file_key,
+            "analysis_date": e.analysis_date,
+            "user":          current_user.email,
+        }
+        for e in evidence_rows
+    ]
+
+    # Chain verification
+    try:
+        chain_verified, _failed_id, _fail_msg = verify_chain(case_id)
+        chain_event_count = len(custody_events)
+    except Exception:
+        chain_verified = None
+        chain_event_count = len(custody_events)
+
+    base_url = str(request.base_url).rstrip("/")
+
+    record_id, pdf_bytes = generate_custody_record(
+        case_id=case_id,
+        generated_by=current_user.email,
+        custody_events=custody_events,
+        evidence_items=evidence_items,
+        scope=scope,
+        evidence_id=evidence_id,
+        chain_verified=chain_verified,
+        chain_event_count=chain_event_count,
+        redacted=redacted,
+        base_url=base_url,
+    )
+
+    # Upload to S3
+    pdf_key = s3_upload(
+        io.BytesIO(pdf_bytes),
+        f"custody_record_{record_id}.pdf",
+        "application/pdf",
+    )
+
+    # Save Certificate record
+    cert = Certificate(
+        certificate_id=record_id,
+        type="custody",
+        case_id=case_id,
+        evidence_id=evidence_id,
+        generated_by=current_user.email,
+        pdf_key=pdf_key,
+        chain_verified_at_generation=chain_verified,
+        file_hash_at_generation=evidence_items[0]["sha256"] if evidence_items else None,
+    )
+    db.add(cert)
+    db.commit()
+
+    log_audit_event(
+        event_type="custody_record_generated",
+        case_id=case_id,
+        evidence_id=evidence_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes=f"Custody Record generated: {record_id} (scope={scope}, redacted={redacted})",
+    )
+
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename=custody_record_{record_id}.pdf"
+        },
+    )
+
+
+@app.get("/verify-custody/{record_id}", response_class=HTMLResponse)
+async def verify_custody_record(
+    request: Request,
+    record_id: str,
+    db: Session = Depends(get_db),
+):
+    cert = db.query(Certificate).filter(
+        Certificate.certificate_id == record_id,
+        Certificate.type == "custody",
+    ).first()
+
+    if not cert:
+        return templates.TemplateResponse(
+            request,
+            "verify_custody.html",
+            {"cert": None, "record_id": record_id},
+            status_code=404,
+        )
+
+    return templates.TemplateResponse(
+        request,
+        "verify_custody.html",
+        {
+            "cert": {
+                "record_id":    cert.certificate_id,
+                "type":         cert.type,
+                "case_id":      cert.case_id,
+                "evidence_id":  cert.evidence_id,
+                "generated_by": cert.generated_by,
+                "chain_verified": cert.chain_verified_at_generation,
+                "created_at":   cert.created_at.strftime("%B %d, %Y at %H:%M:%S UTC") if cert.created_at else "—",
+            },
+            "record_id": record_id,
+        },
+    )
