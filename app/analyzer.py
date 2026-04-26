@@ -89,7 +89,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
         "phash": phash,
         "metadata": image_metadata,
         "exif": exif_data,
-        "c2pa": c2pa_info,
+        "c2pa": c2pa_summary,
         "analysis_date": datetime.utcnow().isoformat(),
         "similar_matches": similar_matches[:5],
         "web_detection": web_detection,
