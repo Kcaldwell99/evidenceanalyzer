@@ -8,7 +8,7 @@ from reportlab.pdfgen import canvas
 
 from app.utils.hash_utils import sha256_file
 from app.utils.metadata_utils import get_image_metadata, extract_exif
-from app.c2pa_detector import read_c2pa_manifest, summarize_c2pa
+from app.c2pa_analysis import analyze_file as c2pa_analyze_file, summarize_for_certificate
 from app.utils.image_fingerprint import generate_phash
 from app.utils.web_detection import detect_web_presence
 from app.utils.hash_compare import hamming_distance
@@ -39,9 +39,8 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     file_size = os.path.getsize(file_path)
     image_metadata = get_image_metadata(file_path)
     exif_data = extract_exif(file_path)
-    c2pa_info = read_c2pa_manifest(file_path)
-    c2pa_summary = summarize_c2pa(c2pa_info)
-
+    c2pa_info = c2pa_analyze_file(file_path)
+    c2pa_summary = summarize_for_certificate(c2pa_info)
     phash = generate_phash(file_path)
     web_detection = detect_web_presence(file_path)
 
