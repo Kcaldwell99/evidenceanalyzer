@@ -98,9 +98,8 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     report["metadata_status"] = (
         "present" if exif_data and "error" not in exif_data else "missing"
     )
-
-    if c2pa_info.get("present"):
-        report["finding"] = (
+    if c2pa_summary.get("state") not in ("ABSENT", "UNAVAILABLE", None):
+            report["finding"] = (
             "Provenance data present. No obvious integrity concerns were identified "
             "from the available file-level indicators reviewed."
         )
