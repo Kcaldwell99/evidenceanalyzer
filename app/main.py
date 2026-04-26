@@ -22,6 +22,7 @@ from app.utils.audit_log import log_audit_event
 from app.db import SessionLocal, engine
 from app.models import Base, Case, Certificate, EvidenceItem, Payment, Subscription, User
 from app.storage import upload_file
+from app.email_alerts import send_upload_alert, send_chain_failure_alert, send_monthly_summary
 from app.auth import (
     hash_password,
     verify_password,
@@ -101,7 +102,19 @@ SERVICE_MAP = {
         "max_files": 25,
     },
 }
+TIER_LIMITS = {
+    "monitoring_small":    25,
+    "monitoring_standard": 100,
+    "monitoring_large":    500,
+}
 
+def get_active_monitoring_sub(user_id: int, db: Session):
+    """Return active monitoring subscription for a user, or None."""
+    return db.query(Subscription).filter(
+        Subscription.user_id == user_id,
+        Subscription.status == "active",
+        Subscription.product.in_(["monitoring_small", "monitoring_standard", "monitoring_large"]),
+    ).first()
 
 # =========================================================
 # HELPERS
@@ -568,6 +581,32 @@ async def analyze_file_route(
     )
     db.add(new_item)
     db.commit()
+
+    return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
+db.add(new_item)
+    db.commit()
+
+    # Monitoring — file count enforcement + upload alert
+    sub = get_active_monitoring_sub(current_user.id, db)
+    if sub:
+        tier_limit = TIER_LIMITS.get(sub.product, 25)
+        current_count = db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).count()
+        if current_count > tier_limit:
+            raise HTTPException(
+                status_code=403,
+                detail=f"File limit reached for your monitoring tier ({tier_limit} files). Upgrade to add more files.",
+            )
+        base_url = str(request.base_url).rstrip("/")
+        send_upload_alert(
+            to_email=current_user.email,
+            case_id=case_id,
+            case_name=case_obj.case_name,
+            file_name=file.filename,
+            evidence_id=evidence_id,
+            sha256=report.get("sha256", "—"),
+            uploaded_by=current_user.email,
+            base_url=base_url,
+        )
 
     return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
 
@@ -1593,6 +1632,26 @@ async def generate_custody_record_route(
         chain_verified = None
         chain_event_count = len(custody_events)
 
+# Chain verification
+    try:
+        chain_verified, _failed_id, _fail_msg = verify_chain(case_id)
+        chain_event_count = len(custody_events)
+    except Exception:
+        chain_verified = None
+        chain_event_count = len(custody_events)
+
+    # Monitoring — chain failure alert
+    if chain_verified is False:
+        sub = get_active_monitoring_sub(current_user.id, db)
+        if sub:
+            send_chain_failure_alert(
+                to_email=current_user.email,
+                case_id=case_id,
+                case_name=case_obj.case_name,
+                record_id=record_id,
+                base_url=str(request.base_url).rstrip("/"),
+            )
+
     base_url = str(request.base_url).rstrip("/")
 
     record_id, pdf_bytes = generate_custody_record(
@@ -1683,3 +1742,56 @@ async def verify_custody_record(
             "record_id": record_id,
         },
     )
+# =========================================================
+# MONITORING — MONTHLY SUMMARY  (admin only)
+# =========================================================
+
+@app.post("/admin/send-monthly-summaries")
+async def send_monthly_summaries(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.utils.audit_log import verify_chain
+    from app.models import CustodyLog
+
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required.")
+
+    period = datetime.utcnow().strftime("%B %Y")
+    subs = db.query(Subscription).filter(
+        Subscription.status == "active",
+        Subscription.product.in_(["monitoring_small", "monitoring_standard", "monitoring_large"]),
+    ).all()
+
+    sent = 0
+    for sub in subs:
+        if not sub.user_id:
+            continue
+        user = db.query(User).filter(User.id == sub.user_id).first()
+        if not user:
+            continue
+        cases = db.query(Case).filter(Case.user_id == sub.user_id).all()
+        for case in cases:
+            file_count = db.query(EvidenceItem).filter(EvidenceItem.case_id == case.case_id).count()
+            event_count = db.query(CustodyLog).filter(CustodyLog.case_id == case.case_id).count()
+            tier_limit = TIER_LIMITS.get(sub.product, 25)
+            try:
+                chain_verified, _, _ = verify_chain(case.case_id)
+            except Exception:
+                chain_verified = None
+            base_url = str(request.base_url).rstrip("/")
+            send_monthly_summary(
+                to_email=user.email,
+                case_id=case.case_id,
+                case_name=case.case_name,
+                file_count=file_count,
+                tier_limit=tier_limit,
+                event_count=event_count,
+                chain_verified=chain_verified,
+                period=period,
+                base_url=base_url,
+            )
+            sent += 1
+
+    return {"status": "ok", "summaries_sent": sent}
