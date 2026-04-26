@@ -227,5 +227,11 @@ def generate_integrity_certificate(
         styles["disclaimer"]
     ))
 # ── BUILD & RETURN ────────────────────────────────────
-    pdf_bytes = build_document(content, certificate_id, verify_url)
+    import tempfile, os
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        tmp_path = tmp.name
+    build_document(tmp_path, content, title=f"Evidentix Integrity Certificate")
+    with open(tmp_path, "rb") as f:
+        pdf_bytes = f.read()
+    os.unlink(tmp_path)
     return certificate_id, pdf_bytes
