@@ -21,3 +21,7 @@ pypdfium2
 google-cloud-vision
 c2pa-python
 qrcode[pil]
+
+resend
+
+resend
