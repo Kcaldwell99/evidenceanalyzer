@@ -1879,5 +1879,43 @@ async def clear_custody_log(
 
     return RedirectResponse(url=f"/cases/{case_id}", status_code=303)
 
+# =========================================================
+# REPORT FILE REDIRECT  (login required)
+# =========================================================
 
+@app.get("/report-file/{case_id}/{evidence_id}/{report_type}")
+async def report_file_redirect(
+    case_id: str,
+    evidence_id: str,
+    report_type: str,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.storage import generate_presigned_url
+
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if case_obj:
+        assert_case_ownership(case_obj, current_user)
+
+    item = (
+        db.query(EvidenceItem)
+        .filter(
+            EvidenceItem.case_id == case_id,
+            EvidenceItem.evidence_id == evidence_id,
+        )
+        .first()
+    )
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Evidence not found.")
+
+    if report_type == "json" and item.json_report:
+        url = generate_presigned_url(item.json_report)
+        return RedirectResponse(url=url, status_code=302)
+    elif report_type == "pdf" and item.pdf_report:
+        url = generate_presigned_url(item.pdf_report)
+        return RedirectResponse(url=url, status_code=302)
+    else:
+        raise HTTPException(status_code=404, detail="Report not found.")
 
