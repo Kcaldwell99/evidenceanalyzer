@@ -1818,3 +1818,31 @@ async def delete_all_evidence(
     )
 
     return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
+@app.post("/admin/clear-custody-log/{case_id}")
+async def clear_custody_log(
+    case_id: str,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.models import CustodyLog
+
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required.")
+
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
+
+    db.query(CustodyLog).filter(CustodyLog.case_id == case_id).delete()
+    db.commit()
+
+    log_audit_event(
+        event_type="custody_log_cleared",
+        case_id=case_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes="Custody log cleared by admin",
+    )
+
+    return RedirectResponse(url=f"/cases/{case_id}", status_code=303)
