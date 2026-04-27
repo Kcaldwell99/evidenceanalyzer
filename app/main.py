@@ -1653,6 +1653,7 @@ async def generate_custody_record_route(
 
     record_id, pdf_bytes = generate_custody_record(
         case_id=case_id,
+        case_name=case_obj.case_name,
         generated_by=current_user.email,
         custody_events=custody_events,
         evidence_items=evidence_items,
@@ -1663,7 +1664,7 @@ async def generate_custody_record_route(
         redacted=redacted,
         base_url=base_url,
     )
-
+    
     # Upload to S3
     pdf_key = s3_upload(
         io.BytesIO(pdf_bytes),
