@@ -153,8 +153,8 @@ def generate_custody_record(
         ("Generated At",    generated_at_str),
         ("Record ID",       record_id),
         ("Scope",           scope_label),
-        ("For use in",      "______________________________________"),
-    ]
+        ("For use in",      case_name if case_name else "______________________________________"),
+          ]
     content.append(build_metadata_table(header_rows))
     content.append(section_spacer())
 
