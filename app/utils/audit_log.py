@@ -26,7 +26,6 @@ def _compute_chain_hash(prev_chain_hash: Optional[str], event: Dict[str, Any]) -
         "notes":      event.get("notes"),
         "file_name":  event.get("file_name"),
         "sha256":     event.get("sha256"),
-        "timestamp":  event.get("timestamp"),
     }
     serialized = json.dumps(content_fields, sort_keys=True, separators=(",", ":"))
     raw = (prev_chain_hash or "") + serialized
@@ -195,10 +194,8 @@ def verify_chain(case_id: str) -> Tuple[bool, Optional[int], Optional[str]]:
                 "ip_address":  entry.ip_address,
                 "notes":       entry.detail,
                 "extra":       None,
-                "timestamp":   entry.created_at.isoformat() if entry.created_at else None,  
-            }
-           
-           
+           }
+      
             expected = _compute_chain_hash(prev_hash, event_snapshot)
 
             if entry.chain_hash != expected:
