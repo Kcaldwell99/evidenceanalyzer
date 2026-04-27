@@ -582,10 +582,6 @@ async def analyze_file_route(
     db.add(new_item)
     db.commit()
 
-    return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
-db.add(new_item)
-    db.commit()
-
     # Monitoring — file count enforcement + upload alert
     sub = get_active_monitoring_sub(current_user.id, db)
     if sub:
