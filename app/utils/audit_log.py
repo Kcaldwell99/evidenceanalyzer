@@ -191,13 +191,16 @@ def verify_chain(case_id: str) -> Tuple[bool, Optional[int], Optional[str]]:
                 "event_type":  entry.action,
                 "case_id":     entry.case_id,
                 "evidence_id": entry.evidence_id,
+                "file_name":   None,
+                "sha256":      None,
                 "user":        entry.user_email,
                 "ip_address":  entry.ip_address,
                 "notes":       entry.detail,
-                "file_name":   None,   # not stored separately; detail doubles as notes/filename
-                "sha256":      None,   # hash of the subject file lives on EvidenceItem
-                "timestamp":   entry.created_at.isoformat() if entry.created_at else None,
+                "extra":       None,
+                "timestamp":   entry.created_at.isoformat() if entry.created_at else None,  
             }
+           
+           
             expected = _compute_chain_hash(prev_hash, event_snapshot)
 
             if entry.chain_hash != expected:
