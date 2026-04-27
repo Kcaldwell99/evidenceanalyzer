@@ -24,8 +24,6 @@ def _compute_chain_hash(prev_chain_hash: Optional[str], event: Dict[str, Any]) -
         "user":       event.get("user"),
         "ip_address": event.get("ip_address"),
         "notes":      event.get("notes"),
-        "file_name":  event.get("file_name"),
-        "sha256":     event.get("sha256"),
     }
     serialized = json.dumps(content_fields, sort_keys=True, separators=(",", ":"))
     raw = (prev_chain_hash or "") + serialized
