@@ -107,7 +107,8 @@ def _is_integrity_event(event_type: str) -> bool:
 
 def generate_custody_record(
     case_id: str,
-    generated_by: str,
+    case_name: str = "",
+    generated_by: str = "",
     custody_events: list,           # list of dicts from custody_log
     evidence_items: list,           # list of EvidenceItem-like dicts
     scope: str = "case",            # "file" or "case"
