@@ -610,6 +610,7 @@ async def analyze_file_route(
 async def evidence_file_redirect(
     case_id: str,
     evidence_id: str,
+    request: Request, 
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -1791,3 +1792,28 @@ async def send_monthly_summaries(
             sent += 1
 
     return {"status": "ok", "summaries_sent": sent}
+
+@app.post("/delete-all-evidence/{case_id}")
+async def delete_all_evidence(
+    case_id: str,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
+    assert_case_ownership(case_obj, current_user)
+
+    db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).delete()
+    db.commit()
+
+    log_audit_event(
+        event_type="all_evidence_deleted",
+        case_id=case_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes="All evidence items deleted by authenticated user",
+    )
+
+    return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
