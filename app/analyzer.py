@@ -187,15 +187,6 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
 
-        # Upload JSON to S3
-        try:
-            from app.storage import upload_file as s3_upload
-            with open(json_path, "rb") as jf:
-                json_s3_key = s3_upload(jf, "analysis_report.json", "application/json")
-            json_path = json_s3_key  # store S3 key instead of local path
-        except Exception:
-            pass  # fall back to local path if S3 upload fails
-
     pdf_path = os.path.join(case_path, "analysis_report.pdf")
     c = canvas.Canvas(pdf_path, pagesize=letter)
     width, height = letter
