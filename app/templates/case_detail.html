@@ -223,6 +223,13 @@
                          Custody Record (Unredacted)
                     </button>
                 </form>
+   </form>
+    <form action="/delete-all-evidence/{{ case.case_id }}" method="post" style="display:inline;">
+        <button type="submit" class="button" style="background:#c62828;" onclick="return confirm('Delete ALL evidence from this case? This cannot be undone.')">
+            Delete All Evidence
+        </button>
+    </form>
+
 </div>
 
 <div class="card">
