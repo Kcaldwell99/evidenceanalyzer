@@ -1740,6 +1740,14 @@ async def verify_custody_record(
             "record_id": record_id,
         },
     )
+{% if current_user.is_admin %}
+<form action="/admin/clear-custody-log/{{ case.case_id }}" method="post" style="display:inline;">
+    <button type="submit" class="button" style="background:#7c2d12;" onclick="return confirm('Clear ALL custody log entries for this case? This cannot be undone.')">
+        Clear Custody Log (Admin)
+    </button>
+</form>
+{% endif %}
+
 # =========================================================
 # MONITORING — MONTHLY SUMMARY  (admin only)
 # =========================================================
@@ -1846,3 +1854,6 @@ async def clear_custody_log(
     )
 
     return RedirectResponse(url=f"/cases/{case_id}", status_code=303)
+
+
+
