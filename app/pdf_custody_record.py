@@ -108,8 +108,8 @@ def generate_custody_record(
     case_id: str,
     case_name: str = "",
     generated_by: str = "",
-    custody_events: list = None,
-    evidence_items: list,           # list of EvidenceItem-like dicts
+    custody_events: list = None,    # list of dicts from custody_log
+    evidence_items: list = None,    # list of EvidenceItem-like dicts
     scope: str = "case",            # "file" or "case"
     evidence_id: str = None,        # required when scope="file"
     chain_verified: bool = None,    # result of verify_chain()
