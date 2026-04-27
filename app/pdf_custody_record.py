@@ -25,7 +25,6 @@ from datetime import datetime, timezone
 import qrcode
 from reportlab.lib.units import inch
 from reportlab.platypus import Image, Paragraph, Spacer, Table, TableStyle
-
 from app.pdf_base import (
     DARK, GREY_LINE, PURPLE, PURPLE_BG, WHITE,
     build_document, build_metadata_table, build_styles, hr, section_spacer,
@@ -109,7 +108,7 @@ def generate_custody_record(
     case_id: str,
     case_name: str = "",
     generated_by: str = "",
-    custody_events: list,           # list of dicts from custody_log
+    custody_events: list = None,
     evidence_items: list,           # list of EvidenceItem-like dicts
     scope: str = "case",            # "file" or "case"
     evidence_id: str = None,        # required when scope="file"
@@ -124,6 +123,8 @@ def generate_custody_record(
     Returns:
         (record_id, pdf_bytes)
     """
+    custody_events = custody_events or []
+    evidence_items = evidence_items or []
     record_id = str(uuid.uuid4())
     generated_at = datetime.now(timezone.utc)
     generated_at_str = generated_at.strftime("%B %d, %Y at %H:%M:%S UTC")
