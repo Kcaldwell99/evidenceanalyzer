@@ -54,8 +54,7 @@ def create_audit_event(
         "ip_address": ip_address,
         "notes":      notes,
         "extra":      extra,
-        "timestamp":  utc_now_iso(),
-    }
+     }
 
 
 def append_audit_event(
@@ -153,8 +152,7 @@ def load_audit_log(
                 "ip_address":  e.ip_address,
                 "notes":       e.detail,
                 "chain_hash":  e.chain_hash,
-                "timestamp":   e.created_at.isoformat() if e.created_at else None,
-            }
+             }
             for e in entries
         ]
     except Exception as ex:
