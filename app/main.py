@@ -1834,7 +1834,15 @@ async def delete_evidence(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    from app.models import Evidence
+    from app.models import EvidenceItem
+evidence = db.query(EvidenceItem).filter(
+    EvidenceItem.evidence_id == evidence_id,
+    EvidenceItem.case_id == case_id,
+).first()
+if not evidence:
+    raise HTTPException(status_code=404, detail="Evidence not found.")
+db.delete(evidence)
+
     evidence = db.query(Evidence).filter(
         Evidence.evidence_id == evidence_id,
         Evidence.case_id == case_id,
