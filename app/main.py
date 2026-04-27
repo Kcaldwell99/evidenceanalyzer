@@ -1826,6 +1826,32 @@ async def send_monthly_summaries(
 
     return {"status": "ok", "summaries_sent": sent}
 
+@app.post("/delete-evidence/{case_id}/{evidence_id}")
+async def delete_evidence(
+    case_id: str,
+    evidence_id: str,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.models import Evidence
+    evidence = db.query(Evidence).filter(
+        Evidence.evidence_id == evidence_id,
+        Evidence.case_id == case_id,
+    ).first()
+    if not evidence:
+        raise HTTPException(status_code=404, detail="Evidence not found.")
+    db.delete(evidence)
+    db.commit()
+    log_audit_event(
+        event_type="evidence_deleted",
+        case_id=case_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes=f"Evidence item {evidence_id} deleted by authenticated user",
+    )
+    return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
+
 @app.post("/delete-all-evidence/{case_id}")
 async def delete_all_evidence(
     case_id: str,
