@@ -542,20 +542,6 @@ async def analyze_file_route(
     log_audit_event(
         event_type="analysis_completed",
         case_id=case_id,
-        file_name=file.filename,
-        sha256=report.get("sha256"),
-        user=current_user.email,
-        ip_address=request.client.host,
-        notes="Image analysis and forensic report generated",
-        extra={
-            "json_report": json_path,
-            "pdf_report": pdf_path,
-            "s3_file_key": file_key,
-        },
-    )
-    log_audit_event(
-        event_type="analysis_completed",
-        case_id=case_id,
         evidence_id=evidence_id,
         file_name=file.filename,
         sha256=report.get("sha256"),
