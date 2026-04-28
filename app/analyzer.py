@@ -222,7 +222,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
         y = _draw_wrapped_lines(c, [f"Date Taken: {exif.get('DateTimeOriginal', 'Not Available')}"], 60, y)
         y = _draw_wrapped_lines(c, [f"Camera Make: {exif.get('Make', 'Not Available')}"], 60, y)
         y = _draw_wrapped_lines(c, [f"GPS Metadata Present: {'Yes' if 'GPSInfo' in exif else 'No'}"], 60, y)
-    elif metadata:
+        y -= 12
         y = _draw_wrapped_lines(c, ["Basic metadata detected in the submitted file."], 60, y)
     else:
         y = _draw_wrapped_lines(
