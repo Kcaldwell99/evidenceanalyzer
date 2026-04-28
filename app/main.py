@@ -1446,7 +1446,70 @@ async def verify_certificate(
             "certificate_id": certificate_id,
         },
     )
+# =========================================================
+# WEB DETECTION  (login required)
+# =========================================================
 
+@app.get("/web-detection/{case_id}/{evidence_id}", response_class=HTMLResponse)
+async def web_detection_route(
+    case_id: str,
+    evidence_id: str,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.utils.web_detection import detect_web_presence
+    from app.storage import get_file, generate_presigned_url
+    import tempfile, os
+
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
+    assert_case_ownership(case_obj, current_user)
+
+    item = (
+        db.query(EvidenceItem)
+        .filter(
+            EvidenceItem.case_id == case_id,
+            EvidenceItem.evidence_id == evidence_id,
+        )
+        .first()
+    )
+    if not item:
+        raise HTTPException(status_code=404, detail="Evidence not found.")
+
+    # Download file from S3 to temp location
+    raw_bytes = get_file(item.file_key)
+    ext = (item.file_name or "file.bin").rsplit(".", 1)[-1]
+    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}") as tmp:
+        tmp.write(raw_bytes)
+        tmp_path = tmp.name
+
+    try:
+        web_detection = detect_web_presence(tmp_path)
+    finally:
+        os.unlink(tmp_path)
+
+    log_audit_event(
+        event_type="web_detection_performed",
+        case_id=case_id,
+        evidence_id=evidence_id,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes=f"Web detection performed on {item.file_name}",
+    )
+
+    return templates.TemplateResponse(
+        request,
+        "web_detection.html",
+        {
+            "case_id": case_id,
+            "evidence_id": evidence_id,
+            "file_name": item.file_name,
+            "web_detection": web_detection,
+            "current_user": current_user,
+        },
+    )
 # =========================================================
 # DOWNLOAD HELPERS  (login required)
 # =========================================================
