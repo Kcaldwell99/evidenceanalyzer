@@ -539,6 +539,17 @@ async def analyze_file_route(
         case_dir=str(case_dir),
         file_key=file_key,
     )
+new_item = EvidenceItem(
+        evidence_id=evidence_id,
+        case_id=case_id,
+        file_name=file.filename,
+        file_key=file_key,
+        json_report=json_path,
+        pdf_report=pdf_path,
+        sha256=report.get("sha256"),
+        analysis_date=datetime.utcnow().isoformat(),
+    )
+
     log_audit_event(
         event_type="analysis_completed",
         case_id=case_id,
@@ -1480,6 +1491,7 @@ async def download_case_file(
 async def download_bundle(
     case_id: str,
     evidence_id: str,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
