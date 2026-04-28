@@ -572,6 +572,16 @@ async def analyze_file_route(
 
     db.add(new_item)
     db.commit()
+# Add to fingerprint index for comparison searches
+    from core.fingerprint_index import add_fingerprint
+    add_fingerprint(
+        case_id=case_id,
+        evidence_id=evidence_id,
+        file_name=file.filename,
+        phash=report.get("phash"),
+        pdf_report=pdf_path,
+        json_report=json_path,
+    )
 
     # Monitoring — file count enforcement + upload alert
     sub = get_active_monitoring_sub(current_user.id, db)
