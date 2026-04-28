@@ -550,7 +550,7 @@ new_item = EvidenceItem(
         analysis_date=datetime.utcnow().isoformat(),
     )
 
-    log_audit_event(
+log_audit_event(
         event_type="analysis_completed",
         case_id=case_id,
         evidence_id=evidence_id,
