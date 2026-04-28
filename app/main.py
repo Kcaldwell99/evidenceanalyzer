@@ -17,6 +17,8 @@ from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from app import db
+from app import db
 from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
 from app.db import SessionLocal, engine
@@ -539,7 +541,7 @@ async def analyze_file_route(
         case_dir=str(case_dir),
         file_key=file_key,
     )
-new_item = EvidenceItem(
+    new_item = EvidenceItem(
         evidence_id=evidence_id,
         case_id=case_id,
         file_name=file.filename,
@@ -550,7 +552,7 @@ new_item = EvidenceItem(
         analysis_date=datetime.utcnow().isoformat(),
     )
 
-log_audit_event(
+    log_audit_event(
         event_type="analysis_completed",
         case_id=case_id,
         evidence_id=evidence_id,
@@ -567,28 +569,20 @@ log_audit_event(
     )
 
     # Save EvidenceItem to DB
-    new_item = EvidenceItem(
-        evidence_id=evidence_id,
-        case_id=case_id,
-        file_name=file.filename,
-        file_key=file_key,
-        json_report=json_path,
-        sha256=report.get("sha256"),
-        analysis_date=datetime.utcnow().isoformat(),
-    )
+
     db.add(new_item)
     db.commit()
 
     # Monitoring — file count enforcement + upload alert
     sub = get_active_monitoring_sub(current_user.id, db)
     if sub:
-        tier_limit = TIER_LIMITS.get(sub.product, 25)
-        current_count = db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).count()
-        if current_count > tier_limit:
-            raise HTTPException(
-                status_code=403,
-                detail=f"File limit reached for your monitoring tier ({tier_limit} files). Upgrade to add more files.",
-            )
+    tier_limit = TIER_LIMITS.get(sub.product, 25)
+    current_count = db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).count()
+    if current_count > tier_limit:
+        raise HTTPException(
+            status_code=403,
+            detail=f"File limit reached for your monitoring tier ({tier_limit} files). Upgrade to add more files.",
+        )
         base_url = str(request.base_url).rstrip("/")
         send_upload_alert(
             to_email=current_user.email,
@@ -1289,9 +1283,6 @@ async def submit_intake(
         },
     )
 
-    with (audit_dir / "intake_submitted.json").open("w", encoding="utf-8") as f:
-        json.dump(audit_event, f, indent=2)
-
     if service == "single" and len(uploaded_items) == 1:
         image_path = uploaded_items[0]["stored_path"]
         analyze_file(image_path, case_dir=str(case_dir))
@@ -1464,6 +1455,7 @@ async def verify_certificate(
 async def download_case_file(
     case_id: str,
     subfolder: str,
+    request: Request, 
     timestamp: str,
     filename: str,
     current_user: User = Depends(get_current_user),
@@ -1620,14 +1612,6 @@ async def generate_custody_record_route(
     ]
 
     # Chain verification
-    try:
-        chain_verified, _failed_id, _fail_msg = verify_chain(case_id)
-        chain_event_count = len(custody_events)
-    except Exception:
-        chain_verified = None
-        chain_event_count = len(custody_events)
-
-# Chain verification
     try:
         chain_verified, _failed_id, _fail_msg = verify_chain(case_id)
         chain_event_count = len(custody_events)
@@ -1874,36 +1858,6 @@ async def delete_all_evidence(
     )
 
     return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
-
-@app.post("/admin/clear-custody-log/{case_id}")
-async def clear_custody_log(
-    case_id: str,
-    request: Request,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    from app.models import CustodyLog
-
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="Admin access required.")
-
-    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
-    if not case_obj:
-        raise HTTPException(status_code=404, detail="Case not found.")
-
-    db.query(CustodyLog).filter(CustodyLog.case_id == case_id).delete()
-    db.commit()
-
-    log_audit_event(
-        event_type="custody_log_cleared",
-        case_id=case_id,
-        user=current_user.email,
-        ip_address=request.client.host,
-        notes="Custody log cleared by admin",
-    )
-
-    return RedirectResponse(url=f"/cases/{case_id}", status_code=303)
-
 # =========================================================
 # REPORT FILE REDIRECT  (login required)
 # =========================================================
