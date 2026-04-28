@@ -576,24 +576,24 @@ async def analyze_file_route(
     # Monitoring — file count enforcement + upload alert
     sub = get_active_monitoring_sub(current_user.id, db)
     if sub:
-    tier_limit = TIER_LIMITS.get(sub.product, 25)
-    current_count = db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).count()
-    if current_count > tier_limit:
-        raise HTTPException(
-            status_code=403,
-            detail=f"File limit reached for your monitoring tier ({tier_limit} files). Upgrade to add more files.",
-        )
-        base_url = str(request.base_url).rstrip("/")
-        send_upload_alert(
-            to_email=current_user.email,
-            case_id=case_id,
-            case_name=case_obj.case_name,
-            file_name=file.filename,
-            evidence_id=evidence_id,
-            sha256=report.get("sha256", "—"),
-            uploaded_by=current_user.email,
-            base_url=base_url,
-        )
+        tier_limit = TIER_LIMITS.get(sub.product, 25)
+        current_count = db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).count()
+        if current_count > tier_limit:
+            raise HTTPException(
+                status_code=403,
+                detail=f"File limit reached for your monitoring tier ({tier_limit} files). Upgrade to add more files.",
+            )
+            base_url = str(request.base_url).rstrip("/")
+            send_upload_alert(
+                to_email=current_user.email,
+                case_id=case_id,
+                case_name=case_obj.case_name,
+                file_name=file.filename,
+                evidence_id=evidence_id,
+                sha256=report.get("sha256", "—"),
+                uploaded_by=current_user.email,
+                base_url=base_url,
+            )
 
     return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
 
