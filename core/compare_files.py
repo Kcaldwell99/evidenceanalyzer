@@ -249,7 +249,7 @@ def _compute_ssim(original_path, suspect_path):
         bbox = diff.getbbox()
         if bbox is None:
             return 1.0
-        diff_pixels = sum(1 for value in diff.getdata() if value != 0)
+        diff_pixels = sum(1 for value in diff.getdata() if value > 10)
         total_pixels = img1.size[0] * img1.size[1]
         return max(0.0, 1.0 - (diff_pixels / total_pixels))
 
