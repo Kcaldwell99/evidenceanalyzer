@@ -236,10 +236,13 @@ def _load_image_gray(path_value, size=(1000, 1000)):
     with Image.open(path_value) as img:
         return img.convert("L").resize(size)
 
-
 def _compute_ssim(original_path, suspect_path):
     img1 = _load_image_gray(original_path)
     img2 = _load_image_gray(suspect_path)
+
+    # ✅ FIX 1: Resize suspect to match original dimensions
+    if img2.size != img1.size:
+        img2 = img2.resize(img1.size, Image.LANCZOS)
 
     if skimage_ssim is None:
         diff = ImageChops.difference(img1, img2)
@@ -252,7 +255,9 @@ def _compute_ssim(original_path, suspect_path):
 
     img1_array = __import__("numpy").array(img1)
     img2_array = __import__("numpy").array(img2)
-    score = skimage_ssim(img1_array, img2_array)
+
+    # ✅ FIX 2: Pass data_range=255 for uint8 grayscale images
+    score = skimage_ssim(img1_array, img2_array, data_range=255)
     return float(score)
 
 
