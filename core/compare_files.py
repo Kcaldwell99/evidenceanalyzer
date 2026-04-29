@@ -655,3 +655,4 @@ def compare_against_all_cases(suspect_path, cases_root="cases"):
         "matches": all_matches[:25],
         "case_results": all_results,
     }
+
