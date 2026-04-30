@@ -19,6 +19,8 @@ except ImportError:
 try:
     from core.comparison_pdf import generate_comparison_pdf
 except Exception as e:
+        print(f"CLIP error: {e}", flush=True)
+        return None
         generate_comparison_pdf = None
 
 from app.utils.hash_utils import sha256_file
@@ -222,9 +224,9 @@ def _compute_clip_similarity(path1, path2):
         emb2 = _clip_model.encode(img2, convert_to_tensor=True)
         score = float(util.cos_sim(emb1, emb2)[0][0])
         return round((score + 1) / 2 * 100, 2)
-    except Exception:
+    except Exception as e:
+        print(f"CLIP error: {e}", flush=True)
         return None
-
 
 def _compute_ssim(original_path, suspect_path):
     img1 = _load_image_gray(original_path)
