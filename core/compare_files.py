@@ -683,19 +683,19 @@ def compare_against_all_cases(suspect_path, cases_root="cases"):
             item.get("phash_distance", 999),
         )
     )
-best_match = all_matches[0] if all_matches else None
+    best_match = all_matches[0] if all_matches else None
 
     if best_match:
-        _original_path = best_match.get("original_file_path") or best_match.get("original_path")
-        if _original_path:
-            _clip = _compute_clip_similarity(str(suspect_path), str(_original_path))
-            best_match["clip_score"] = _clip
-            best_match["clip_score_pct"] = f"{_clip:.1f}%" if _clip is not None else "N/A"
-        else:
-            best_match["clip_score"] = None
-            best_match["clip_score_pct"] = "N/A"
+    _original_path = best_match.get("original_file_path") or best_match.get("original_path")
+    if _original_path:
+        _clip = _compute_clip_similarity(str(suspect_path), str(_original_path))
+        best_match["clip_score"] = _clip
+        best_match["clip_score_pct"] = f"{_clip:.1f}%" if _clip is not None else "N/A"
+    else:
+        best_match["clip_score"] = None
+        best_match["clip_score_pct"] = "N/A"
 
-        return {
+    return {
         "suspect_file": os.path.basename(str(suspect_path)),
         "best_match": best_match,
         "cases_reviewed": len(all_results),
