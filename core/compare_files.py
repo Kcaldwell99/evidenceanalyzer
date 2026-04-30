@@ -1,4 +1,3 @@
-
 import json
 import os
 
@@ -87,7 +86,8 @@ def build_forensic_conclusion(
             "generally consistent",
         ]
     )
-# Strong phash match should always yield high confidence regardless of SSIM
+
+    # Strong phash match should always yield high confidence regardless of SSIM
     if phash_distance == 0:
         return {
             "confidence_level": "High Confidence Match",
@@ -141,6 +141,7 @@ def build_forensic_conclusion(
                 "but the differences observed prevent classification as an exact digital match."
             ),
         }
+
     if phash_distance <= 16:
         return {
             "confidence_level": "Possible Match",
@@ -155,55 +156,6 @@ def build_forensic_conclusion(
                 "Perceptual hash similarity at this distance is a meaningful forensic indicator. "
                 "The result does not confirm an exact file match but supports the inference "
                 "that the images share a common visual origin."
-            ),
-        }
-
-    if ssim_score >= 0.60 and phash_distance <= 20:
-        return {
-            "confidence_level": "Inconclusive",
-            "conclusion_title": "Inconclusive Result",
-            "conclusion_text": (
-                "The comparison produced mixed indicators. Certain metrics suggest similarity, "
-                "but the available data does not support a reliable forensic conclusion that the "
-                "submitted image is the same as, or derived from, the reference image. Additional "
-                "contextual information, source files, or expert review may be necessary."
-            ),
-            "interpretation_text": (
-                "Some indicators point toward similarity, but the overall evidentiary signal is not "
-                "strong enough to support a higher-confidence conclusion."
-            ),
-        }
-
-    return {
-        "confidence_level": "No Significant Support for a Match",
-        "conclusion_title": "No Significant Support for a Match",
-        "conclusion_text": (
-            "The comparison did not reveal sufficient forensic support for a meaningful match "
-            "between the submitted image and the reference image. Based on the available metrics "
-            "and visual differential review, the images do not appear to be materially consistent "
-            "with one another."
-        ),
-        "interpretation_text": (
-            "The observed indicators do not collectively support a reliable conclusion that the "
-            "submitted image matches or was derived from the reference image."
-        ),
-    }
-
-
-    if (ssim_score >= 0.75 and phash_distance <= 14) or moderate_visual:
-        return {
-            "confidence_level": "Probable Match",
-            "conclusion_title": "Probable Match",
-            "conclusion_text": (
-                "The submitted image exhibits substantial similarity to the reference image. "
-                "The comparison metrics and visual review support the opinion that the images "
-                "are probably related, although the observed differences suggest editing, "
-                "recompression, partial cropping, or other modification. This result is "
-                "consistent with likely derivation, but not an exact file match."
-            ),
-            "interpretation_text": (
-                "The available indicators support a meaningful relationship between the compared images, "
-                "but the differences observed prevent classification as an exact digital match."
             ),
         }
 
@@ -258,6 +210,8 @@ def _load_image_rgb(path_value):
 def _load_image_gray(path_value, size=(1000, 1000)):
     with Image.open(path_value) as img:
         return img.convert("L").resize(size)
+
+
 def _compute_clip_similarity(path1, path2):
     if _clip_model is None:
         return None
@@ -269,13 +223,14 @@ def _compute_clip_similarity(path1, path2):
         score = float(util.cos_sim(emb1, emb2)[0][0])
         return round((score + 1) / 2 * 100, 2)
     except Exception:
-        return None  
+        return None
+
 
 def _compute_ssim(original_path, suspect_path):
     img1 = _load_image_gray(original_path)
     img2 = _load_image_gray(suspect_path)
 
-    # ✅ FIX 1: Resize suspect to match original dimensions
+    # FIX: Resize suspect to match original dimensions
     if img2.size != img1.size:
         img2 = img2.resize(img1.size, Image.LANCZOS)
 
@@ -291,7 +246,7 @@ def _compute_ssim(original_path, suspect_path):
     img1_array = __import__("numpy").array(img1)
     img2_array = __import__("numpy").array(img2)
 
-    # ✅ FIX 2: Pass data_range=255 for uint8 grayscale images
+    # FIX: Pass data_range=255 for uint8 grayscale images
     score = skimage_ssim(img1_array, img2_array, data_range=255)
     return float(score)
 
@@ -371,6 +326,8 @@ def _match_level(phash_distance, ssim_score):
         return "Moderate"
     if ssim_score >= 0.60 and phash_distance <= 20:
         return "Low"
+    if phash_distance <= 16:
+        return "Low"
     return "Minimal"
 
 
@@ -405,6 +362,7 @@ def _build_pdf_differences(result, max_items=8):
         )
 
     return difference_lines
+
 
 def _build_pdf_payload(result):
     return {
@@ -459,6 +417,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         ssim_score = _compute_ssim(original_path, suspect_path)
     except Exception:
         ssim_score = 0.0
+
     clip_score = _compute_clip_similarity(original_path, suspect_path)
 
     visual_summary = _visual_assessment(ssim_score, phash_distance)
@@ -529,7 +488,6 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
             print(traceback.format_exc(), flush=True)
             comparison_pdf_path = None
 
-
     result["comparison_json"] = _safe_relpath(comparison_json_path)
 
     if comparison_pdf_path and os.path.exists(comparison_pdf_path):
@@ -547,7 +505,6 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         except Exception as e:
             print(f"S3 upload failed: {e}", flush=True)
             result["comparison_pdf"] = _safe_relpath(comparison_pdf_path)
-
     else:
         result["comparison_pdf"] = None
 
@@ -584,6 +541,7 @@ def _find_uploaded_evidence_file(case_path, file_name):
             if filename == file_name:
                 return os.path.join(root, filename)
     return None
+
 
 def compare_against_case(suspect_path, case_id_or_path, suspect_filename=None):
     from app.utils.image_fingerprint import generate_phash
@@ -625,7 +583,9 @@ def compare_against_case(suspect_path, case_id_or_path, suspect_filename=None):
         evidence_path = download_to_tempfile(item.file_key, suffix=suffix)
 
         try:
-            comparison = compare_two_files(evidence_path, suspect_path,
+            comparison = compare_two_files(
+                evidence_path,
+                suspect_path,
                 original_filename=item.file_name,
                 suspect_filename=suspect_filename or os.path.basename(str(suspect_path)),
             )
@@ -645,6 +605,7 @@ def compare_against_case(suspect_path, case_id_or_path, suspect_filename=None):
 
     if matches:
         best_match = matches[0]
+        # CLIP is already computed inside compare_two_files — no extra call needed
 
     return {
         "case_id": case_id,
@@ -654,6 +615,7 @@ def compare_against_case(suspect_path, case_id_or_path, suspect_filename=None):
         "matches": matches,
         "match_count": len(matches),
     }
+
 
 def compare_against_all_cases(suspect_path, cases_root="cases"):
     cases_root = str(cases_root)
@@ -683,17 +645,9 @@ def compare_against_all_cases(suspect_path, cases_root="cases"):
             item.get("phash_distance", 999),
         )
     )
-    best_match = all_matches[0] if all_matches else None
 
-    if best_match:
-    _original_path = best_match.get("original_file_path") or best_match.get("original_path")
-    if _original_path:
-        _clip = _compute_clip_similarity(str(suspect_path), str(_original_path))
-        best_match["clip_score"] = _clip
-        best_match["clip_score_pct"] = f"{_clip:.1f}%" if _clip is not None else "N/A"
-    else:
-        best_match["clip_score"] = None
-        best_match["clip_score_pct"] = "N/A"
+    best_match = all_matches[0] if all_matches else None
+    # CLIP is already computed inside compare_two_files for each match
 
     return {
         "suspect_file": os.path.basename(str(suspect_path)),
@@ -702,8 +656,3 @@ def compare_against_all_cases(suspect_path, cases_root="cases"):
         "matches": all_matches[:25],
         "case_results": all_results,
     }
-
-
-
-
-
