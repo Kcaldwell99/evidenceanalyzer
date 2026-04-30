@@ -822,7 +822,8 @@ async def compare_case_route(
                 "suspect_file": suspect_file.filename,
                 "suspect_phash": result.get("suspect_phash"),
                 "comparison": result.get("comparison"),
-                "clip_score_pct": result.get("clip_score_pct", "N/A"),
+                "clip_score_pct": result.get("best_match", {}).get("clip_score_pct", "N/A"),
+    
                 "matches": result.get("matches", []),
                 "current_user": current_user,
             },
