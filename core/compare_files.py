@@ -1,6 +1,7 @@
 
 import json
 import os
+
 from datetime import datetime
 from pathlib import Path
 
@@ -25,6 +26,12 @@ from app.utils.hash_utils import sha256_file
 from app.utils.metadata_utils import get_image_metadata, extract_exif
 from app.utils.image_fingerprint import generate_phash
 
+try:
+    from sentence_transformers import SentenceTransformer, util
+    from PIL import Image as PILImage
+    _clip_model = SentenceTransformer('clip-ViT-B-32')
+except Exception:
+    _clip_model = None
 
 REPORT_LIMITATIONS_TEXT = (
     "This report reflects a tool-assisted forensic comparison of the files submitted for analysis. "
@@ -251,6 +258,18 @@ def _load_image_rgb(path_value):
 def _load_image_gray(path_value, size=(1000, 1000)):
     with Image.open(path_value) as img:
         return img.convert("L").resize(size)
+def _compute_clip_similarity(path1, path2):
+    if _clip_model is None:
+        return None
+    try:
+        img1 = PILImage.open(path1).convert("RGB")
+        img2 = PILImage.open(path2).convert("RGB")
+        emb1 = _clip_model.encode(img1, convert_to_tensor=True)
+        emb2 = _clip_model.encode(img2, convert_to_tensor=True)
+        score = float(util.cos_sim(emb1, emb2)[0][0])
+        return round((score + 1) / 2 * 100, 2)
+    except Exception:
+        return None  
 
 def _compute_ssim(original_path, suspect_path):
     img1 = _load_image_gray(original_path)
@@ -440,6 +459,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         ssim_score = _compute_ssim(original_path, suspect_path)
     except Exception:
         ssim_score = 0.0
+    clip_score = _compute_clip_similarity(original_path, suspect_path)
 
     visual_summary = _visual_assessment(ssim_score, phash_distance)
     match_level = _match_level(phash_distance, ssim_score)
@@ -477,6 +497,8 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         "suspect_phash": str(suspect_phash),
         "phash_distance": phash_distance,
         "ssim_score": round(float(ssim_score), 4),
+        "clip_score": clip_score,
+        "clip_score_pct": f"{clip_score:.1f}%" if clip_score is not None else "N/A",
         "similarity_score": round(float(ssim_score) * 100, 2),
         "match_level": match_level,
         "visual_assessment": visual_summary,
