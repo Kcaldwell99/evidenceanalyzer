@@ -220,7 +220,7 @@
 
     <div class="metric">
         <strong>Confidence Level:</strong>
-        <span>{{ result.confidence_level }}</span>
+        <span>{{ comparison.confidence_level }}</span>
     </div>
 <div class="metric">
     <strong>Visual Semantic Similarity (CLIP):</strong>
@@ -228,17 +228,17 @@
 </div>
     <div class="metric">
         <strong>Conclusion:</strong>
-        <p>{{ result.conclusion_text }}</p>
+        <p>{{ comparison.conclusion_text }}</p>
     </div>
 
     <div class="metric">
         <strong>Interpretation:</strong>
-        <p>{{ result.interpretation_text }}</p>
+        <p>{{ comparison.interpretation_text }}</p>
     </div>
 
     <div class="metric">
         <strong>Limitations:</strong>
-        <p>{{ result.limitations_text }}</p>
+        <p>{{ comparison.limitations_text }}</p>
     </div>
 </div>
 
@@ -592,3 +592,4 @@
     </script>
 </body>
 </html>
+
