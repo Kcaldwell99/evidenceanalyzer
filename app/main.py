@@ -702,6 +702,18 @@ async def compare_submit(
             "current_user": current_user,
         },
     )
+@app.get("/compare-against-case", response_class=HTMLResponse)
+async def compare_against_case_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    cases = load_cases_for_user(current_user)
+    return templates.TemplateResponse(
+        request,
+        "compare.html",
+        {"current_user": current_user, "cases": cases},
+    )
 
 @app.post("/compare-against-case", response_class=HTMLResponse)
 async def compare_against_case_route(
@@ -810,6 +822,7 @@ async def compare_case_route(
                 "suspect_file": suspect_file.filename,
                 "suspect_phash": result.get("suspect_phash"),
                 "comparison": result.get("comparison"),
+                "clip_score_pct": result.get("clip_score_pct", "N/A"),
                 "matches": result.get("matches", []),
                 "current_user": current_user,
             },
