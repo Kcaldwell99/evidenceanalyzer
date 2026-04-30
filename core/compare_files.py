@@ -134,6 +134,22 @@ def build_forensic_conclusion(
                 "but the differences observed prevent classification as an exact digital match."
             ),
         }
+    if phash_distance <= 16:
+        return {
+            "confidence_level": "Possible Match",
+            "conclusion_title": "Possible Match — Perceptual Hash Similarity Detected",
+            "conclusion_text": (
+                "The submitted image exhibits perceptual hash similarity to the reference image. "
+                "While structural similarity analysis was inconclusive, the perceptual hash distance "
+                "is consistent with JPEG re-encoding or minor post-processing of the same source image. "
+                "This result warrants further review."
+            ),
+            "interpretation_text": (
+                "Perceptual hash similarity at this distance is a meaningful forensic indicator. "
+                "The result does not confirm an exact file match but supports the inference "
+                "that the images share a common visual origin."
+            ),
+        }
 
     if ssim_score >= 0.60 and phash_distance <= 20:
         return {
