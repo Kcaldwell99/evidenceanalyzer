@@ -808,8 +808,8 @@ async def compare_case_route(
             ip_address=request.client.host,
             notes="Suspect image compared against evidence in selected case",
             extra={
-                "best_match_file": result.get("comparison", {}).get("original_file") if result.get("comparison") else None,
-                "similarity_score": result.get("comparison", {}).get("similarity_score") if result.get("comparison") else None,
+                "best_match_file": result.get("best_match", {}).get("original_file") if result.get("best_match") else None,
+                "similarity_score": result.get("best_match", {}).get("similarity_score") if result.get("best_match") else None,
                 "match_count": len(result.get("matches", [])),
             },
         )
@@ -821,10 +821,11 @@ async def compare_case_route(
                 "case_id": case_id,
                 "suspect_file": suspect_file.filename,
                 "suspect_phash": result.get("suspect_phash"),
-                "comparison": result.get("best_match"),
-                
-                "clip_score_pct": result.get("best_match", {}).get("clip_score_pct", "N/A"),
-    
+                "comparison": {
+                **(result.get("best_match") or {}),
+                "conclusion": (result.get("best_match") or {}).get("conclusion_text", ""),
+            },
+
                 "matches": result.get("matches", []),
                 "current_user": current_user,
             },
