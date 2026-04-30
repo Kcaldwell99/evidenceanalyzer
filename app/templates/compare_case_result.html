@@ -222,7 +222,10 @@
         <strong>Confidence Level:</strong>
         <span>{{ result.confidence_level }}</span>
     </div>
-
+<div class="metric">
+    <strong>Visual Semantic Similarity (CLIP):</strong>
+    <span>{{ clip_score_pct }}</span>
+</div>
     <div class="metric">
         <strong>Conclusion:</strong>
         <p>{{ result.conclusion_text }}</p>
