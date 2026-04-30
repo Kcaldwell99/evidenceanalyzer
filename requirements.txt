@@ -27,3 +27,5 @@ resend
 resend
 
 scikit-image
+
+sentence-transformers
