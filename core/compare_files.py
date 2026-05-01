@@ -18,10 +18,8 @@ except ImportError:
 
 try:
     from core.comparison_pdf import generate_comparison_pdf
-except Exception as e:
-        print(f"CLIP error: {e}", flush=True)
-        return None
-        generate_comparison_pdf = None
+except Exception:
+    generate_comparison_pdf = None
 
 from app.utils.hash_utils import sha256_file
 from app.utils.metadata_utils import get_image_metadata, extract_exif
@@ -89,7 +87,6 @@ def build_forensic_conclusion(
         ]
     )
 
-    # Strong phash match should always yield high confidence regardless of SSIM
     if phash_distance == 0:
         return {
             "confidence_level": "High Confidence Match",
@@ -225,14 +222,14 @@ def _compute_clip_similarity(path1, path2):
         score = float(util.cos_sim(emb1, emb2)[0][0])
         return round((score + 1) / 2 * 100, 2)
     except Exception as e:
-        print(f"CLIP error: {e}", flush=True)
+        print("CLIP error: " + str(e), flush=True)
         return None
+
 
 def _compute_ssim(original_path, suspect_path):
     img1 = _load_image_gray(original_path)
     img2 = _load_image_gray(suspect_path)
 
-    # FIX: Resize suspect to match original dimensions
     if img2.size != img1.size:
         img2 = img2.resize(img1.size, Image.LANCZOS)
 
@@ -248,7 +245,6 @@ def _compute_ssim(original_path, suspect_path):
     img1_array = __import__("numpy").array(img1)
     img2_array = __import__("numpy").array(img2)
 
-    # FIX: Pass data_range=255 for uint8 grayscale images
     score = skimage_ssim(img1_array, img2_array, data_range=255)
     return float(score)
 
@@ -348,14 +344,14 @@ def _build_pdf_differences(result, max_items=8):
 
     for d in result.get("metadata_differences", [])[:max_items]:
         difference_lines.append(
-            f"Metadata difference — {d.get('field')}: {d.get('original')} → {d.get('suspect')}"
+            "Metadata difference - " + str(d.get("field")) + ": " + str(d.get("original")) + " -> " + str(d.get("suspect"))
         )
 
     remaining_slots = max(0, max_items - len(result.get("metadata_differences", [])[:max_items]))
     if remaining_slots > 0:
         for d in result.get("exif_differences", [])[:remaining_slots]:
             difference_lines.append(
-                f"EXIF difference — {d.get('field')}: {d.get('original')} → {d.get('suspect')}"
+                "EXIF difference - " + str(d.get("field")) + ": " + str(d.get("original")) + " -> " + str(d.get("suspect"))
             )
 
     if not difference_lines:
@@ -445,6 +441,8 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         visual_assessment=visual_summary,
     )
 
+    clip_score_pct = (str(round(clip_score, 1)) + "%") if clip_score is not None else "N/A"
+
     result = {
         "generated_at": datetime.utcnow().isoformat(),
         "original_file": original_filename or os.path.basename(original_path),
@@ -459,7 +457,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         "phash_distance": phash_distance,
         "ssim_score": round(float(ssim_score), 4),
         "clip_score": clip_score,
-        "clip_score_pct": f"{clip_score:.1f}%" if clip_score is not None else "N/A",
+        "clip_score_pct": clip_score_pct,
         "similarity_score": round(float(ssim_score) * 100, 2),
         "match_level": match_level,
         "visual_assessment": visual_summary,
@@ -486,7 +484,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
             generate_comparison_pdf(pdf_payload, comparison_pdf_path)
         except Exception as e:
             import traceback
-            print(f"PDF generation failed: {e}", flush=True)
+            print("PDF generation failed: " + str(e), flush=True)
             print(traceback.format_exc(), flush=True)
             comparison_pdf_path = None
 
@@ -495,7 +493,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     if comparison_pdf_path and os.path.exists(comparison_pdf_path):
         try:
             from app.storage import s3_client, AWS_S3_BUCKET, AWS_REGION
-            s3_key = f"comparison_reports/{os.path.basename(output_dir)}_{os.path.basename(comparison_pdf_path)}"
+            s3_key = "comparison_reports/" + os.path.basename(output_dir) + "_" + os.path.basename(comparison_pdf_path)
             with open(comparison_pdf_path, "rb") as pdf_file:
                 s3_client.upload_fileobj(pdf_file, AWS_S3_BUCKET, s3_key, ExtraArgs={"ContentType": "application/pdf"})
             s3_url = s3_client.generate_presigned_url(
@@ -505,7 +503,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
             )
             result["comparison_pdf"] = s3_url
         except Exception as e:
-            print(f"S3 upload failed: {e}", flush=True)
+            print("S3 upload failed: " + str(e), flush=True)
             result["comparison_pdf"] = _safe_relpath(comparison_pdf_path)
     else:
         result["comparison_pdf"] = None
@@ -607,7 +605,6 @@ def compare_against_case(suspect_path, case_id_or_path, suspect_filename=None):
 
     if matches:
         best_match = matches[0]
-        # CLIP is already computed inside compare_two_files — no extra call needed
 
     return {
         "case_id": case_id,
@@ -649,7 +646,6 @@ def compare_against_all_cases(suspect_path, cases_root="cases"):
     )
 
     best_match = all_matches[0] if all_matches else None
-    # CLIP is already computed inside compare_two_files for each match
 
     return {
         "suspect_file": os.path.basename(str(suspect_path)),
