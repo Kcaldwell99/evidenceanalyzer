@@ -813,7 +813,7 @@ async def compare_case_route(
                 "match_count": len(result.get("matches", [])),
             },
         )
-
+print("DEBUG comparison keys: " + str(list((result.get("best_match") or {}).keys())), flush=True)
     return templates.TemplateResponse(
             request,
             "compare_case_result.html",
@@ -825,7 +825,7 @@ async def compare_case_route(
                 **(result.get("best_match") or {}),
                 "conclusion": (result.get("best_match") or {}).get("conclusion_text", ""),
             },
-
+                "clip_score_pct": (result.get("best_match") or {}).get("clip_score_pct", "N/A"),
                 "matches": result.get("matches", []),
                 "current_user": current_user,
             },
