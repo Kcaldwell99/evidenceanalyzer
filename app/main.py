@@ -813,7 +813,7 @@ async def compare_case_route(
                 "match_count": len(result.get("matches", [])),
             },
         )
-print("DEBUG comparison keys: " + str(list((result.get("best_match") or {}).keys())), flush=True)
+
     return templates.TemplateResponse(
             request,
             "compare_case_result.html",
