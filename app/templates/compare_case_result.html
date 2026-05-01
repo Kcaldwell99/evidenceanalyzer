@@ -82,6 +82,14 @@
         <div class="summary-item" style="grid-column: 1 / -1;">
             <span class="label">Conclusion</span>
             <span class="value">{{ comparison.conclusion_text }}</span>
+            <div class="summary-item">
+            <span class="label">Interpretation</span>
+            <span class="value">{{ comparison.interpretation_text }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="label">CLIP Score</span>
+            <span class="value">{{ clip_score_pct }}</span>
+        </div>
         </div>
     </div>
 </div>
