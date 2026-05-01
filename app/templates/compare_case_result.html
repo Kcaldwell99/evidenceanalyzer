@@ -4,42 +4,13 @@
     <meta charset="UTF-8">
     <title>Case Comparison Results</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 30px auto;
-            max-width: 1100px;
-            background: #f4f6f8;
-            color: #1f2937;
-        }
-        .section {
-            background: white;
-            padding: 22px;
-            margin-top: 22px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
+        body { font-family: Arial, sans-serif; margin: 30px auto; max-width: 1100px; background: #f4f6f8; color: #1f2937; }
+        .section { background: white; padding: 22px; margin-top: 22px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         h1, h2, h3 { color: #111827; margin-top: 0; }
-        .summary-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px 24px;
-        }
-        .summary-item {
-            padding: 10px 12px;
-            background: #f9fafb;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-        }
-        .highlight-card {
-            border-left: 5px solid #2563eb;
-            background: #eff6ff;
-        }
-        .label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 4px;
-            color: #374151;
-        }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; }
+        .summary-item { padding: 10px 12px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; }
+        .highlight-card { border-left: 5px solid #2563eb; background: #eff6ff; }
+        .label { font-weight: bold; display: block; margin-bottom: 4px; color: #374151; }
         .value { color: #111827; word-break: break-word; }
         .note { color: #6b7280; font-size: 14px; }
         .yes { color: #15803d; font-weight: bold; }
@@ -49,303 +20,158 @@
         th { background: #f3f4f6; }
         a { color: #2563eb; text-decoration: none; }
         a:hover { text-decoration: underline; }
-        .button {
-            display: inline-block;
-            margin-right: 12px;
-            margin-top: 10px;
-            padding: 10px 14px;
-            background: #2563eb;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-        }
+        .button { display: inline-block; margin-right: 12px; margin-top: 10px; padding: 10px 14px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; }
         .button:hover { background: #1d4ed8; text-decoration: none; }
         .image-block { margin-top: 20px; }
-        .image-block img {
-            max-width: 100%;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            background: white;
-        }
-        .slider-compare {
-            position: relative;
-            width: 100%;
-            max-width: 900px;
-            margin-top: 20px;
-            overflow: hidden;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            background: #fff;
-        }
-        .slider-base-image, .slider-overlay-image {
-            display: block;
-            width: 100%;
-            height: auto;
-            user-select: none;
-            pointer-events: none;
-        }
-        .slider-overlay-wrapper {
-            position: absolute;
-            top: 0; left: 0;
-            width: 50%;
-            height: 100%;
-            overflow: hidden;
-            border-right: 2px solid #ffffff;
-        }
-        .slider-range { width: 100%; margin-top: 14px; }
-        .slider-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            font-size: 14px;
-            color: #6b7280;
-        }
-        .analysis-section {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 24px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
+        .image-block img { max-width: 100%; border: 1px solid #d1d5db; border-radius: 8px; background: white; }
+        .analysis-section { background: #ffffff; padding: 20px; border-radius: 12px; margin-top: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .analysis-section h2 { margin-top: 0; }
         .metric { margin-bottom: 14px; }
-        @media (max-width: 850px) {
-            .summary-grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 850px) { .summary-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <div class="section">
-        <h1>Case Comparison Results</h1>
-        <div class="summary-grid">
-            <div class="summary-item">
-                <span class="label">Case ID</span>
-                <span class="value">{{ case_id }}</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">Suspect File</span>
-                <span class="value">{{ suspect_file }}</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">Suspect pHash</span>
-                <span class="value">{{ suspect_phash }}</span>
-            </div>
-            <div class="summary-item highlight-card">
-                <span class="label">Matches Found</span>
-                <span class="value">{{ matches | length }}</span>
-            </div>
+<div class="section">
+    <h1>Comparison Result</h1>
+    <div class="summary-grid">
+        <div class="summary-item">
+            <span class="label">Case ID</span>
+            <span class="value">{{ case_id }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="label">Suspect File</span>
+            <span class="value">{{ suspect_file }}</span>
+        </div>
+        <div class="summary-item highlight-card">
+            <span class="label">Matches Found</span>
+            <span class="value">{{ matches | length }}</span>
         </div>
     </div>
+</div>
 
-    {% if comparison %}
-    <div class="section">
-        <h2>Best Match</h2>
-        <div class="summary-grid">
-            <div class="summary-item">
-                <span class="label">Reference File</span>
-                <span class="value">{{ comparison.original_file }}</span>
-            </div>
-            <div class="summary-item highlight-card">
-                <span class="label">Confidence</span>
-                <span class="value">{{ comparison.confidence_level }}</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">Similarity Score</span>
-                <span class="value">{{ comparison.similarity_score }}%</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">pHash Distance</span>
-                <span class="value">{{ comparison.phash_distance }}</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">SSIM Score</span>
-                <span class="value">{{ comparison.ssim_score }}</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">Visual Semantic Similarity (CLIP)</span>
-                <span class="value">{{ clip_score_pct }}</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">SHA256 Match</span>
-                <span class="value">
-                    {% if comparison.sha256_match %}
-                        <span class="yes">Yes</span>
-                    {% else %}
-                        <span class="no">No</span>
-                    {% endif %}
-                </span>
-            </div>
-            <div class="summary-item">
-                <span class="label">Visual Assessment</span>
-                <span class="value">{{ comparison.visual_assessment }}</span>
-            </div>
-            <div class="summary-item" style="grid-column: 1 / -1;">
-                <span class="label">Conclusion</span>
-                <span class="value">{{ comparison.conclusion_text }}</span>
-            </div>
+{% if comparison %}
+<div class="section">
+    <h2>Best Match</h2>
+    <div class="summary-grid">
+        <div class="summary-item">
+            <span class="label">Reference File</span>
+            <span class="value">{{ comparison.original_file }}</span>
+        </div>
+        <div class="summary-item highlight-card">
+            <span class="label">Confidence</span>
+            <span class="value">{{ comparison.confidence_level }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="label">Similarity Score</span>
+            <span class="value">{{ comparison.similarity_score }}%</span>
+        </div>
+        <div class="summary-item">
+            <span class="label">pHash Distance</span>
+            <span class="value">{{ comparison.phash_distance }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="label">SSIM Score</span>
+            <span class="value">{{ comparison.ssim_score }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="label">Visual Semantic Similarity (CLIP)</span>
+            <span class="value">{{ clip_score_pct }}</span>
+        </div>
+        <div class="summary-item" style="grid-column: 1 / -1;">
+            <span class="label">Conclusion</span>
+            <span class="value">{{ comparison.conclusion_text }}</span>
         </div>
     </div>
+</div>
 
-    <div class="analysis-section">
-        <h2>Forensic Conclusion</h2>
-        <div class="metric">
-            <strong>Confidence Level:</strong>
-            <span>{{ comparison.confidence_level }}</span>
-        </div>
-        <div class="metric">
-            <strong>Visual Semantic Similarity (CLIP):</strong>
-            <span>{{ clip_score_pct }}</span>
-        </div>
-        <div class="metric">
-            <strong>Conclusion:</strong>
-            <p>{{ comparison.conclusion_text }}</p>
-        </div>
-        <div class="metric">
-            <strong>Interpretation:</strong>
-            <p>{{ comparison.interpretation_text }}</p>
-        </div>
-        <div class="metric">
-            <strong>Limitations:</strong>
-            <p>{{ comparison.limitations_text }}</p>
-        </div>
-
-        <div style="margin-top: 18px;">
-            {% if comparison.comparison_pdf %}
-            <a class="button" href="/case-files/{{ comparison.comparison_pdf.replace('\\','/').replace('cases/','') }}" target="_blank">Open Comparison PDF</a>
-            {% endif %}
-        </div>
+<div class="analysis-section">
+    <h2>Forensic Conclusion</h2>
+    <div class="metric">
+        <strong>Confidence Level:</strong>
+        <span>{{ comparison.confidence_level }}</span>
     </div>
-
-    <div class="section">
-        <h2>Visual Difference Analysis</h2>
-        <p class="note">These images are generated automatically from the comparison workflow and highlight localized visual differences between the reference and suspect images.</p>
-
-        {% if comparison.normalized_original_path and comparison.normalized_suspect_path %}
-        <div class="image-block">
-            <h3>Interactive Original vs. Suspect Slider</h3>
-            <div class="slider-compare">
-                <img class="slider-base-image" src="/case-files/{{ comparison.normalized_original_path.replace('\\','/').replace('cases/','') }}" alt="Normalized original image">
-                <div class="slider-overlay-wrapper" id="overlayWrapper">
-                    <img class="slider-overlay-image" src="/case-files/{{ comparison.normalized_suspect_path.replace('\\','/').replace('cases/','') }}" alt="Normalized suspect image">
-                </div>
-            </div>
-            <input type="range" min="0" max="100" value="50" class="slider-range" id="compareSlider">
-            <div class="slider-labels"><span>Original</span><span>Suspect</span></div>
-        </div>
-        {% endif %}
-
-        {% if comparison.side_by_side_path %}
-        <div class="image-block">
-            <h3>Side-by-Side Comparison</h3>
-            <img src="/case-files/{{ comparison.side_by_side_path.replace('\\','/').replace('cases/','') }}" alt="Side by side comparison">
-        </div>
-        {% endif %}
-
-        {% if comparison.diff_map_path %}
-        <div class="image-block">
-            <h3>Difference Map</h3>
-            <img src="/case-files/{{ comparison.diff_map_path.replace('\\','/').replace('cases/','') }}" alt="Difference map">
-        </div>
-        {% endif %}
-
-        {% if comparison.original_marked_path %}
-        <div class="image-block">
-            <h3>Reference Image with Marked Regions</h3>
-            <img src="/case-files/{{ comparison.original_marked_path.replace('\\','/').replace('cases/','') }}" alt="Original marked image">
-        </div>
-        {% endif %}
-
-        {% if comparison.suspect_marked_path %}
-        <div class="image-block">
-            <h3>Suspect Image with Marked Regions</h3>
-            <img src="/case-files/{{ comparison.suspect_marked_path.replace('\\','/').replace('cases/','') }}" alt="Suspect marked image">
-        </div>
-        {% endif %}
+    <div class="metric">
+        <strong>Visual Semantic Similarity (CLIP):</strong>
+        <span>{{ clip_score_pct }}</span>
     </div>
-
-    <div class="section">
-        <h2>Metadata Differences</h2>
-        {% if comparison.metadata_differences %}
-        <table>
-            <thead><tr><th>Field</th><th>Original</th><th>Suspect</th></tr></thead>
-            <tbody>
-                {% for item in comparison.metadata_differences %}
-                <tr>
-                    <td>{{ item.field }}</td>
-                    <td>{{ item.original }}</td>
-                    <td>{{ item.suspect }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>No metadata differences were detected.</p>
-        {% endif %}
+    <div class="metric">
+        <strong>Conclusion:</strong>
+        <p>{{ comparison.conclusion_text }}</p>
     </div>
-
-    <div class="section">
-        <h2>EXIF Differences</h2>
-        {% if comparison.exif_differences %}
-        <table>
-            <thead><tr><th>Field</th><th>Original</th><th>Suspect</th></tr></thead>
-            <tbody>
-                {% for item in comparison.exif_differences %}
-                <tr>
-                    <td>{{ item.field }}</td>
-                    <td>{{ item.original }}</td>
-                    <td>{{ item.suspect }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>No EXIF differences were detected.</p>
-        {% endif %}
+    <div class="metric">
+        <strong>Interpretation:</strong>
+        <p>{{ comparison.interpretation_text }}</p>
     </div>
+    <div class="metric">
+        <strong>Limitations:</strong>
+        <p>{{ comparison.limitations_text }}</p>
+    </div>
+    {% if comparison.comparison_pdf %}
+    <a class="button" href="/case-files/{{ comparison.comparison_pdf.replace('\\','/').replace('cases/','') }}" target="_blank">Open Comparison PDF</a>
     {% endif %}
+</div>
 
-    <div class="section">
-        <h2>All Matches</h2>
-        {% if matches %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Reference File</th>
-                    <th>Confidence</th>
-                    <th>Similarity Score</th>
-                    <th>pHash Distance</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in matches %}
-                <tr>
-                    <td>{{ item.original_file }}</td>
-                    <td>{{ item.confidence_level }}</td>
-                    <td>{{ item.similarity_score }}%</td>
-                    <td>{{ item.phash_distance }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>No comparable evidence found.</p>
-        {% endif %}
-    </div>
+<div class="section">
+    <h2>Metadata Differences</h2>
+    {% if comparison.metadata_differences %}
+    <table>
+        <thead><tr><th>Field</th><th>Original</th><th>Suspect</th></tr></thead>
+        <tbody>
+            {% for item in comparison.metadata_differences %}
+            <tr><td>{{ item.field }}</td><td>{{ item.original }}</td><td>{{ item.suspect }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No metadata differences detected.</p>
+    {% endif %}
+</div>
 
-    <div class="section">
-        <a class="button" href="/cases/{{ case_id }}">Back to Case</a>
-        <a class="button" href="/">Back to Home</a>
-    </div>
+<div class="section">
+    <h2>EXIF Differences</h2>
+    {% if comparison.exif_differences %}
+    <table>
+        <thead><tr><th>Field</th><th>Original</th><th>Suspect</th></tr></thead>
+        <tbody>
+            {% for item in comparison.exif_differences %}
+            <tr><td>{{ item.field }}</td><td>{{ item.original }}</td><td>{{ item.suspect }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No EXIF differences detected.</p>
+    {% endif %}
+</div>
+{% endif %}
 
-    <script>
-        const compareSlider = document.getElementById("compareSlider");
-        const overlayWrapper = document.getElementById("overlayWrapper");
-        if (compareSlider && overlayWrapper) {
-            compareSlider.addEventListener("input", function () {
-                overlayWrapper.style.width = this.value + "%";
-            });
-        }
-    </script>
+<div class="section">
+    <h2>All Matches</h2>
+    {% if matches %}
+    <table>
+        <thead>
+            <tr><th>Reference File</th><th>Confidence</th><th>Similarity Score</th><th>pHash Distance</th></tr>
+        </thead>
+        <tbody>
+            {% for item in matches %}
+            <tr>
+                <td>{{ item.original_file }}</td>
+                <td>{{ item.confidence_level }}</td>
+                <td>{{ item.similarity_score }}%</td>
+                <td>{{ item.phash_distance }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No comparable evidence found.</p>
+    {% endif %}
+</div>
+
+<div class="section">
+    <a class="button" href="/cases/{{ case_id }}">Back to Case</a>
+    <a class="button" href="/">Back to Home</a>
+</div>
+
 </body>
 </html>
