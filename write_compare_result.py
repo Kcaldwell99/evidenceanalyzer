@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿content = """<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -103,7 +103,7 @@ a:hover { text-decoration: underline; }
     <p>{{ result.best_match.limitations_text }}</p>
   </div>
   {% if result.best_match.comparison_pdf %}
-  <a class="button" href="/case-files/{{ result.best_match.comparison_pdf.replace('\\','/').replace('cases/','') }}" target="_blank">Download PDF Report</a>
+  <a class="button" href="/case-files/{{ result.best_match.comparison_pdf.replace('\\\\','/').replace('cases/','') }}" target="_blank">Download PDF Report</a>
   {% endif %}
 </div>
 
@@ -174,4 +174,9 @@ a:hover { text-decoration: underline; }
 <a class="button" href="/cases/{{ result.case_id if result else '' }}">Back to Case</a>
 
 </body>
-</html>
+</html>"""
+
+with open("app/templates/compare_result.html", "w", encoding="utf-8") as f:
+    f.write(content)
+
+print("Done. Lines:", len(content.splitlines()))
