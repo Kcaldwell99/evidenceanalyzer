@@ -856,7 +856,7 @@ async def compare_global_route(
         notes="Image compared against all cases",
         extra={"match_count": len(result.get("matches", []))},
     )
-    Get-Content app/main.py | Select-Object -Index (854..865)
+    print("DEBUG best_match:", result.get("best_match"), flush=True)
     return templates.TemplateResponse(
             request,
             "compare_global_result.html",
