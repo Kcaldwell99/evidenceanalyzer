@@ -844,9 +844,7 @@ async def compare_global_route(
 
     with suspect_path.open("wb") as buffer:
         buffer.write(await suspect_file.read())
-
-    result = compare_against_all_cases(str(suspect_path))
-
+    result = compare_against_all_cases(str(suspect_path), cases_root=str(CASES_DIR))
     log_audit_event(
         event_type="global_comparison_completed",
         case_id="GLOBAL",
