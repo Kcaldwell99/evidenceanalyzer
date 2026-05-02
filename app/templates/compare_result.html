@@ -119,13 +119,7 @@ a:hover { text-decoration: underline; }
   <h2>Metadata Differences</h2>
   <table>
     <tr><th>Field</th><th>Reference</th><th>Suspect</th></tr>
-    {% for key, val in result.best_match.metadata_differences | dictsort %}
-    <tr>
-      <td>{{ key }}</td>
-      <td>{{ val.reference if val is mapping else val }}</td>
-      <td>{{ val.suspect if val is mapping else '' }}</td>
-    </tr>
-    {% endfor %}
+    {% for d in result.best_match.metadata_differences %}<tr><td>{{ d.field }}</td><td>{{ d.original }}</td><td>{{ d.suspect }}</td></tr>{% endfor %}
   </table>
 </div>
 {% endif %}
@@ -135,13 +129,7 @@ a:hover { text-decoration: underline; }
   <h2>EXIF Differences</h2>
   <table>
     <tr><th>Field</th><th>Reference</th><th>Suspect</th></tr>
-    {% for key, val in result.best_match.exif_differences | dictsort %}
-    <tr>
-      <td>{{ key }}</td>
-      <td>{{ val.reference if val is mapping else val }}</td>
-      <td>{{ val.suspect if val is mapping else '' }}</td>
-    </tr>
-    {% endfor %}
+    {% for d in result.best_match.exif_differences %}<tr><td>{{ d.field }}</td><td>{{ d.original }}</td><td>{{ d.suspect }}</td></tr>{% endfor %}
   </table>
 </div>
 {% endif %}
@@ -175,3 +163,5 @@ a:hover { text-decoration: underline; }
 
 </body>
 </html>
+
+
