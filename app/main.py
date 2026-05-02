@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import requests
-from sqlalchemy import event
+from sqlalchemy import Index, event
 from sqlalchemy import event
 import stripe
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Depends, Response
@@ -813,7 +813,7 @@ async def compare_case_route(
                 "match_count": len(result.get("matches", [])),
             },
         )
-
+    print("DEBUG best_match:", result.get("best_match"), flush=True)
     return templates.TemplateResponse(
             request,
             "compare_case_result.html",
@@ -856,7 +856,7 @@ async def compare_global_route(
         notes="Image compared against all cases",
         extra={"match_count": len(result.get("matches", []))},
     )
-
+    Get-Content app/main.py | Select-Object -Index (854..865)
     return templates.TemplateResponse(
             request,
             "compare_global_result.html",
