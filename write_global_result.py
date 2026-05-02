@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿content = """<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -119,4 +119,8 @@ h1 { font-size: 24px; margin-bottom: 20px; }
 <a class="button" href="/">Back to Home</a>
 
 </body>
-</html>
+</html>"""
+
+with open("app/templates/compare_global_result.html", "w", encoding="utf-8") as f:
+    f.write(content)
+print("Done. Lines:", len(content.splitlines()))
