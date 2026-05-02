@@ -813,7 +813,7 @@ async def compare_case_route(
                 "match_count": len(result.get("matches", [])),
             },
         )
-    print("DEBUG best_match:", result.get("best_match"), flush=True)
+    raise ValueError("DEBUG CHECKPOINT: " + str(result.get("best_match")))
     return templates.TemplateResponse(
             request,
             "compare_case_result.html",
