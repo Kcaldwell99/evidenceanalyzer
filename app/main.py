@@ -861,6 +861,7 @@ async def compare_global_route(
             request,
             "compare_global_result.html",
             {
+                "result": result,          # ADD THIS LINE
                 "suspect_file": suspect_file.filename,
                 "suspect_phash": result.get("suspect_phash"),
                 "matches": result.get("matches", []),
