@@ -6,6 +6,8 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw
 
+from core.perceptual_hash import phash_distance
+
 try:
     from skimage.metrics import structural_similarity as skimage_ssim
 except ImportError:
@@ -48,7 +50,9 @@ def build_forensic_conclusion(
     metadata_diff_count=0,
     exif_diff_count=0,
     visual_assessment=None,
+    clip_score=None,
 ):
+   
     if sha256_match:
         return {
             "confidence_level": "Exact File Match",
@@ -139,12 +143,26 @@ def build_forensic_conclusion(
                 "The available indicators support a meaningful relationship between the compared images, "
                 "but the differences observed prevent classification as an exact digital match."
             ),
-        }
 
+        }
     if phash_distance <= 16:
+        if clip_score is not None and clip_score >= 0.85:
+            return {
+                "confidence_level": "Probable Match",
+                "conclusion_title": "Probable Match — High Visual Semantic Similarity",
+                "conclusion_text": (
+                    "The submitted image exhibits perceptual hash similarity to the reference image, "
+                    "and visual semantic analysis confirms strong content similarity (CLIP >= 85%). "
+                    "This combination supports a probable derivation from the same source image."
+                ),
+                "interpretation_text": (
+                    "Perceptual hash similarity combined with high CLIP similarity provides "
+                    "meaningful forensic support for a common visual origin."
+                ),
+            }
         return {
             "confidence_level": "Possible Match",
-            "conclusion_title": "Possible Match — Perceptual Hash Similarity Detected",
+            "conclusion_title": "Possible Match \u2014 Perceptual Hash Similarity Detected",
             "conclusion_text": (
                 "The submitted image exhibits perceptual hash similarity to the reference image. "
                 "While structural similarity analysis was inconclusive, the perceptual hash distance "
@@ -439,6 +457,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         metadata_diff_count=len(metadata_differences),
         exif_diff_count=len(exif_differences),
         visual_assessment=visual_summary,
+        clip_score=clip_score,
     )
 
     clip_score_pct = (str(round(clip_score, 1)) + "%") if clip_score is not None else "N/A"
