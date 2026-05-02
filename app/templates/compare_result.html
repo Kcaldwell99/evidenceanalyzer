@@ -71,7 +71,7 @@ a:hover { text-decoration: underline; }
     </div>
     <div class="summary-item">
       <span class="label">Similarity Score (SSIM)</span>
-      <span class="value">{{ result.best_match.ssim_score }}%</span>
+      <span class="value">{{ result.best_match.similarity_score }}%</span>
     </div>
     <div class="summary-item">
       <span class="label">Visual Semantic Similarity (CLIP)</span>
@@ -146,7 +146,8 @@ a:hover { text-decoration: underline; }
     <span class="label" style="margin-top:6px;">Confidence</span>
     <span class="value">{{ match.confidence_level }}</span>
     <span class="label" style="margin-top:6px;">Similarity Score</span>
-    <span class="value">{{ match.ssim_score }}%</span>
+    <span class="value">{{ match.similarity_score }}%</span>
+
     <span class="label" style="margin-top:6px;">pHash Distance</span>
     <span class="value">{{ match.phash_distance }}</span>
     {% if match.comparison_pdf %}
@@ -163,5 +164,6 @@ a:hover { text-decoration: underline; }
 
 </body>
 </html>
+
 
 
