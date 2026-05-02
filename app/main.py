@@ -1364,12 +1364,19 @@ async def generate_integrity_certificate_route(
             report = json.loads(get_file(item.json_report).decode("utf-8"))
         except Exception:
             report = {}
-
     report["file_name"] = report.get("file_name") or item.file_name
     report["sha256"] = report.get("sha256") or item.sha256
-    report["analysis_date"] = report.get("analysis_date") or (
-        item.analysis_date or datetime.utcnow().isoformat()
-    )
+try:
+    report["analysis_date"] = datetime.fromisoformat(str(item.analysis_date or datetime.utcnow().isoformat())).strftime("%B %d, %Y at %H:%M:%S UTC")
+except Exception:
+    report["analysis_date"] = datetime.utcnow().strftime("%B %d, %Y at %H:%M:%S UTC")
+if "metadata" not in report:
+    report["metadata"] = {}
+if not report["metadata"].get("mime_type"):
+    ext = item.file_name.rsplit(".", 1)[-1].upper() if item.file_name and "." in item.file_name else ""
+    report["metadata"]["mime_type"] = f"{ext} file" if ext else "Unknown"
+
+
     base_url = str(request.base_url).rstrip("/")
 
     # Run C2PA analysis and inject into report
