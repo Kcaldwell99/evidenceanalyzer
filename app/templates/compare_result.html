@@ -119,7 +119,7 @@ a:hover { text-decoration: underline; }
   <h2>Metadata Differences</h2>
   <table>
     <tr><th>Field</th><th>Reference</th><th>Suspect</th></tr>
-    {% for key, val in result.best_match.metadata_differences.items() %}
+    {% for key, val in result.best_match.metadata_differences | dictsort %}
     <tr>
       <td>{{ key }}</td>
       <td>{{ val.reference if val is mapping else val }}</td>
@@ -135,7 +135,7 @@ a:hover { text-decoration: underline; }
   <h2>EXIF Differences</h2>
   <table>
     <tr><th>Field</th><th>Reference</th><th>Suspect</th></tr>
-    {% for key, val in result.best_match.exif_differences.items() %}
+    {% for key, val in result.best_match.exif_differences | dictsort %}
     <tr>
       <td>{{ key }}</td>
       <td>{{ val.reference if val is mapping else val }}</td>
