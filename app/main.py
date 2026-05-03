@@ -1998,7 +1998,36 @@ async def report_file_redirect(
         url = generate_presigned_url(item.pdf_report)
         return RedirectResponse(url=url, status_code=302)
     else:
-        raise HTTPException(status_code=404, detail="Report not found.")
+        
+@app.get("/global-matches", response_class=HTMLResponse)
+async def global_matches(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.models import EvidenceItem, Case
+    cases = db.query(Case).order_by(Case.id.asc()).all()
+    if not current_user.is_admin:
+        cases = [c for c in cases if c.user_id == current_user.id]
+    
+    items = []
+    for case in cases:
+        evidence = db.query(EvidenceItem).filter(EvidenceItem.case_id == case.case_id).all()
+        for e in evidence:
+            items.append({
+                "case_id": case.case_id,
+                "case_name": case.case_name,
+                "evidence_id": e.evidence_id,
+                "file_name": e.file_name,
+                "sha256": e.sha256,
+                "analysis_date": e.analysis_date,
+            })
+    
+    return templates.TemplateResponse(
+        request,
+        "global_matches.html",
+        {"items": items, "current_user": current_user},
+    )        
 
 from app.external_routes import external_router
 app.include_router(external_router)
