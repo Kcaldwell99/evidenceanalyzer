@@ -245,14 +245,13 @@ async def register_submit(
     )
     return resp
 
-
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request, next: Optional[str] = None):
     return templates.TemplateResponse(request, "login.html", {"error": None, "next": next})
 
 @app.get("/pricing")
 async def pricing(request: Request):
-    return templates.TemplateResponse(request, "pricing.html", {})
+    return templates.TemplateResponse(request, "pricing.html", {"pricing": PRICING})
 
 @app.get("/sample")
 async def sample():
@@ -317,16 +316,16 @@ async def home(
     cases = load_cases_for_user(current_user)
     deleted = request.query_params.get("deleted")
 
-    return templates.TemplateResponse(
+return templates.TemplateResponse(
         request,
         "upload.html",
         {
             "cases": cases,
             "current_user": current_user,
             "message": "Case deleted successfully." if deleted else None,
+            "pricing": PRICING,
         },
     )
-
 
 @app.post("/create-case", response_class=HTMLResponse)
 async def create_case(
@@ -1115,6 +1114,20 @@ STRIPE_PRICES = {
 
     # Retired — do not use in new checkouts
     # "integrity": "price_1TIqGdHVHQNKUlwk4oPa5cRp",
+}
+PRICING = {
+    "single":                {"name": "Single Image Analysis",   "price": "$79",       "per": "per image"},
+    "integrity_certificate": {"name": "Integrity Certificate",   "price": "$49",       "per": "per file"},
+    "custody_record":        {"name": "Custody Record",          "price": "$199",      "per": "per case"},
+    "video_single":          {"name": "Single Video Analysis",   "price": "$199",      "per": "per video"},
+    "bundle":                {"name": "Case Bundle",             "price": "$299",      "per": "up to 10 images"},
+    "video_image_bundle":    {"name": "Video + Image Bundle",    "price": "$399",      "per": "per case"},
+    "video_bundle":          {"name": "Video Bundle",            "price": "$599",      "per": "up to 5 videos"},
+    "monitoring_small":      {"name": "Monitoring — Small",      "price": "$49/mo",    "per": "up to 25 files"},
+    "monitoring_standard":   {"name": "Monitoring — Standard",   "price": "$99/mo",   "per": "up to 100 files"},
+    "monitoring_large":      {"name": "Monitoring — Large",      "price": "$199/mo",   "per": "up to 500 files"},
+    "professional":          {"name": "Professional Plan",       "price": "$399/mo",   "per": "up to 150 analyses"},
+    "firm":                  {"name": "Firm License",            "price": "$7,500/yr", "per": "unlimited"},
 }
 
 # Subscription products — used to determine checkout mode
