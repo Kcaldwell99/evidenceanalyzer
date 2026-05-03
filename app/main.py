@@ -1998,6 +1998,8 @@ async def report_file_redirect(
         url = generate_presigned_url(item.pdf_report)
         return RedirectResponse(url=url, status_code=302)
     else:
+        raise HTTPException(status_code=404, detail="Report not found.")
+
         
 @app.get("/global-matches", response_class=HTMLResponse)
 async def global_matches(
