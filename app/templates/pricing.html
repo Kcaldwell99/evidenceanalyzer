@@ -51,154 +51,42 @@
       </div>
     </div>
   </section>
-
-  <section id="pricing" class="pricing">
+<section id="pricing" class="pricing">
     <div class="pricing-inner">
 
       <div class="pricing-section-label">One-time purchases</div>
       <div class="pricing-grid">
-
+        {% for slug in ["single", "integrity_certificate", "custody_record", "video_single", "bundle", "video_image_bundle", "video_bundle"] %}
+        {% set p = pricing[slug] %}
         <div class="price-card">
-          <h3>Single Image Report</h3>
-          <div class="price-amount">$79</div>
+          <h3>{{ p.name }}</h3>
+          <div class="price-amount">{{ p.price }}</div>
           <ul>
-            <li>Per image analysis</li>
-            <li>PDF report included</li>
+            <li>{{ p.per }}</li>
           </ul>
-          <a href="/checkout/single" class="button">Buy Now</a>
+          <a href="/checkout/{{ slug }}" class="button">Buy Now</a>
         </div>
-
-        <div class="price-card">
-          <h3>Integrity Certificate</h3>
-          <div class="price-amount">$49</div>
-          <ul>
-            <li>Per file</li>
-            <li>SHA-256 cryptographic verification</li>
-            <li>Exhibit-ready certificate</li>
-          </ul>
-          <a href="/checkout/integrity_certificate" class="button">Buy Now</a>
-        </div>
-
-        <div class="price-card">
-          <h3>Custody Record</h3>
-          <div class="price-amount">$199</div>
-          <ul>
-            <li>Per case</li>
-            <li>Full chain-of-custody log</li>
-            <li>Exhibit-ready declaration</li>
-          </ul>
-          <a href="/checkout/custody_record" class="button">Buy Now</a>
-        </div>
-
-        <div class="price-card">
-          <h3>Single Video Analysis</h3>
-          <div class="price-amount">$199</div>
-          <ul>
-            <li>Per video</li>
-            <li>20-frame extraction + metadata</li>
-            <li>PDF report included</li>
-          </ul>
-          <a href="/checkout/video_single" class="button">Buy Now</a>
-        </div>
-
-        <div class="price-card">
-          <h3>Case Bundle</h3>
-          <div class="price-amount">$299</div>
-          <ul>
-            <li>Up to 10 image analyses</li>
-            <li>PDF reports included</li>
-          </ul>
-          <a href="/checkout/bundle" class="button">Buy Now</a>
-        </div>
-
-        <div class="price-card">
-          <h3>Video + Image Bundle</h3>
-          <div class="price-amount">$399</div>
-          <ul>
-            <li>Combined video + image analysis</li>
-            <li>Per case</li>
-            <li>PDF reports included</li>
-          </ul>
-          <a href="/checkout/video_image_bundle" class="button">Buy Now</a>
-        </div>
-
-        <div class="price-card">
-          <h3>Video Bundle</h3>
-          <div class="price-amount">$599</div>
-          <ul>
-            <li>Up to 5 videos</li>
-            <li>Frame + metadata per file</li>
-            <li>PDF reports included</li>
-          </ul>
-          <a href="/checkout/video_bundle" class="button">Buy Now</a>
-        </div>
-
+        {% endfor %}
       </div>
 
       <div class="pricing-section-label subscriptions">Subscriptions</div>
       <div class="pricing-grid subscriptions">
-
-        <div class="price-card">
-          <h3>Monitoring &mdash; Small</h3>
-          <div class="price-amount">$49/mo</div>
+        {% for slug in ["monitoring_small", "monitoring_standard", "monitoring_large", "professional", "firm"] %}
+        {% set p = pricing[slug] %}
+        <div class="price-card {% if slug == 'monitoring_standard' %}featured{% endif %}">
+          {% if slug == "monitoring_standard" %}<span class="badge">Most Popular</span>{% endif %}
+          <h3>{{ p.name }}</h3>
+          <div class="price-amount">{{ p.price }}</div>
           <ul>
-            <li>Up to 25 files monitored</li>
-            <li>Monthly custody summary</li>
-            <li>Chain-of-custody alerts</li>
+            <li>{{ p.per }}</li>
           </ul>
-          <a href="/checkout/monitoring_small" class="button">Subscribe</a>
+          <a href="/checkout/{{ slug }}" class="button">Subscribe</a>
         </div>
-
-        <div class="price-card featured">
-          <span class="badge">Most Popular</span>
-          <h3>Monitoring &mdash; Standard</h3>
-          <div class="price-amount">$99/mo</div>
-          <ul>
-            <li>Up to 100 files monitored</li>
-            <li>Monthly custody summary</li>
-            <li>Chain-of-custody alerts</li>
-          </ul>
-          <a href="/checkout/monitoring_standard" class="button">Subscribe</a>
-        </div>
-
-        <div class="price-card">
-          <h3>Monitoring &mdash; Large</h3>
-          <div class="price-amount">$199/mo</div>
-          <ul>
-            <li>Up to 500 files monitored</li>
-            <li>Monthly custody summary</li>
-            <li>Chain-of-custody alerts</li>
-          </ul>
-          <a href="/checkout/monitoring_large" class="button">Subscribe</a>
-        </div>
-
-        <div class="price-card featured">
-          <span class="badge">Best Value</span>
-          <h3>Professional</h3>
-          <div class="price-amount">$399/mo</div>
-          <ul>
-            <li>Up to 150 analyses / month</li>
-            <li>Unlimited cases</li>
-          </ul>
-          <a href="/checkout/professional" class="button">Subscribe</a>
-        </div>
-
-        <div class="price-card">
-          <h3>Firm License</h3>
-          <div class="price-amount">$7,500/yr</div>
-          <ul>
-            <li>Unlimited analyses</li>
-            <li>Unlimited reports</li>
-            <li>Unlimited cases</li>
-          </ul>
-          <a href="/checkout/firm" class="button">Subscribe</a>
-        </div>
-
+        {% endfor %}
       </div>
 
     </div>
   </section>
-
   <section class="final-cta">
     <p>Need a custom quote? <a href="mailto:admin@evidenceanalyzer.com">Contact us.</a></p>
   </section>
