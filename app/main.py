@@ -1,4 +1,4 @@
-`import json
+import json
 import os
 import shutil
 import hashlib
@@ -2001,4 +2001,4 @@ async def report_file_redirect(
         raise HTTPException(status_code=404, detail="Report not found.")
 
 from app.external_routes import external_router
-app.include_router(external_router)`
+app.include_router(external_router)
