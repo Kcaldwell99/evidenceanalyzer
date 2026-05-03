@@ -421,101 +421,41 @@
                 <h2>Investigation Tools</h2>
                 <a class="button" href="/global-matches">Open Global Match Dashboard</a>
             </div>
+<div class="card full-width">
+          <h2>Pricing</h2>
 
-            <div class="card full-width">
-                <h2>Pricing</h2>
+          <div class="pricing-section-label">One-time purchases</div>
+          <div class="pricing-grid">
+            {% for slug in ["single", "integrity_certificate", "custody_record", "video_single", "bundle", "video_image_bundle", "video_bundle"] %}
+            {% set p = pricing[slug] %}
+            <div class="price-card">
+              <h3>{{ p.name }}</h3>
+              <div class="price-amount">{{ p.price }}</div>
+              <ul>
+                <li>{{ p.per }}</li>
+              </ul>
+              <a href="/checkout/{{ slug }}" class="button">Buy Now</a>
+            </div>
+            {% endfor %}
+          </div>
 
-                <div class="pricing-section-label">One-time purchases</div>
-                <div class="pricing-grid">
-                    <div class="price-card">
-                        <h3>Single Image Report</h3>
-                        <div class="price-amount">$79</div>
-                        <ul>
-                            <li>Per image analysis</li>
-                            <li>PDF report included</li>
-                        </ul>
-                        <a href="/checkout/single" class="button">Buy Now</a>
-                    </div>
+          <div class="pricing-section-label subscriptions">Subscriptions</div>
+          <div class="pricing-grid subscriptions">
+            {% for slug in ["monitoring_small", "monitoring_standard", "monitoring_large", "professional", "firm"] %}
+            {% set p = pricing[slug] %}
+            <div class="price-card {% if slug == 'monitoring_standard' %}featured{% endif %}">
+              {% if slug == "monitoring_standard" %}<span class="badge">Most Popular</span>{% endif %}
+              <h3>{{ p.name }}</h3>
+              <div class="price-amount">{{ p.price }}</div>
+              <ul>
+                <li>{{ p.per }}</li>
+              </ul>
+              <a href="/checkout/{{ slug }}" class="button">Subscribe</a>
+            </div>
+            {% endfor %}
+          </div>
 
-                    <div class="price-card">
-                        <h3>Integrity &amp; Custody Report</h3>
-                        <div class="price-amount">$149</div>
-                        <ul>
-                            <li>Per case</li>
-                            <li>SHA-256 verification + custody log</li>
-                            <li>Exhibit-ready declaration</li>
-                        </ul>
-                        <a href="/checkout/integrity" class="button">Buy Now</a>
-                    </div>
-
-                    <div class="price-card">
-                        <h3>Single Video Analysis</h3>
-                        <div class="price-amount">$199</div>
-                        <ul>
-                            <li>Per video</li>
-                            <li>20-frame extraction + metadata</li>
-                            <li>PDF report</li>
-                        </ul>
-                        <a href="/checkout/video_single" class="button">Buy Now</a>
-                    </div>
-
-                    <div class="price-card">
-                        <h3>Case Bundle</h3>
-                        <div class="price-amount">$299</div>
-                        <ul>
-                            <li>Up to 10 image analyses</li>
-                            <li>PDF reports included</li>
-                        </ul>
-                        <a href="/checkout/bundle" class="button">Buy Now</a>
-                    </div>
-
-                    <div class="price-card">
-                        <h3>Video + Image Bundle</h3>
-                        <div class="price-amount">$399</div>
-                        <ul>
-                            <li>Combined video + image analysis</li>
-                            <li>Per case</li>
-                            <li>PDF reports included</li>
-                        </ul>
-                        <a href="/checkout/video_image_bundle" class="button">Buy Now</a>
-                    </div>
-
-                    <div class="price-card">
-                        <h3>Video Bundle</h3>
-                        <div class="price-amount">$599</div>
-                        <ul>
-                            <li>Up to 5 videos</li>
-                            <li>Frame + metadata per file</li>
-                            <li>PDF reports included</li>
-                        </ul>
-                        <a href="/checkout/video_bundle" class="button">Buy Now</a>
-                    </div>
-                </div>
-
-                <div class="pricing-section-label">Subscriptions</div>
-                <div class="pricing-grid subscriptions">
-                    <div class="price-card featured">
-                        <span class="badge">Most Popular</span>
-                        <h3>Professional</h3>
-                        <div class="price-amount">$399/mo</div>
-                        <ul>
-                            <li>Up to 150 analyses / month</li>
-                            <li>Unlimited cases</li>
-                        </ul>
-                        <a href="/checkout/professional" class="button">Buy Now</a>
-                    </div>
-
-                    <div class="price-card">
-                        <h3>Firm License</h3>
-                        <div class="price-amount">$7,500/yr</div>
-                        <ul>
-                            <li>Unlimited analyses</li>
-                            <li>Unlimited reports</li>
-                            <li>Unlimited cases</li>
-                        </ul>
-                        <a href="/checkout/firm" class="button">Buy Now</a>
-                    </div>
-                </div>
+        </div>
 
                 <div style="margin-top:30px;">
                     <a href="mailto:intake@evidenceanalyzer.com?subject=Evidentix%20Inquiry" class="button">
@@ -527,7 +467,7 @@
     </div>
 
 <footer style="text-align:center; padding:2rem; font-size:0.8rem; color:#64748b; border-top:1px solid #2d3148; margin-top:2rem;">
-  &copy; 2026 Evidentix&trade;. All rights reserved. Evidentix&trade; is a trademark of Caldwell Law Firm, P.C., CLF The Woodlands, LLC. and Evidence Analyzer.
+  &copy; 2026 Evidence Analyzer, LLC;. All rights reserved. Evidentix&trade; is a trademark of Caldwell Law Firm, P.C., CLF The Woodlands, LLC. and Evidence Analyzer.
 </footer>
 
 
