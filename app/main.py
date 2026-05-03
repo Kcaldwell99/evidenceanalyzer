@@ -680,8 +680,13 @@ async def compare_submit(
 
     with suspected_path.open("wb") as f:
         shutil.copyfileobj(suspected_file.file, f)
-
-    comparison = compare_two_files(str(original_path), str(suspected_path), str(case_path))
+    comparison_data = compare_two_files(str(original_path), str(suspected_path), str(case_path))
+    comparison = {
+        "case_id": None,
+        "suspect_file": suspected_file.filename,
+        "best_match": comparison_data,
+        "matches": [comparison_data],
+    }
 
     log_audit_event(
         event_type="comparison_performed",
