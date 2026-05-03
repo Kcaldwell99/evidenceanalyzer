@@ -1,5 +1,4 @@
-@"
-import ffmpeg
+﻿import ffmpeg
 
 
 def get_video_metadata(video_path):
@@ -27,4 +26,3 @@ def get_video_metadata(video_path):
         "audio_codec": audio_stream.get("codec_name") if audio_stream else None,
         "audio_channels": audio_stream.get("channels") if audio_stream else None,
     }
-"@ | Set-Content app/utils/video_metadata.py
