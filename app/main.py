@@ -1,4 +1,4 @@
-import json
+`import json
 import os
 import shutil
 import hashlib
@@ -844,6 +844,13 @@ async def compare_global_route(
 
     with suspect_path.open("wb") as buffer:
         buffer.write(await suspect_file.read())
+    from app.db import SessionLocal
+    from app.models import EvidenceItem as _EI
+    _db = SessionLocal()
+    _ids = [r[0] for r in _db.query(_EI.case_id).distinct().all()]
+    _db.close()
+    print(f"DEBUG direct query case_ids: {_ids}", flush=True)
+
     result = compare_against_all_cases(str(suspect_path), cases_root=str(CASES_DIR))
     log_audit_event(
         event_type="global_comparison_completed",
@@ -1713,19 +1720,7 @@ async def generate_custody_record_route(
     except Exception:
         chain_verified = None
         chain_event_count = len(custody_events)
-
-    # Monitoring — chain failure alert
-    if chain_verified is False:
-        sub = get_active_monitoring_sub(current_user.id, db)
-        if sub:
-            send_chain_failure_alert(
-                to_email=current_user.email,
-                case_id=case_id,
-                case_name=case_obj.case_name,
-                record_id=record_id,
-                base_url=str(request.base_url).rstrip("/"),
-            )
-
+ 
     base_url = str(request.base_url).rstrip("/")
 
     record_id, pdf_bytes = generate_custody_record(
@@ -1738,6 +1733,17 @@ async def generate_custody_record_route(
         evidence_id=evidence_id,
         chain_verified=chain_verified,
         chain_event_count=chain_event_count,
+            # Monitoring — chain failure alert
+    if chain_verified is False:
+        sub = get_active_monitoring_sub(current_user.id, db)
+        if sub:
+            send_chain_failure_alert(
+                to_email=current_user.email,
+                case_id=case_id,
+                case_name=case_obj.case_name,
+                record_id=record_id,
+                base_url=str(request.base_url).rstrip("/"),
+            )
         redacted=redacted,
         base_url=base_url,
     )
@@ -1993,3 +1999,5 @@ async def report_file_redirect(
     else:
         raise HTTPException(status_code=404, detail="Report not found.")
 
+from app.external_routes import external_router
+app.include_router(external_router)`
