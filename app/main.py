@@ -316,7 +316,7 @@ async def home(
     cases = load_cases_for_user(current_user)
     deleted = request.query_params.get("deleted")
 
-return templates.TemplateResponse(
+    return templates.TemplateResponse(
         request,
         "upload.html",
         {
