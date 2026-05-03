@@ -1733,7 +1733,11 @@ async def generate_custody_record_route(
         evidence_id=evidence_id,
         chain_verified=chain_verified,
         chain_event_count=chain_event_count,
-            # Monitoring — chain failure alert
+        redacted=redacted,
+        base_url=base_url,
+    )
+
+    # Monitoring — chain failure alert
     if chain_verified is False:
         sub = get_active_monitoring_sub(current_user.id, db)
         if sub:
@@ -1744,9 +1748,6 @@ async def generate_custody_record_route(
                 record_id=record_id,
                 base_url=str(request.base_url).rstrip("/"),
             )
-        redacted=redacted,
-        base_url=base_url,
-    )
     
     # Upload to S3
     pdf_key = s3_upload(
