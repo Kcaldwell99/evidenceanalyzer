@@ -2104,5 +2104,71 @@ async def analyze_video_route(
             "current_user": current_user,
         },
     )
+@app.get("/compare-video", response_class=HTMLResponse)
+async def compare_video_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    cases = load_cases_for_user(current_user)
+    return templates.TemplateResponse(
+        request,
+        "video_compare.html",
+        {"current_user": current_user, "cases": cases},
+    )
+
+
+@app.post("/compare-video", response_class=HTMLResponse)
+async def compare_video_route(
+    request: Request,
+    original_file: UploadFile = File(...),
+    suspect_file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+):
+    from core.video_analyzer import analyze_video
+    from core.video_compare import compare_frame_sets
+
+    temp_dir = UPLOADS_DIR / "temp_video_compare"
+    temp_dir.mkdir(parents=True, exist_ok=True)
+
+    original_path = temp_dir / original_file.filename
+    suspect_path = temp_dir / suspect_file.filename
+
+    with original_path.open("wb") as f:
+        f.write(await original_file.read())
+    with suspect_path.open("wb") as f:
+        f.write(await suspect_file.read())
+
+    original_result = analyze_video(str(original_path))
+    suspect_result = analyze_video(str(suspect_path))
+
+    matches = compare_frame_sets(
+        original_result["frame_hashes"],
+        suspect_result["frame_hashes"],
+    )
+
+    match_pct = round(
+        len(matches) / max(len(original_result["frame_hashes"]), 1) * 100, 1
+    )
+
+    log_audit_event(
+        event_type="video_comparison_performed",
+        case_id="COMPARE",
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes=f"Video comparison: {original_file.filename} vs {suspect_file.filename}",
+    )
+
+    return templates.TemplateResponse(
+        request,
+        "video_compare_result.html",
+        {
+            "original": original_result,
+            "suspect": suspect_result,
+            "matches": matches,
+            "match_pct": match_pct,
+            "current_user": current_user,
+        },
+    )
+
 from app.external_routes import external_router
 app.include_router(external_router)
