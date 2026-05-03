@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Video Forensic Analysis</title>
+<link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+<header class="site-header-wrap">
+  <div class="site-header">
+    <span class="brand"><span class="brand-name">Evidence Analyzer</span><span class="brand-tag">by Evidentix&trade;</span></span>
+    <a href="/" class="sign-in">Dashboard</a>
+  </div>
+</header>
+<main style="max-width:700px;margin:40px auto;padding:0 20px;">
+  <h1>Video Forensic Analysis</h1>
+  <p>Upload a video file to extract frames, metadata, and generate a forensic hash report.</p>
+  <div style="background:white;border-radius:10px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <form method="post" action="/analyze-video" enctype="multipart/form-data">
+      <label style="font-weight:bold;display:block;margin-bottom:6px;">Select Case</label>
+      <select name="case_id" required style="width:100%;padding:8px;margin-bottom:16px;border:1px solid #d1d5db;border-radius:6px;">
+        <option value="">-- Select a Case --</option>
+        {% for case in cases %}
+        <option value="{{ case.case_id }}">{{ case.case_id }} — {{ case.case_name }}</option>
+        {% endfor %}
+      </select>
+      <label style="font-weight:bold;display:block;margin-bottom:6px;">Choose Video File</label>
+      <input type="file" name="file" accept="video/*" required style="margin-bottom:16px;">
+      <br>
+      <button type="submit" class="button" style="background:#2563eb;color:white;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;">Analyze Video</button>
+    </form>
+  </div>
+  <a href="/" style="display:inline-block;margin-top:16px;color:#2563eb;">? Back to Dashboard</a>
+</main>
+</body>
+</html>

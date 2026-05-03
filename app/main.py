@@ -2048,6 +2048,61 @@ async def global_matches(
         "global_matches.html",
         {"items": items, "current_user": current_user},
     )        
+@app.get("/analyze-video", response_class=HTMLResponse)
+async def analyze_video_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    cases = load_cases_for_user(current_user)
+    return templates.TemplateResponse(
+        request,
+        "video_analyze.html",
+        {"current_user": current_user, "cases": cases},
+    )
 
+
+@app.post("/analyze-video", response_class=HTMLResponse)
+async def analyze_video_route(
+    request: Request,
+    case_id: str = Form(...),
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from core.video_analyzer import analyze_video
+
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
+    assert_case_ownership(case_obj, current_user)
+
+    case_dir = CASES_DIR / case_id
+    upload_dir = case_dir / "uploads"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    file_path = upload_dir / file.filename
+    with file_path.open("wb") as buffer:
+        buffer.write(await file.read())
+
+    result = analyze_video(str(file_path), case_dir=str(case_dir))
+
+    log_audit_event(
+        event_type="video_analyzed",
+        case_id=case_id,
+        file_name=file.filename,
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes=f"Video forensic analysis performed: {file.filename}",
+    )
+
+    return templates.TemplateResponse(
+        request,
+        "video_result.html",
+        {
+            "result": result,
+            "case_id": case_id,
+            "current_user": current_user,
+        },
+    )
 from app.external_routes import external_router
 app.include_router(external_router)

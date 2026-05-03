@@ -21,11 +21,7 @@ pypdfium2
 google-cloud-vision
 c2pa-python
 qrcode[pil]
-
 resend
-
-resend
-
 scikit-image
-
 sentence-transformers
+ffmpeg-python
