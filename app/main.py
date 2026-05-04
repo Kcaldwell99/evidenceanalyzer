@@ -2145,10 +2145,11 @@ async def compare_video_route(
         original_result["frame_hashes"],
         suspect_result["frame_hashes"],
     )
-
+unique_matching = len(set(m["frame1"] for m in matches))
     match_pct = round(
-        len(matches) / max(len(original_result["frame_hashes"]), 1) * 100, 1
+        unique_matching / max(len(original_result["frame_hashes"]), 1) * 100, 1
     )
+    match_pct = min(match_pct, 100.0)
 
     log_audit_event(
         event_type="video_comparison_performed",
