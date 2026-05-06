@@ -817,7 +817,6 @@ async def compare_case_route(
                 "match_count": len(result.get("matches", [])),
             },
         )
-    raise ValueError("DEBUG CHECKPOINT: " + str(result.get("best_match")))
     return templates.TemplateResponse(
             request,
             "compare_case_result.html",
@@ -865,7 +864,6 @@ async def compare_global_route(
         notes="Image compared against all cases",
         extra={"match_count": len(result.get("matches", []))},
     )
-    print("DEBUG best_match:", result.get("best_match"), flush=True)
     return templates.TemplateResponse(
             request,
             "compare_global_result.html",
