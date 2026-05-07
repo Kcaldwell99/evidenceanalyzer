@@ -2068,6 +2068,7 @@ async def analyze_video_route(
     db: Session = Depends(get_db),
 ):
     from core.video_analyzer import analyze_video
+    import uuid
 
     case_obj = db.query(Case).filter(Case.case_id == case_id).first()
     if not case_obj:
@@ -2078,20 +2079,54 @@ async def analyze_video_route(
     upload_dir = case_dir / "uploads"
     upload_dir.mkdir(parents=True, exist_ok=True)
 
+    evidence_id = str(uuid.uuid4())
     file_path = upload_dir / file.filename
     with file_path.open("wb") as buffer:
-        buffer.write(await file.read())
-
-    result = analyze_video(str(file_path), case_dir=str(case_dir))
+        shutil.copyfileobj(file.file, buffer)
+    file.file.seek(0)
+    file_key = upload_file(file.file, file.filename, file.content_type)
 
     log_audit_event(
-        event_type="video_analyzed",
+        event_type="file_uploaded",
         case_id=case_id,
+        evidence_id=evidence_id,
         file_name=file.filename,
         user=current_user.email,
         ip_address=request.client.host,
-        notes=f"Video forensic analysis performed: {file.filename}",
+        notes="Video evidence file uploaded",
     )
+
+    result, json_path, pdf_path = analyze_video(str(file_path), case_dir=str(case_dir))
+
+    new_item = EvidenceItem(
+        evidence_id=evidence_id,
+        case_id=case_id,
+        file_name=file.filename,
+        file_key=file_key,
+        json_report=json_path,
+        pdf_report=pdf_path,
+        sha256=result.get("sha256"),
+        analysis_date=datetime.utcnow().isoformat(),
+    )
+
+    log_audit_event(
+        event_type="analysis_completed",
+        case_id=case_id,
+        evidence_id=evidence_id,
+        file_name=file.filename,
+        sha256=result.get("sha256"),
+        user=current_user.email,
+        ip_address=request.client.host,
+        notes="Video forensic analysis and report generated",
+        extra={
+            "json_report": json_path,
+            "pdf_report": pdf_path,
+            "s3_file_key": file_key,
+        },
+    )
+
+    db.add(new_item)
+    db.commit()
 
     return templates.TemplateResponse(
         request,
