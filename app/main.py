@@ -593,17 +593,17 @@ async def analyze_file_route(
                 status_code=403,
                 detail=f"File limit reached for your monitoring tier ({tier_limit} files). Upgrade to add more files.",
             )
-            base_url = str(request.base_url).rstrip("/")
-            send_upload_alert(
-                to_email=current_user.email,
-                case_id=case_id,
-                case_name=case_obj.case_name,
-                file_name=file.filename,
-                evidence_id=evidence_id,
-                sha256=report.get("sha256", "—"),
-                uploaded_by=current_user.email,
-                base_url=base_url,
-            )
+        base_url = str(request.base_url).rstrip("/")
+        send_upload_alert(
+            to_email=current_user.email,
+            case_id=case_id,
+            case_name=case_obj.case_name,
+            file_name=file.filename,
+            evidence_id=evidence_id,
+            sha256=report.get("sha256", "—"),
+            uploaded_by=current_user.email,
+            base_url=base_url,
+        )
 
     return RedirectResponse(url=f"/cases/{case_id}?uploaded=1", status_code=303)
 
