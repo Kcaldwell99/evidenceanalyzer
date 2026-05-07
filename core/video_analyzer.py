@@ -46,4 +46,13 @@ def analyze_video(file_path, case_dir=None):
         print(traceback.format_exc(), flush=True)
         pdf_path = None
 
-    return result, json_path, pdf_path
+    # Upload JSON and PDF to S3
+    from app.storage import upload_file as s3_upload
+    with open(json_path, "rb") as f:
+        json_key = s3_upload(f, os.path.basename(json_path), "application/json")
+    pdf_key = None
+    if pdf_path and os.path.exists(pdf_path):
+        with open(pdf_path, "rb") as f:
+            pdf_key = s3_upload(f, os.path.basename(pdf_path), "application/pdf")
+
+    return result, json_key, pdf_key
