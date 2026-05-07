@@ -358,6 +358,7 @@ async def create_case(
             "cases": updated_data,
             "current_user": current_user,
             "message": f"Case created successfully: {case_id}",
+            "pricing": PRICING,
         },
     )
 
