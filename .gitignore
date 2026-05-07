@@ -10,3 +10,6 @@ uploads/
 # Secrets - never commit credentials
 .env
 .env.*
+
+# Local scratch / one-shot helper scripts
+_scratch/
