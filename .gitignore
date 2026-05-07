@@ -7,3 +7,6 @@ uploads/
 *.png
 *.pdf
 *.json
+# Secrets - never commit credentials
+.env
+.env.*
