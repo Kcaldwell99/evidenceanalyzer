@@ -511,6 +511,17 @@ async def analyze_file_route(
         raise HTTPException(status_code=404, detail="Case not found.")
     assert_case_ownership(case_obj, current_user)
 
+    # Monitoring tier — file count enforcement (before any work happens)
+    sub = get_active_monitoring_sub(current_user.id, db)
+    if sub:
+        tier_limit = TIER_LIMITS.get(sub.product, 25)
+        current_count = db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).count()
+        if current_count >= tier_limit:
+            raise HTTPException(
+                status_code=403,
+                detail=f"File limit reached for your monitoring tier ({tier_limit} files). Upgrade to add more files.",
+            )
+
     case_dir = CASES_DIR / case_id
     case_upload_dir = case_dir / "uploads"
     case_upload_dir.mkdir(parents=True, exist_ok=True)
@@ -583,16 +594,8 @@ async def analyze_file_route(
         json_report=json_path,
     )
 
-    # Monitoring — file count enforcement + upload alert
-    sub = get_active_monitoring_sub(current_user.id, db)
+    # Monitoring — upload alert (tier already validated at start of route)
     if sub:
-        tier_limit = TIER_LIMITS.get(sub.product, 25)
-        current_count = db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).count()
-        if current_count > tier_limit:
-            raise HTTPException(
-                status_code=403,
-                detail=f"File limit reached for your monitoring tier ({tier_limit} files). Upgrade to add more files.",
-            )
         base_url = str(request.base_url).rstrip("/")
         send_upload_alert(
             to_email=current_user.email,
