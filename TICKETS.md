@@ -38,6 +38,12 @@ Mirror the pattern from `analyze_file_route` (commit e390266):
 
 ### #4 — image_fingerprint.py: missing PIL import + unconfirmed PDF error
 
+**CORRECTION (May 8, 2026 — later same day):** Issue 1 below was wrong. `from PIL import Image` IS present at the top of `image_fingerprint.py` (line 1). The original investigation misread the file because an early `Get-Content` screenshot clipped the first line, and the misread was carried forward through the rest of the analysis. An attempted "fix" added a duplicate import; it was caught by `git diff` (showed two `from PIL import Image` lines), reverted via `git restore`, never committed. **Issues 2 and 3 still stand.** Issue 1 below is preserved as written for posterity / lessons learned.
+
+**Lessons learned:**
+- Don't trust screenshot output of `Get-Content` for files where line 1 might be clipped. Either scroll up before pasting, or check file content with `git show` / `Select-String -Pattern "."` to be sure.
+- The `git diff` review step caught this before commit. The pattern works.
+
 **Severity:** Medium-High. `generate_phash()` is on the critical path for every image upload, every comparison, and batch scans. No try/except wrapping at any call site, so a failure 500s the whole request.
 
 **Location:** `app/utils/image_fingerprint.py` (15 lines, the entire file).
@@ -46,7 +52,7 @@ Mirror the pattern from `analyze_file_route` (commit e390266):
 
 Two issues identified.
 
-**Issue 1 — Missing `PIL.Image` import (high confidence):**
+**Issue 1 — Missing `PIL.Image` import (high confidence):** [WRONG — see correction at top of ticket. The import IS there.]
 
 The file's else branch (line 16) does `image = Image.open(file_path)`, but `Image` is never imported. Top-of-file imports are only `imagehash`, `os`, `io`. This branch handles all non-PDF uploads (jpg, png, etc.) and will raise `NameError: name 'Image' is not defined` at runtime.
 
@@ -75,7 +81,7 @@ A phash failure 500s the entire upload/comparison rather than degrading to phash
 
 **Suggested fix sequence:**
 
-1. **One-line fix for Issue 1:** add `from PIL import Image` to top of `app/utils/image_fingerprint.py`. Probably ship this immediately — high confidence, trivial change.
+1. **One-line fix for Issue 1:** ~~add `from PIL import Image` to top of `app/utils/image_fingerprint.py`. Probably ship this immediately — high confidence, trivial change.~~ **N/A — already imported.**
 
 2. **Pull Render error logs** for occurrences of "phash", "Image", or 500s on `/analyze`. The actual error message will scope Issue 2 precisely. Until logs are reviewed, Issue 2 is speculation.
 
