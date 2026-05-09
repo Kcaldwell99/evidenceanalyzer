@@ -21,11 +21,15 @@ for item in items:
         phash = generate_phash(tmp_path)
         os.remove(tmp_path)
 
+        if phash is None:
+            print(f"Skipped (no phash): {item.file_name} ({item.case_id})")
+            continue
+
         add_fingerprint(
             case_id=item.case_id,
             evidence_id=item.evidence_id,
             file_name=item.file_name,
-            phash=str(phash),
+            phash=phash,
             pdf_report=item.pdf_report,
             json_report=item.json_report,
         )

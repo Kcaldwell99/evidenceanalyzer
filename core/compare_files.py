@@ -6,8 +6,6 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw
 
-from core.perceptual_hash import phash_distance
-
 try:
     from skimage.metrics import structural_similarity as skimage_ssim
 except ImportError:
@@ -414,11 +412,14 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     original_phash = generate_phash(original_path)
     suspect_phash = generate_phash(suspect_path)
 
-    try:
-        import imagehash
-        phash_distance = int(imagehash.hex_to_hash(original_phash) - imagehash.hex_to_hash(suspect_phash))
-    except Exception:
-        phash_distance = 999 if original_phash != suspect_phash else 0
+    if original_phash is None or suspect_phash is None:
+        phash_distance = None
+    else:
+        try:
+            import imagehash
+            phash_distance = int(imagehash.hex_to_hash(original_phash) - imagehash.hex_to_hash(suspect_phash))
+        except Exception:
+            phash_distance = 999 if original_phash != suspect_phash else 0
 
     original_metadata = get_image_metadata(original_path)
     suspect_metadata = get_image_metadata(suspect_path)
@@ -436,8 +437,12 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
 
     clip_score = _compute_clip_similarity(original_path, suspect_path)
 
-    visual_summary = _visual_assessment(ssim_score, phash_distance)
-    match_level = _match_level(phash_distance, ssim_score)
+    if phash_distance is None:
+        visual_summary = "Perceptual hash unavailable for one or both files; visual comparison not possible."
+        match_level = "Could Not Analyze"
+    else:
+        visual_summary = _visual_assessment(ssim_score, phash_distance)
+        match_level = _match_level(phash_distance, ssim_score)
 
     diff_outputs = {}
     try:
@@ -573,6 +578,14 @@ def compare_against_case(suspect_path, case_id_or_path, suspect_filename=None):
     case_id = os.path.basename(str(case_id_or_path))
 
     suspect_phash = generate_phash(suspect_path)
+    if suspect_phash is None:
+        return {
+            "error": "Could not compute perceptual hash for the suspect file. The file may be corrupted, an unsupported format, or contain no extractable image data. Unable to search for similar evidence.",
+            "case_id": case_id,
+            "suspect_path": suspect_path,
+            "matches": [],
+            "best_match": None,
+        }
 
     all_matches = search_similar(
         suspect_phash,

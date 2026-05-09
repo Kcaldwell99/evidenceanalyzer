@@ -68,18 +68,23 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
             evidence_id = f"E-{existing_count + 1:03d}"
         finally:
             db.close()
-    add_fingerprint(
-        case_id=case_id_value,
-        evidence_id=evidence_id,
-        file_name=original_filename or os.path.basename(file_path),
-        phash=phash,
-    )
-
-    similar_matches = search_similar(
-        phash,
-        hamming_distance,
-        max_distance=8,
-    )
+    if phash is not None:
+        add_fingerprint(
+            case_id=case_id_value,
+            evidence_id=evidence_id,
+            file_name=original_filename or os.path.basename(file_path),
+            phash=phash,
+        )
+        similar_matches = search_similar(
+            phash,
+            hamming_distance,
+            max_distance=8,
+        )
+    else:
+        similar_matches = []
+        # Phash unavailable for this file; skipping fingerprint indexing and
+        # similarity search. Report will reflect this via the
+        # report.get('phash') or 'Not Available' pattern at the rendering site.
 
     report = {
         "evidence_id": evidence_id,
@@ -205,7 +210,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     y = _draw_wrapped_lines(c, [f"File Name: {report.get('file_name', 'Not Available')}"], 60, y)
     y = _draw_wrapped_lines(c, [f"File Size: {report.get('file_size', 'Not Available')} bytes"], 60, y)
     y = _draw_wrapped_lines(c, [f"SHA256: {report.get('sha256', 'Not Available')}"], 60, y)
-    y = _draw_wrapped_lines(c, [f"Perceptual Hash (pHash): {report.get('phash', 'Not Available')}"], 60, y)
+    y = _draw_wrapped_lines(c, [f"Perceptual Hash (pHash): {report.get('phash') or 'Not Available'}"], 60, y)
     y -= 8
 
     c.setFont("Helvetica-Bold", 12)

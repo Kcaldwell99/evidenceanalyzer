@@ -35,7 +35,6 @@ from app.auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
 )
 
-from core.batch_scan import scan_folder
 from core.compare_files import compare_two_files, compare_against_case, compare_against_all_cases
 from core.copyright_lookup import build_copyright_search_link
 
@@ -888,32 +887,6 @@ async def compare_global_route(
 # =========================================================
 # BATCH SCAN  (login required)
 # =========================================================
-
-@app.get("/batch-scan", response_class=HTMLResponse)
-async def batch_scan_page(
-    request: Request,
-    current_user: User = Depends(get_current_user),
-):
-    return templates.TemplateResponse(request, "batch_scan.html", {"current_user": current_user})
-
-
-@app.post("/batch-scan", response_class=HTMLResponse)
-async def batch_scan_route(
-    request: Request,
-    folder_path: str = Form(...),
-    current_user: User = Depends(get_current_user),
-):
-    if not os.path.exists(folder_path):
-        return HTMLResponse("Folder not found", status_code=404)
-
-    results = scan_folder(folder_path)
-
-    return templates.TemplateResponse(
-        request,
-        "batch_scan_result.html",
-        {"folder": folder_path, "results": results, "current_user": current_user},
-    )
-
 
 # =========================================================
 # COPYRIGHT SEARCH  (login required)
