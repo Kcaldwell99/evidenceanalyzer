@@ -36,72 +36,6 @@ Mirror the pattern from `analyze_file_route` (commit e390266):
 
 ---
 
-### #4 — image_fingerprint.py: missing PIL import + unconfirmed PDF error
-
-**CORRECTION (May 8, 2026 — later same day):** Issue 1 below was wrong. `from PIL import Image` IS present at the top of `image_fingerprint.py` (line 1). The original investigation misread the file because an early `Get-Content` screenshot clipped the first line, and the misread was carried forward through the rest of the analysis. An attempted "fix" added a duplicate import; it was caught by `git diff` (showed two `from PIL import Image` lines), reverted via `git restore`, never committed. **Issues 2 and 3 still stand.** Issue 1 below is preserved as written for posterity / lessons learned.
-
-**Lessons learned:**
-- Don't trust screenshot output of `Get-Content` for files where line 1 might be clipped. Either scroll up before pasting, or check file content with `git show` / `Select-String -Pattern "."` to be sure.
-- The `git diff` review step caught this before commit. The pattern works.
-
-**Severity:** Medium-High. `generate_phash()` is on the critical path for every image upload, every comparison, and batch scans. No try/except wrapping at any call site, so a failure 500s the whole request.
-
-**Location:** `app/utils/image_fingerprint.py` (15 lines, the entire file).
-
-**Investigation summary (May 8, 2026):**
-
-Two issues identified.
-
-**Issue 1 — Missing `PIL.Image` import (high confidence):** [WRONG — see correction at top of ticket. The import IS there.]
-
-The file's else branch (line 16) does `image = Image.open(file_path)`, but `Image` is never imported. Top-of-file imports are only `imagehash`, `os`, `io`. This branch handles all non-PDF uploads (jpg, png, etc.) and will raise `NameError: name 'Image' is not defined` at runtime.
-
-Per `git log`, the else branch with this missing import has been present since commit `d703b4d` ("handle PDF input in generate_phash via pdf2image"). Two subsequent commits, no fix. The fact that this hasn't surfaced as a major user issue suggests either:
-- Nearly all production uploads through this path have been PDFs (took the if-branch).
-- The NameError surfaces as a generic HTTP 500 and hasn't been investigated.
-- Some upstream caller catches and swallows (no evidence of this).
-
-**Issue 2 — "PIL error on PDF upload" (the rollover's flagged bug):**
-
-The PDF branch uses `page.render(scale=2).to_pil()`, which matches the current pypdfium2 v4 API per the official documentation. So the bug is most likely runtime-environmental, not an API mismatch. Likely candidates:
-- Pillow not actually installed in the prod runtime (despite being in requirements.txt — possible if Render's build skipped it).
-- Bitmap format mismatch between installed pypdfium2 and Pillow versions.
-- Specific malformed PDFs failing pypdfium2's rendering pipeline.
-
-Cannot confirm without prod error logs.
-
-**Issue 3 — No graceful degradation:**
-
-Every call site invokes `generate_phash(...)` without try/except wrapping:
-- `app/analyzer.py:44` — every upload through `analyze_file_route`.
-- `core/batch_scan.py:17` — batch scan.
-- `core/compare_files.py:414, 415, 575` — comparison features.
-
-A phash failure 500s the entire upload/comparison rather than degrading to phash=None and continuing. Even if Issues 1 and 2 are fixed, future failures (corrupt files, unsupported formats) would still 500.
-
-**Suggested fix sequence:**
-
-1. **One-line fix for Issue 1:** ~~add `from PIL import Image` to top of `app/utils/image_fingerprint.py`. Probably ship this immediately — high confidence, trivial change.~~ **N/A — already imported.**
-
-2. **Pull Render error logs** for occurrences of "phash", "Image", or 500s on `/analyze`. The actual error message will scope Issue 2 precisely. Until logs are reviewed, Issue 2 is speculation.
-
-3. **Wrap call sites in try/except** so phash failures degrade gracefully:
-   ```python
-   try:
-       phash = generate_phash(file_path)
-   except Exception:
-       phash = None  # or log and continue
-   ```
-   Apply to all 4 call sites. Small refactor, low risk.
-
-4. **Add tests** for both branches with sample files (one PDF, one PNG). Prevents future regressions.
-
-**Notes:**
-- Investigation done in "scope only" mode — no code changes yet, no commits to `image_fingerprint.py`.
-- `pypdfium2` is not installed in Ken's local venv, so local reproduction would require a `pip install pypdfium2 pillow` first.
-
----
-
 ## Closed
 
 ### #1 — Orphan EvidenceItem on tier limit overage
@@ -128,3 +62,17 @@ The image upload route (`analyze_file_route`) committed EvidenceItem, audit log 
 - Future code paths that use `log_audit_event` correctly populate `evidence_id` where applicable, so no new orphans are being created.
 
 **If formal verification is wanted later:** call `verify_chain(case_id)` for each distinct case_id in the custody_log and confirm all return `(True, None, None)`.
+
+### #4 — image_fingerprint.py: missing PIL import + unconfirmed PDF error
+
+**Closed in commit 3dba819 (May 8, 2026).** Verified live in prod with both image (JPG) and PDF uploads — both succeed with no errors logged.
+
+**Issue 1 (missing PIL import):** Retracted earlier same day — was a misread (line 1 of the file was clipped in the original `Get-Content` screenshot). The import was already present.
+
+**Issues 2 and 3 (PIL error on PDF + no graceful degradation):** Closed by a single rewrite of `app/utils/image_fingerprint.py` rather than per-call-site try/except. Changes:
+- Wraps the entire function body in `try/except Exception`; returns `Optional[str]` (None on any failure); logs via `logger.exception`.
+- Adds an explicit zero-page PDF check with a `logger.warning`.
+- Wraps the PDF branch in `try/finally` for `pdf.close()` (resource leak fix).
+- Removes unused `import io`.
+
+Fixed at the function rather than at call sites: one edit instead of six, future call sites get the safety automatically, function now has a clear `Optional[str]` contract.
