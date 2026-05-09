@@ -265,6 +265,11 @@ async def privacy(request: Request):
 async def terms(request: Request):
     return templates.TemplateResponse(request, "terms.html", {})
 
+
+@app.get("/subpoena-policy")
+async def subpoena_policy(request: Request):
+    return templates.TemplateResponse(request, "subpoena_policy.html", {})
+
 @app.post("/login", response_class=HTMLResponse)
 async def login_submit(
     request: Request,
