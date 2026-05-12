@@ -13,3 +13,20 @@ uploads/
 
 # Local scratch / one-shot helper scripts
 _scratch/
+
+# Untracked notes & scratch
+Rollover Notes/
+app/_scratch/
+
+# Backup files
+*.bak
+*.bak2
+Backups/
+
+# Log files
+*.log
+
+# OS / Editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
