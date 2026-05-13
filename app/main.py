@@ -408,7 +408,7 @@ async def delete_case(
     if case_dir.exists():
         shutil.rmtree(case_dir)
 
-    return RedirectResponse(url="/?deleted=1", status_code=303)
+    return RedirectResponse(url="/dashboard?deleted=1", status_code=303)
 
 
 @app.get("/reports", response_class=HTMLResponse)
