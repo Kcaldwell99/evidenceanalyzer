@@ -233,7 +233,7 @@ async def register_submit(
     db.refresh(user)
 
     token = create_access_token(user.id, user.email)
-    resp = RedirectResponse(url="/", status_code=303)
+    resp = RedirectResponse(url="/dashboard", status_code=303)
     resp.set_cookie(
         key="access_token",
         value=token,
@@ -309,11 +309,20 @@ async def logout():
 
 
 # =========================================================
-# BASIC CASE WORKFLOW  (all routes now require login)
+# PUBLIC PAGES
 # =========================================================
 
 @app.get("/", response_class=HTMLResponse)
-async def home(
+async def home(request: Request):
+    return templates.TemplateResponse(request, "home.html", {})
+
+
+# =========================================================
+# BASIC CASE WORKFLOW  (all routes now require login)
+# =========================================================
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(
     request: Request,
     current_user: User = Depends(get_current_user),
 ):
