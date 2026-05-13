@@ -84,6 +84,7 @@ app.mount("/case-files", StaticFiles(directory=str(CASES_DIR)), name="case-files
 app.mount("/report-files", StaticFiles(directory=str(REPORTS_DIR)), name="report-files")
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
+EVIDENTIX_DEV_MODE = os.getenv("EVIDENTIX_DEV_MODE") == "1"
 
 
 SERVICE_MAP = {
@@ -1211,7 +1212,7 @@ async def intake_page(
     if service not in SERVICE_MAP:
         raise HTTPException(status_code=400, detail="Invalid service type.")
 
-    if session_id == "test":
+    if EVIDENTIX_DEV_MODE and session_id == "test":
         session = {"customer_details": {"email": "test@example.com"}}
     else:
         session = verify_checkout_session(session_id)
@@ -1245,7 +1246,7 @@ async def submit_intake(
     if service not in SERVICE_MAP:
         raise HTTPException(status_code=400, detail="Invalid service type.")
 
-    if session_id == "test":
+    if EVIDENTIX_DEV_MODE and session_id == "test":
         session = {"customer_details": {"email": "test@example.com"}}
     else:
         session = verify_checkout_session(session_id)
