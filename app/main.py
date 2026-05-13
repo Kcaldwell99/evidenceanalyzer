@@ -23,7 +23,7 @@ from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
 from app.db import SessionLocal, engine
 from app.models import Base, Case, Certificate, EvidenceItem, Payment, Subscription, User
-from app.storage import upload_file
+from app.storage import upload_file, delete_object, delete_objects
 from app.email_alerts import send_upload_alert, send_chain_failure_alert, send_monthly_summary
 from app.auth import (
     hash_password,
@@ -392,6 +392,11 @@ async def delete_case(
 
     assert_case_ownership(case_obj, current_user)
 
+    # Gather S3 keys BEFORE deleting DB rows
+    evidence_keys = [e.file_key for e in db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).all()]
+    certificate_keys = [c.pdf_key for c in db.query(Certificate).filter(Certificate.case_id == case_id).all()]
+    all_s3_keys = evidence_keys + certificate_keys
+
     log_audit_event(
         event_type="case_deleted",
         case_id=case_id,
@@ -400,10 +405,14 @@ async def delete_case(
         notes="Case and all evidence deleted by authenticated user",
     )
 
+    db.query(Certificate).filter(Certificate.case_id == case_id).delete()
     db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).delete()
     db.delete(case_obj)
     db.commit()
-  
+
+    # Delete S3 objects (idempotent; failures swallowed in storage helper)
+    delete_objects(all_s3_keys)
+
     case_dir = CASES_DIR / case_id
     if case_dir.exists():
         shutil.rmtree(case_dir)
@@ -1932,8 +1941,15 @@ async def delete_evidence(
     ).first()
     if not evidence:
         raise HTTPException(status_code=404, detail="Evidence not found.")
+
+    # Capture S3 key BEFORE deleting DB row
+    file_key = evidence.file_key
+
     db.delete(evidence)
     db.commit()
+
+    # Delete S3 object (idempotent)
+    delete_object(file_key)
     log_audit_event(
         event_type="evidence_deleted",
         case_id=case_id,
@@ -1955,8 +1971,14 @@ async def delete_all_evidence(
         raise HTTPException(status_code=404, detail="Case not found.")
     assert_case_ownership(case_obj, current_user)
 
+    # Gather S3 keys BEFORE deleting DB rows
+    evidence_keys = [e.file_key for e in db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).all()]
+
     db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).delete()
     db.commit()
+
+    # Delete S3 objects (idempotent)
+    delete_objects(evidence_keys)
 
     log_audit_event(
         event_type="all_evidence_deleted",

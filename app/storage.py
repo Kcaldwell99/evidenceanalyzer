@@ -92,3 +92,41 @@ def download_to_tempfile(key, suffix=""):
     tmp.write(data)
     tmp.close()
     return tmp.name
+
+def delete_object(key):
+    """Delete a single object from S3 or local file. Idempotent."""
+    if not key:
+        return
+    if USE_S3:
+        try:
+            s3_client.delete_object(Bucket=AWS_S3_BUCKET, Key=key)
+        except ClientError:
+            pass
+    else:
+        try:
+            os.remove(key)
+        except (FileNotFoundError, OSError):
+            pass
+
+
+def delete_objects(keys):
+    """Bulk-delete a list of S3 objects (up to 1000 per call) or local files. Idempotent."""
+    if not keys:
+        return
+    clean_keys = [k for k in keys if k]
+    if not clean_keys:
+        return
+    if USE_S3:
+        try:
+            s3_client.delete_objects(
+                Bucket=AWS_S3_BUCKET,
+                Delete={"Objects": [{"Key": k} for k in clean_keys]},
+            )
+        except ClientError:
+            pass
+    else:
+        for k in clean_keys:
+            try:
+                os.remove(k)
+            except (FileNotFoundError, OSError):
+                pass
