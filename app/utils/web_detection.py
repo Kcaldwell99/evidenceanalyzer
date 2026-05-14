@@ -4,7 +4,17 @@ import requests
 
 
 def detect_web_presence(file_path: str) -> dict:
-    """Use Google Vision API to find web matches for an image."""
+    """Use Google Vision API to find web matches for an image.
+
+    Only image files are sent to Google. Non-image uploads (PDFs,
+    videos, text files, etc.) are skipped without leaving the server.
+    """
+    # File-type guard: only send image files to Google Vision
+    image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif"}
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext not in image_extensions:
+        return {"skipped": "Non-image file; web detection not applicable."}
+
     api_key = os.getenv("GOOGLE_VISION_API_KEY")
     if not api_key:
         return {"error": "Google Vision API key not configured."}
