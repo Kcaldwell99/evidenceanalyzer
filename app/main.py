@@ -526,6 +526,7 @@ async def analyze_file_route(
     request: Request,
     case_id: str = Form(...),
     file: UploadFile = File(...),
+    web_detection_enabled: bool = Form(False),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -574,6 +575,7 @@ async def analyze_file_route(
         str(file_path),
         case_dir=str(case_dir),
         file_key=file_key,
+        web_detection_enabled=web_detection_enabled,
     )
     new_item = EvidenceItem(
         evidence_id=evidence_id,
@@ -584,6 +586,7 @@ async def analyze_file_route(
         pdf_report=pdf_path,
         sha256=report.get("sha256"),
         analysis_date=datetime.utcnow().isoformat(),
+        web_detection_enabled=web_detection_enabled,
     )
 
     log_audit_event(
@@ -1241,6 +1244,7 @@ async def submit_intake(
     case_reference: str = Form(""),
     narrative: str = Form(...),
     disclaimer_accepted: str = Form(...),
+    web_detection_enabled: bool = Form(False),
     files: List[UploadFile] = File(...),
 ):
     if service not in SERVICE_MAP:
@@ -1314,6 +1318,7 @@ async def submit_intake(
             "narrative": narrative,
         },
         "files": uploaded_items,
+        "web_detection_enabled": web_detection_enabled,
         "status": "intake_received",
     }
 
@@ -1329,12 +1334,13 @@ async def submit_intake(
             "stripe_session_id": session_id,
             "service": service,
             "file_count": len(uploaded_items),
+            "web_detection_enabled": web_detection_enabled,
         },
     )
 
     if service == "single" and len(uploaded_items) == 1:
         image_path = uploaded_items[0]["stored_path"]
-        analyze_file(image_path, case_dir=str(case_dir))
+        analyze_file(image_path, case_dir=str(case_dir), web_detection_enabled=web_detection_enabled)
 
     return templates.TemplateResponse(
         request,

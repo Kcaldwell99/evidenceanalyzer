@@ -342,6 +342,16 @@
 
                     <div class="note">Analyze the original or reference image first so it is added to the evidence index.</div>
 
+                    <div class="opt-in-block" style="margin: 1rem 0; padding: 0.75rem; background: #f5f5f5; border-left: 3px solid #888;">
+                        <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="web_detection_enabled" value="true" style="margin-top: 0.25rem;">
+                            <span>
+                                <strong>Run Google Vision web-presence check</strong> (optional)<br>
+                                <small style="color: #555;">When enabled, this image is sent to Google Vision API to detect web matches. Leave unchecked to keep the file local. Default: off.</small>
+                            </span>
+                        </label>
+                    </div>
+
                     <button type="submit">Analyze File</button>
                 </form>
             </div>
