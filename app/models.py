@@ -45,6 +45,7 @@ class EvidenceItem(Base):
     json_report = Column(Text, nullable=True)
     pdf_report = Column(Text, nullable=True)
     file_key = Column(String(500), nullable=True)
+    web_detection_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
 
 
 class FingerprintIndex(Base):
