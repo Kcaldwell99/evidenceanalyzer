@@ -26,3 +26,4 @@ scikit-image
 sentence-transformers
 ffmpeg-python
 python-dotenv==1.2.2
+staticmap

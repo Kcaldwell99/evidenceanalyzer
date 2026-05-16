@@ -37,3 +37,45 @@ def extract_exif(file_path):
             return exif_data
     except Exception as e:
         return {"error": str(e)}
+
+
+def _dms_to_decimal(dms, ref):
+    try:
+        degrees = float(dms[0])
+        minutes = float(dms[1])
+        seconds = float(dms[2])
+        decimal = degrees + (minutes / 60.0) + (seconds / 3600.0)
+        if ref in ("S", "W"):
+            decimal = -decimal
+        return decimal
+    except (TypeError, ValueError, IndexError, ZeroDivisionError):
+        return None
+
+
+def extract_gps(file_path):
+    """Return (latitude, longitude) as decimal degrees if EXIF contains GPS, else None."""
+    try:
+        with Image.open(file_path) as img:
+            exif_raw = img._getexif()
+            if not exif_raw:
+                return None
+            gps_info = None
+            for tag, value in exif_raw.items():
+                if TAGS.get(tag, tag) == "GPSInfo" and isinstance(value, dict):
+                    gps_info = {GPSTAGS.get(k, k): v for k, v in value.items()}
+                    break
+            if not gps_info:
+                return None
+            lat_dms = gps_info.get("GPSLatitude")
+            lat_ref = gps_info.get("GPSLatitudeRef")
+            lon_dms = gps_info.get("GPSLongitude")
+            lon_ref = gps_info.get("GPSLongitudeRef")
+            if not (lat_dms and lat_ref and lon_dms and lon_ref):
+                return None
+            lat = _dms_to_decimal(lat_dms, lat_ref)
+            lon = _dms_to_decimal(lon_dms, lon_ref)
+            if lat is None or lon is None:
+                return None
+            return (lat, lon)
+    except Exception:
+        return None

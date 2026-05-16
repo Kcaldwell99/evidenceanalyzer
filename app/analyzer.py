@@ -7,10 +7,11 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 from app.utils.hash_utils import sha256_file
-from app.utils.metadata_utils import get_image_metadata, extract_exif
+from app.utils.metadata_utils import get_image_metadata, extract_exif, extract_gps
 from app.c2pa_analysis import analyze_file as c2pa_analyze_file, summarize_for_certificate
 from app.utils.image_fingerprint import generate_phash
 from app.utils.web_detection import detect_web_presence
+from app.utils.map_render import render_map_png
 from app.utils.hash_compare import hamming_distance
 
 from core.fingerprint_index import add_fingerprint, search_similar
@@ -39,6 +40,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     file_size = os.path.getsize(file_path)
     image_metadata = get_image_metadata(file_path)
     exif_data = extract_exif(file_path)
+    gps_coords = extract_gps(file_path)
     c2pa_info = c2pa_analyze_file(file_path)
     c2pa_summary = summarize_for_certificate(c2pa_info)
     phash = generate_phash(file_path)
@@ -97,6 +99,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
         "phash": phash,
         "metadata": image_metadata,
         "exif": exif_data,
+        "gps_coords": gps_coords,
         "c2pa": c2pa_summary,
         "analysis_date": datetime.utcnow().isoformat(),
         "similar_matches": similar_matches[:5],
@@ -235,7 +238,6 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
         y = _draw_wrapped_lines(c, [f"Device: {exif.get('Model', 'Not Available')}"], 60, y)
         y = _draw_wrapped_lines(c, [f"Date Taken: {exif.get('DateTimeOriginal', 'Not Available')}"], 60, y)
         y = _draw_wrapped_lines(c, [f"Camera Make: {exif.get('Make', 'Not Available')}"], 60, y)
-        y = _draw_wrapped_lines(c, [f"GPS Metadata Present: {'Yes' if 'GPSInfo' in exif else 'No'}"], 60, y)
         y -= 12
         y = _draw_wrapped_lines(c, ["Basic metadata detected in the submitted file."], 60, y)
     else:
@@ -248,6 +250,46 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
             60,
             y,
         )
+
+    _gps_coords = report.get("gps_coords")
+    if _gps_coords:
+        _lat, _lon = _gps_coords
+        y -= 12
+        y = _draw_wrapped_lines(c, [f"GPS Coordinates: {_lat:.6f}, {_lon:.6f}"], 60, y)
+        y -= 8
+        _map_height = 216
+        if y - _map_height < 80:
+            c.showPage()
+            c.setFont("Helvetica", 10)
+            y = letter[1] - 50
+        _map_path = render_map_png(_lat, _lon)
+        if _map_path:
+            try:
+                y -= _map_height
+                c.drawImage(_map_path, 60, y, width=288, height=_map_height)
+                y -= 14
+                y = _draw_wrapped_lines(
+                    c,
+                    _wrap_text(
+                        "Map shows the GPS coordinates embedded in the file metadata. Embedded "
+                        "coordinates reflect the capturing device's reported location at the time "
+                        "of capture and may be subject to GPS error, indoor signal degradation, or "
+                        "post-capture manipulation. This report does not validate the authenticity "
+                        "of embedded GPS data. Map data \u00a9 OpenStreetMap contributors."
+                    ),
+                    60,
+                    y,
+                )
+            finally:
+                try:
+                    os.unlink(_map_path)
+                except OSError:
+                    pass
+        else:
+            y = _draw_wrapped_lines(c, ["(Map could not be generated.)"], 60, y)
+    else:
+        y -= 12
+        y = _draw_wrapped_lines(c, ["GPS data: No GPS coordinates embedded in file metadata."], 60, y)
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y, "3. Similarity Review")
     y -= 15
