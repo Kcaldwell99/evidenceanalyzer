@@ -208,11 +208,23 @@ async def register_submit(
     email: str = Form(...),
     password: str = Form(...),
     password_confirm: str = Form(...),
+    full_name: str = Form(...),
+    firm_name: str = Form(""),
+    country: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    error = None
+    import re
 
-    if password != password_confirm:
+    error = None
+    full_name_clean = full_name.strip()
+    firm_name_clean = firm_name.strip()
+    country_clean = country.strip().upper()
+
+    if not full_name_clean:
+        error = "Full name is required."
+    elif not re.match(r"^[A-Z]{2}$", country_clean):
+        error = "Please select a valid country."
+    elif password != password_confirm:
         error = "Passwords do not match."
     elif len(password) < 8:
         error = "Password must be at least 8 characters."
@@ -228,6 +240,9 @@ async def register_submit(
         email=email.lower().strip(),
         hashed_password=hash_password(password),
         is_admin=False,
+        full_name=full_name_clean,
+        firm_name=firm_name_clean or None,
+        country=country_clean,
     )
     db.add(user)
     db.commit()
