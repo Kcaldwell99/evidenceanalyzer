@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm web detection — {{ item.file_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 2rem 1rem;
+            color: #222;
+        }
+        .card {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        h1 { font-size: 1.4rem; margin: 0 0 1rem; }
+        p { line-height: 1.5; margin: 0 0 1rem; }
+        .meta {
+            background: #f5f5f5;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid #888;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        button {
+            padding: 0.6rem 1.25rem;
+            font-size: 0.95rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button.primary { background: #2c5aa0; color: #fff; }
+        button.primary:hover { background: #244b85; }
+        a.cancel {
+            padding: 0.6rem 1.25rem;
+            background: #eee;
+            color: #333;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        a.cancel:hover { background: #ddd; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Run Google Vision web detection on this image?</h1>
+
+        <p>This sends a copy of the image to Google's Vision API to find publicly indexed pages where the image appears (or visually similar images). Google may retain the request per their API terms.</p>
+
+        <p>Files were uploaded with web detection turned off. If you proceed, this action will be recorded in the case audit log and the consent will be saved for this evidence item.</p>
+
+        <div class="meta">
+            <strong>File:</strong> {{ item.file_name }}<br>
+            <strong>Case:</strong> {{ case_id }}<br>
+            <strong>Evidence ID:</strong> {{ evidence_id }}
+        </div>
+
+        <form action="/web-detection/{{ case_id }}/{{ evidence_id }}" method="post">
+            <div class="actions">
+                <button type="submit" class="primary">Run web detection</button>
+                <a href="/cases/{{ case_id }}" class="cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

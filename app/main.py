@@ -571,7 +571,6 @@ async def analyze_file_route(
         notes="Evidence file uploaded",
     )
 
-    print(f"[DEBUG] web_detection_enabled received: {web_detection_enabled!r} (type={type(web_detection_enabled).__name__})", flush=True)
     report, json_path, pdf_path = analyze_file(
         str(file_path),
         case_dir=str(case_dir),
@@ -1514,6 +1513,42 @@ async def verify_certificate(
 # =========================================================
 
 @app.get("/web-detection/{case_id}/{evidence_id}", response_class=HTMLResponse)
+async def web_detection_consent(
+    case_id: str,
+    evidence_id: str,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    case_obj = db.query(Case).filter(Case.case_id == case_id).first()
+    if not case_obj:
+        raise HTTPException(status_code=404, detail="Case not found.")
+    assert_case_ownership(case_obj, current_user)
+
+    item = (
+        db.query(EvidenceItem)
+        .filter(
+            EvidenceItem.case_id == case_id,
+            EvidenceItem.evidence_id == evidence_id,
+        )
+        .first()
+    )
+    if not item:
+        raise HTTPException(status_code=404, detail="Evidence not found.")
+
+    return templates.TemplateResponse(
+        request,
+        "web_detection_consent.html",
+        {
+            "case_id": case_id,
+            "evidence_id": evidence_id,
+            "item": item,
+            "current_user": current_user,
+        },
+    )
+
+
+@app.post("/web-detection/{case_id}/{evidence_id}", response_class=HTMLResponse)
 async def web_detection_route(
     case_id: str,
     evidence_id: str,
@@ -1553,13 +1588,16 @@ async def web_detection_route(
     finally:
         os.unlink(tmp_path)
 
+    item.web_detection_enabled = True
+    db.commit()
+
     log_audit_event(
-        event_type="web_detection_performed",
+        event_type="web_detection_consented",
         case_id=case_id,
         evidence_id=evidence_id,
         user=current_user.email,
         ip_address=request.client.host,
-        notes=f"Web detection performed on {item.file_name}",
+        notes=f"User consented to web detection via on-demand endpoint for {item.file_name}",
     )
 
     return templates.TemplateResponse(
