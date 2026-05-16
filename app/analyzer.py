@@ -214,6 +214,12 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     y = _draw_wrapped_lines(c, [f"File Size: {report.get('file_size', 'Not Available')} bytes"], 60, y)
     y = _draw_wrapped_lines(c, [f"SHA256: {report.get('sha256', 'Not Available')}"], 60, y)
     y = _draw_wrapped_lines(c, [f"Perceptual Hash (pHash): {report.get('phash') or 'Not Available'}"], 60, y)
+    _raw_date = report.get('analysis_date')
+    try:
+        _formatted_date = datetime.fromisoformat(_raw_date).strftime('%B %d, %Y at %H:%M:%S UTC') if _raw_date else 'Not Available'
+    except (ValueError, TypeError):
+        _formatted_date = _raw_date or 'Not Available'
+    y = _draw_wrapped_lines(c, [f"Analysis Date: {_formatted_date}"], 60, y)
     y -= 8
 
     c.setFont("Helvetica-Bold", 12)
