@@ -571,6 +571,7 @@ async def analyze_file_route(
         notes="Evidence file uploaded",
     )
 
+    print(f"[DEBUG] web_detection_enabled received: {web_detection_enabled!r} (type={type(web_detection_enabled).__name__})", flush=True)
     report, json_path, pdf_path = analyze_file(
         str(file_path),
         case_dir=str(case_dir),
