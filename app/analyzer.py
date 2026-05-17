@@ -74,16 +74,16 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
         finally:
             db.close()
     if phash is not None:
+        similar_matches = search_similar(
+            phash,
+            hamming_distance,
+            max_distance=8,
+        )
         add_fingerprint(
             case_id=case_id_value,
             evidence_id=evidence_id,
             file_name=original_filename or os.path.basename(file_path),
             phash=phash,
-        )
-        similar_matches = search_similar(
-            phash,
-            hamming_distance,
-            max_distance=8,
         )
     else:
         similar_matches = []
