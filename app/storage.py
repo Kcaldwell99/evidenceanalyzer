@@ -20,7 +20,8 @@ if USE_S3:
         aws_access_key_id=AWS_ACCESS_KEY_ID,
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     )
-
+else:
+    s3_client = None
 
 def save_upload(file_obj, filename, upload_dir="uploads"):
     key = f"{uuid4()}_{filename}"

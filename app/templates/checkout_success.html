@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Payment Successful — Evidentix™</title>
-{% if GOOGLE_ADS_ID %}
+{% if GOOGLE_ADS_ID and cookie_consent_state == "accepted" %}
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ADS_ID }}"></script>
     <script>
@@ -14,7 +14,6 @@
       gtag('config', '{{ GOOGLE_ADS_ID }}');
     </script>
     {% endif %}
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -51,6 +50,36 @@
       transition: background 0.2s;
     }
     .btn:hover { background: #6470e6; }
+    .consent-prompt {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #2d3148;
+    }
+    .consent-prompt p {
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .consent-buttons {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+    .consent-buttons button {
+      background: transparent;
+      border: 1px solid #7c8cf8;
+      color: #7c8cf8;
+      border-radius: 7px;
+      padding: 0.5rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .consent-buttons button:hover {
+      background: #7c8cf8;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -61,8 +90,17 @@
     <p>A confirmation will be sent to <strong>{{ current_user.email }}</strong>.</p>
     <p>If you purchased a report service, our team will be in touch shortly to collect your evidence files.</p>
     <a href="/dashboard" class="btn">Go to Dashboard</a>
+    {% if cookie_consent_state == "pending" %}
+    <div class="consent-prompt">
+      <p>We use analytics cookies to measure conversions from our ads. Your choice doesn't affect your purchase or account.</p>
+      <form method="POST" action="/cookie-consent" class="consent-buttons">
+        <button type="submit" name="value" value="accepted">Accept</button>
+        <button type="submit" name="value" value="declined">Decline</button>
+      </form>
+    </div>
+    {% endif %}
   </div>
-{% if GOOGLE_ADS_ID and GOOGLE_ADS_LABEL_PURCHASE %}
+{% if GOOGLE_ADS_ID and GOOGLE_ADS_LABEL_PURCHASE and cookie_consent_state == "accepted" %}
     <!-- Google Ads conversion: Purchase -->
     <script>
       gtag('event', 'conversion', {
@@ -71,6 +109,5 @@
       });
     </script>
     {% endif %}
-
 </body>
 </html>

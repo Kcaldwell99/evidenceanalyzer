@@ -86,6 +86,23 @@ app.mount("/report-files", StaticFiles(directory=str(REPORTS_DIR)), name="report
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
 EVIDENTIX_DEV_MODE = os.getenv("EVIDENTIX_DEV_MODE") == "1"
 
+def get_consent_state(request, current_user):
+    """Resolve cookie consent state for a request.
+
+    Returns "accepted", "declined", or "pending".
+
+    Logged-in user with non-null cookie_consent in DB wins.
+    Otherwise reads the cookie_consent cookie.
+    "pending" means no decision recorded — show banner.
+    """
+    if current_user is not None and getattr(current_user, "cookie_consent", None) is not None:
+        return "accepted" if current_user.cookie_consent else "declined"
+    cookie_val = request.cookies.get("cookie_consent")
+    if cookie_val == "accepted":
+        return "accepted"
+    if cookie_val == "declined":
+        return "declined"
+    return "pending"
 
 SERVICE_MAP = {
     "single": {
@@ -342,6 +359,7 @@ async def dashboard(
     request: Request,
     current_user: User = Depends(get_current_user),
 ):
+    cookie_consent_state = get_consent_state(request, current_user)
     cases = load_cases_for_user(current_user)
     deleted = request.query_params.get("deleted")
 
@@ -1197,6 +1215,7 @@ async def checkout_success(
     product: str = "",
     current_user: User = Depends(get_current_user),
 ):
+    cookie_consent_state = get_consent_state(request, current_user)
     return templates.TemplateResponse(
         request,
         "checkout_success.html",
@@ -1204,10 +1223,35 @@ async def checkout_success(
             "current_user": current_user,
             "product": product,
             "session_id": session_id,
-        },
+            "cookie_consent_state": cookie_consent_state,
+              },
+        )
+@app.post("/cookie-consent")
+async def set_cookie_consent(
+    request: Request,
+    value: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Record cookie consent. Writes cookie for everyone, DB column for logged-in users."""
+    if value not in ("accepted", "declined"):
+        raise HTTPException(status_code=400, detail="Invalid consent value.")
+    # DB write for logged-in users
+    if current_user is not None:
+        current_user.cookie_consent = (value == "accepted")
+        db.commit()
+    # Cookie write for everyone
+    referer = request.headers.get("referer", "/")
+    response = RedirectResponse(url=referer, status_code=303)
+    response.set_cookie(
+        key="cookie_consent",
+        value=value,
+        max_age=60 * 60 * 24 * 365,  # 12 months
+        httponly=False,
+        secure=True,
+        samesite="lax",
     )
-
-
+    return response
 @app.get("/cancel", response_class=HTMLResponse)
 async def checkout_cancel(
     request: Request,
@@ -1242,6 +1286,7 @@ async def intake_page(
         "intake_form.html",
         {
             "session_id": session_id,
+            "cookie_consent_state": cookie_consent_state,
             "service": service,
             "service_info": SERVICE_MAP[service],
             "customer_email": session.get("customer_details", {}).get("email", ""),
