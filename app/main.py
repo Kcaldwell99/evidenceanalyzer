@@ -421,6 +421,8 @@ async def delete_case(
         notes="Case and all evidence deleted by authenticated user",
     )
 
+    from app.models import FingerprintIndex
+    db.query(FingerprintIndex).filter(FingerprintIndex.case_id == case_id).delete()
     db.query(Certificate).filter(Certificate.case_id == case_id).delete()
     db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).delete()
     db.delete(case_obj)
@@ -2005,6 +2007,9 @@ async def delete_evidence(
 
     # Capture S3 key BEFORE deleting DB row
     file_key = evidence.file_key
+
+    from app.models import FingerprintIndex
+    db.query(FingerprintIndex).filter(FingerprintIndex.evidence_id == evidence_id).delete()
 
     db.delete(evidence)
     db.commit()
