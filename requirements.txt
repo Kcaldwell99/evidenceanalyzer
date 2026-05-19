@@ -27,3 +27,5 @@ sentence-transformers
 ffmpeg-python
 python-dotenv==1.2.2
 staticmap
+alembic==1.18.4
+Mako==1.3.12
