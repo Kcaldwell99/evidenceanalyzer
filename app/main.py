@@ -4,7 +4,8 @@ import shutil
 import hashlib
 import tempfile
 import zipfile
-from datetime import datetime
+import secrets
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional
 
@@ -24,7 +25,7 @@ from app.utils.audit_log import log_audit_event
 from app.db import SessionLocal, engine
 from app.models import Base, Case, Certificate, EvidenceItem, Payment, Subscription, User
 from app.storage import upload_file, delete_object, delete_objects
-from app.email_alerts import send_upload_alert, send_chain_failure_alert, send_monthly_summary
+from app.email_alerts import send_upload_alert, send_chain_failure_alert, send_monthly_summary, send_verification_email
 from app.auth import (
     hash_password,
     verify_password,
@@ -252,6 +253,8 @@ async def register_submit(
         return templates.TemplateResponse(
             request, "register.html", {"error": error}, status_code=400
         )
+    verification_token = secrets.token_urlsafe(48)
+    verification_expires = datetime.utcnow() + timedelta(hours=24)
 
     user = User(
         email=email.lower().strip(),
@@ -260,10 +263,19 @@ async def register_submit(
         full_name=full_name_clean,
         firm_name=firm_name_clean or None,
         country=country_clean,
+        email_verified=False,
+        email_verification_token=verification_token,
+        email_verification_token_expires=verification_expires,
     )
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    try:
+        send_verification_email(user.email, verification_token)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to send verification email to {user.email}: {e}")
 
     token = create_access_token(user.id, user.email)
     resp = RedirectResponse(url="/dashboard", status_code=303)
