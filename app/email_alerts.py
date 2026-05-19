@@ -181,6 +181,48 @@ def send_monthly_summary(
     client = _get_client()
     if not client:
         return
+def send_verification_email(
+    to_email: str,
+    token: str,
+    base_url: str = "https://evidenceanalyzer.com",
+):
+    """Send an email verification link to a newly-registered user."""
+    client = _get_client()
+    if not client:
+        return
+
+    verify_url = f"{base_url}/verify-email/{token}"
+    subject = "Verify your Evidentix account"
+    html = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: #5B2D8E; color: white; padding: 24px 28px; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 20px;">Evidentix&#8482;</h1>
+            <p style="margin: 4px 0 0 0; opacity: 0.8; font-size: 13px;">Verify your email address</p>
+        </div>
+        <div style="background: white; padding: 28px; border: 1px solid #e5e7eb; border-top: none;">
+            <p style="margin-top: 0;">Welcome to Evidentix. Please confirm your email address to activate your account and access all features.</p>
+            <p style="margin: 24px 0;">
+                <a href="{verify_url}" style="display: inline-block; background: #5B2D8E; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Verify Email Address</a>
+            </p>
+            <p style="font-size: 13px; color: #666;">Or copy and paste this link into your browser:</p>
+            <p style="font-size: 12px; color: #555; word-break: break-all; background: #faf8ff; padding: 10px 12px; border-radius: 4px; font-family: monospace;">{verify_url}</p>
+            <p style="font-size: 13px; color: #888; margin-top: 24px;">This link will expire in 24 hours. If you did not create an Evidentix account, you can safely ignore this email.</p>
+        </div>
+        <div style="padding: 16px 28px; background: #f9f9f9; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; font-size: 12px; color: #888;">
+            Evidentix&#8482; &mdash; Evidence Analyzer, LLC &mdash; evidenceanalyzer.com
+        </div>
+    </div>
+    """
+    try:
+        client.Emails.send({
+            "from": FROM_ADDRESS,
+            "to": [to_email],
+            "subject": subject,
+            "html": html,
+        })
+        logger.info(f"Verification email sent to {to_email}")
+    except Exception as e:
+        logger.error(f"Failed to send verification email to {to_email}: {e}")
 
     chain_status = "VERIFIED ✓" if chain_verified else "FAILED ✗"
     chain_color = "#1e7e34" if chain_verified else "#b71c1c"
