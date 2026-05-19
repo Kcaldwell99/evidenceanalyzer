@@ -365,7 +365,6 @@ async def home(request: Request):
 # =========================================================
 # BASIC CASE WORKFLOW  (all routes now require login)
 # =========================================================
-
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
@@ -374,6 +373,15 @@ async def dashboard(
     cookie_consent_state = get_consent_state(request, current_user)
     cases = load_cases_for_user(current_user)
     deleted = request.query_params.get("deleted")
+    verified = request.query_params.get("verified")
+
+    message = None
+    if deleted:
+        message = "Case deleted successfully."
+    elif verified == "1":
+        message = "Email verified successfully. Welcome to Evidentix."
+    elif verified == "already":
+        message = "Your email is already verified."
 
     return templates.TemplateResponse(
         request,
@@ -381,7 +389,7 @@ async def dashboard(
         {
             "cases": cases,
             "current_user": current_user,
-            "message": "Case deleted successfully." if deleted else None,
+            "message": message,
             "pricing": PRICING,
         },
     )
