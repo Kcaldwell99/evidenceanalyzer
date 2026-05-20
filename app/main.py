@@ -353,6 +353,55 @@ async def logout():
     return resp
 
 
+@app.get("/verify-email/{token}")
+async def verify_email(token: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email_verification_token == token).first()
+
+    if not user:
+        return RedirectResponse(url="/login?verify_error=invalid", status_code=303)
+
+    if user.email_verified:
+        if user.email_verification_token:
+            user.email_verification_token = None
+            user.email_verification_token_expires = None
+            db.commit()
+        return RedirectResponse(url="/dashboard?verified=already", status_code=303)
+
+    if user.email_verification_token_expires and user.email_verification_token_expires < datetime.utcnow():
+        return RedirectResponse(url="/login?verify_error=expired", status_code=303)
+
+    user.email_verified = True
+    user.email_verification_token = None
+    user.email_verification_token_expires = None
+    db.commit()
+
+    return RedirectResponse(url="/dashboard?verified=1", status_code=303)
+
+
+@app.post("/resend-verification")
+async def resend_verification(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.email_verified:
+        return RedirectResponse(url="/dashboard?verified=already", status_code=303)
+
+    verification_token = secrets.token_urlsafe(48)
+    verification_expires = datetime.utcnow() + timedelta(hours=24)
+
+    current_user.email_verification_token = verification_token
+    current_user.email_verification_token_expires = verification_expires
+    db.commit()
+
+    try:
+        send_verification_email(current_user.email, verification_token)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to resend verification email to {current_user.email}: {e}")
+
+    return RedirectResponse(url="/dashboard?resent=1", status_code=303)
+
+
 # =========================================================
 # PUBLIC PAGES
 # =========================================================
@@ -382,6 +431,8 @@ async def dashboard(
         message = "Email verified successfully. Welcome to Evidentix."
     elif verified == "already":
         message = "Your email is already verified."
+    elif request.query_params.get("resent") == "1":
+        message = "Verification email resent. Please check your inbox."
 
     return templates.TemplateResponse(
         request,
