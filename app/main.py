@@ -5,7 +5,7 @@ import hashlib
 import tempfile
 import zipfile
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import List, Optional
 
@@ -255,7 +255,7 @@ async def register_submit(
             request, "register.html", {"error": error}, status_code=400
         )
     verification_token = secrets.token_urlsafe(48)
-    verification_expires = datetime.utcnow() + timedelta(hours=24)
+    verification_expires = datetime.now(timezone.utc) + timedelta(hours=24)
 
     user = User(
         email=email.lower().strip(),
@@ -368,7 +368,7 @@ async def verify_email(token: str, db: Session = Depends(get_db)):
             db.commit()
         return RedirectResponse(url="/dashboard?verified=already", status_code=303)
 
-    if user.email_verification_token_expires and user.email_verification_token_expires < datetime.utcnow():
+    if user.email_verification_token_expires and user.email_verification_token_expires < datetime.now(timezone.utc):
         return RedirectResponse(url="/login?verify_error=expired", status_code=303)
 
     user.email_verified = True
@@ -388,7 +388,7 @@ async def resend_verification(
         return RedirectResponse(url="/dashboard?verified=already", status_code=303)
 
     verification_token = secrets.token_urlsafe(48)
-    verification_expires = datetime.utcnow() + timedelta(hours=24)
+    verification_expires = datetime.now(timezone.utc) + timedelta(hours=24)
 
     current_user.email_verification_token = verification_token
     current_user.email_verification_token_expires = verification_expires
