@@ -142,6 +142,12 @@
       <p>Digital Evidence Platform</p>
     </div>
 
+    {% if verify_error == 'expired' %}
+    <div class="error">Your verification link has expired. Sign in below and we'll send a new one.</div>
+    {% elif verify_error == 'invalid' %}
+    <div class="error">That verification link isn't valid. Sign in below to request a new one.</div>
+    {% endif %}
+
     {% if error %}
     <div class="error">{{ error }}</div>
     {% endif %}
