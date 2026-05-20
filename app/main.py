@@ -387,6 +387,15 @@ async def resend_verification(
     if current_user.email_verified:
         return RedirectResponse(url="/dashboard?verified=already", status_code=303)
 
+    # Rate limit: refuse if last token was issued less than 60 seconds ago.
+    # Token expires 24h after issue, so issued_at = expires - 24h.
+    if current_user.email_verification_token_expires:
+        issued_at = current_user.email_verification_token_expires - timedelta(hours=24)
+        seconds_since_last = (datetime.now(timezone.utc) - issued_at).total_seconds()
+        if seconds_since_last < 60:
+            wait = int(60 - seconds_since_last)
+            return RedirectResponse(url=f"/dashboard?resend_cooldown={wait}", status_code=303)
+
     verification_token = secrets.token_urlsafe(48)
     verification_expires = datetime.now(timezone.utc) + timedelta(hours=24)
 
@@ -434,6 +443,9 @@ async def dashboard(
         message = "Your email is already verified."
     elif request.query_params.get("resent") == "1":
         message = "Verification email resent. Please check your inbox."
+    elif request.query_params.get("resend_cooldown"):
+        wait = request.query_params.get("resend_cooldown")
+        message = f"Please wait {wait} seconds before requesting another verification email."
 
     return templates.TemplateResponse(
         request,
