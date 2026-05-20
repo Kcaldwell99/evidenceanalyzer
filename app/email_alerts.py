@@ -181,6 +181,59 @@ def send_monthly_summary(
     client = _get_client()
     if not client:
         return
+
+    chain_status = "VERIFIED" if chain_verified else "FAILED"
+    chain_color = "#1e7e34" if chain_verified else "#b71c1c"
+    subject = f"Evidentix Monthly Summary - {case_name} - {period}"
+    html = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: #5B2D8E; color: white; padding: 24px 28px; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0; font-size: 20px;">Evidentix&#8482; Monthly Summary</h1>
+            <p style="margin: 4px 0 0 0; opacity: 0.8; font-size: 13px;">{period}</p>
+        </div>
+        <div style="background: white; padding: 28px; border: 1px solid #e5e7eb; border-top: none;">
+            <p style="margin-top: 0;">Here is your monthly custody monitoring summary for the matter below.</p>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 10px 12px; font-weight: bold; color: #555; width: 40%; background: #faf8ff;">Case ID</td>
+                    <td style="padding: 10px 12px;">{case_id}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 10px 12px; font-weight: bold; color: #555; background: #faf8ff;">Matter Name</td>
+                    <td style="padding: 10px 12px;">{case_name}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 10px 12px; font-weight: bold; color: #555; background: #faf8ff;">Files on Platform</td>
+                    <td style="padding: 10px 12px;">{file_count} of {tier_limit}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 10px 12px; font-weight: bold; color: #555; background: #faf8ff;">Custody Events This Period</td>
+                    <td style="padding: 10px 12px;">{event_count}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 12px; font-weight: bold; color: #555; background: #faf8ff;">Chain Integrity</td>
+                    <td style="padding: 10px 12px; font-weight: bold; color: {chain_color};">{chain_status}</td>
+                </tr>
+            </table>
+            <a href="{base_url}/cases/{case_id}" style="display: inline-block; background: #5B2D8E; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">View Case</a>
+        </div>
+        <div style="padding: 16px 28px; background: #f9f9f9; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; font-size: 12px; color: #888;">
+            Evidentix&#8482; Custody Monitoring &mdash; Evidence Analyzer, LLC &mdash; evidenceanalyzer.com
+        </div>
+    </div>
+    """
+    try:
+        client.Emails.send({
+            "from": FROM_ADDRESS,
+            "to": [to_email],
+            "subject": subject,
+            "html": html,
+        })
+        logger.info(f"Monthly summary sent to {to_email} for {case_id}")
+    except Exception as e:
+        logger.error(f"Failed to send monthly summary: {e}")
+
+
 def send_verification_email(
     to_email: str,
     token: str,
@@ -223,55 +276,3 @@ def send_verification_email(
         logger.info(f"Verification email sent to {to_email}")
     except Exception as e:
         logger.error(f"Failed to send verification email to {to_email}: {e}")
-
-    chain_status = "VERIFIED ✓" if chain_verified else "FAILED ✗"
-    chain_color = "#1e7e34" if chain_verified else "#b71c1c"
-    subject = f"Evidentix Monthly Summary — {case_name} — {period}"
-    html = f"""
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: #5B2D8E; color: white; padding: 24px 28px; border-radius: 8px 8px 0 0;">
-            <h1 style="margin: 0; font-size: 20px;">Evidentix&#8482; Monthly Summary</h1>
-            <p style="margin: 4px 0 0 0; opacity: 0.8; font-size: 13px;">{period}</p>
-        </div>
-        <div style="background: white; padding: 28px; border: 1px solid #e5e7eb; border-top: none;">
-            <p style="margin-top: 0;">Here is your monthly custody monitoring summary for the matter below.</p>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                    <td style="padding: 10px 12px; font-weight: bold; color: #555; width: 40%; background: #faf8ff;">Case ID</td>
-                    <td style="padding: 10px 12px;">{case_id}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                    <td style="padding: 10px 12px; font-weight: bold; color: #555; background: #faf8ff;">Matter Name</td>
-                    <td style="padding: 10px 12px;">{case_name}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                    <td style="padding: 10px 12px; font-weight: bold; color: #555; background: #faf8ff;">Files on Platform</td>
-                    <td style="padding: 10px 12px;">{file_count} of {tier_limit}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                    <td style="padding: 10px 12px; font-weight: bold; color: #555; background: #faf8ff;">Custody Events This Period</td>
-                    <td style="padding: 10px 12px;">{event_count}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px 12px; font-weight: bold; color: #555; background: #faf8ff;">Chain Integrity</td>
-                    <td style="padding: 10px 12px; font-weight: bold; color: {chain_color};">{chain_status}</td>
-                </tr>
-            </table>
-            <a href="{base_url}/cases/{case_id}" style="display: inline-block; background: #5B2D8E; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">View Case</a>
-        </div>
-        <div style="padding: 16px 28px; background: #f9f9f9; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; font-size: 12px; color: #888;">
-            Evidentix&#8482; Custody Monitoring &mdash; Evidence Analyzer, LLC &mdash; evidenceanalyzer.com
-        </div>
-    </div>
-    """
-
-    try:
-        client.Emails.send({
-            "from": FROM_ADDRESS,
-            "to": [to_email],
-            "subject": subject,
-            "html": html,
-        })
-        logger.info(f"Monthly summary sent to {to_email} for {case_id}")
-    except Exception as e:
-        logger.error(f"Failed to send monthly summary: {e}")
