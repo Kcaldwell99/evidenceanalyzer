@@ -1147,7 +1147,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
             if sub:
                 sub.status = "active"
-                sub.updated_at = datetime.utcnow()
+                sub.updated_at = datetime.now(timezone.utc)
                 db.commit()
             else:
                 # First invoice.paid for this subscription — create the record
@@ -1172,7 +1172,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
         if sub:
             sub.status = data_object.get("status", sub.status)
-            sub.updated_at = datetime.utcnow()
+            sub.updated_at = datetime.now(timezone.utc)
             db.commit()
 
     elif event_type == "customer.subscription.deleted":
@@ -1183,7 +1183,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
         if sub:
             sub.status = "canceled"
-            sub.updated_at = datetime.utcnow()
+            sub.updated_at = datetime.now(timezone.utc)
             db.commit()
 
     elif event_type == "invoice.payment_failed":
@@ -1195,7 +1195,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
             if sub:
                 sub.status = "past_due"
-                sub.updated_at = datetime.utcnow()
+                sub.updated_at = datetime.now(timezone.utc)
                 db.commit()
 
     return {"status": "ok"}
