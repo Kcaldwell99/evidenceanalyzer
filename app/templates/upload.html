@@ -172,6 +172,25 @@
             border-radius: 6px;
             margin-bottom: 20px;
         }
+        .verify-banner {
+            background: #fef3c7;
+            color: #78350f;
+            border: 1px solid #fcd34d;
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .verify-banner .verify-text { flex: 1; min-width: 300px; }
+        .verify-banner .verify-text strong { display: block; margin-bottom: 4px; color: #78350f; }
+        .verify-banner .verify-email { font-family: monospace; font-size: 0.9em; background: rgba(255,255,255,0.5); padding: 1px 6px; border-radius: 3px; }
+        .verify-banner form { margin: 0; }
+        .verify-banner button { background: #92400e; color: white; border: none; padding: 9px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em; white-space: nowrap; }
+        .verify-banner button:hover { background: #78350f; }
 
         .pricing-section-label {
             font-size: 13px;
@@ -308,6 +327,17 @@
             </div>
         </div>
 
+        {% if current_user and not current_user.email_verified %}
+            <div class="verify-banner">
+                <div class="verify-text">
+                    <strong>Verify your email to unlock all features.</strong>
+                    We sent a verification link to <span class="verify-email">{{ current_user.email }}</span>. Most platform features are locked until verification is complete.
+                </div>
+                <form action="/resend-verification" method="post">
+                    <button type="submit">Resend Email</button>
+                </form>
+            </div>
+        {% endif %}
         {% if message %}
             <div class="message">{{ message }}</div>
         {% endif %}
