@@ -27,6 +27,7 @@ from app.models import Base, Case, Certificate, EvidenceItem, Payment, Subscript
 from app.storage import upload_file, delete_object, delete_objects
 from app.email_alerts import send_upload_alert, send_chain_failure_alert, send_monthly_summary, send_verification_email
 from app.auth import (
+    require_verified_email,
     hash_password,
     verify_password,
     create_access_token,
@@ -450,7 +451,7 @@ async def create_case(
     request: Request,
     case_name: str = Form(...),
     description: str = Form(""),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
     existing_cases = db.query(Case).order_by(Case.id.asc()).all()
@@ -486,7 +487,7 @@ async def create_case(
 async def delete_case(
     case_id: str,
     request: Request,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
 
@@ -633,7 +634,7 @@ async def analyze_file_route(
     case_id: str = Form(...),
     file: UploadFile = File(...),
     web_detection_enabled: bool = Form(False),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
     case_obj = db.query(Case).filter(Case.case_id == case_id).first()
@@ -801,7 +802,7 @@ async def compare_submit(
     case_notes: str = Form(""),
     original_file: UploadFile = File(...),
     suspected_file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
 ):
     safe_case_name = safe_slug(case_name)
     case_path = REPORTS_DIR / safe_case_name
@@ -858,7 +859,7 @@ async def compare_against_case_page(
 @app.post("/compare-against-case", response_class=HTMLResponse)
 async def compare_against_case_route(
     request: Request,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
     form = await request.form()
@@ -923,7 +924,7 @@ async def compare_case_route(
     request: Request,
     case_id: str = Form(...),
     suspect_file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
     case_obj = db.query(Case).filter(Case.case_id == case_id).first()
@@ -974,7 +975,7 @@ async def compare_case_route(
 async def compare_global_route(
     request: Request,
     suspect_file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
 ):
     temp_dir = UPLOADS_DIR / "temp_compare"
     temp_dir.mkdir(parents=True, exist_ok=True)
@@ -1048,7 +1049,7 @@ async def copyright_search_submit(
     claimant: str = Form(""),
     registration_number: str = Form(""),
     year: str = Form(""),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
 ):
     search_link = build_copyright_search_link(
         title=title,
@@ -1250,7 +1251,7 @@ STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
 async def checkout(
     request: Request,
     product: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
 ):
     if product not in STRIPE_PRICES:
         raise HTTPException(status_code=404, detail="Product not found.")
@@ -1494,7 +1495,7 @@ async def generate_integrity_certificate_route(
     case_id: str,
     evidence_id: str,
     request: Request,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
     from app.pdf_integrity_certificate import generate_integrity_certificate
@@ -1686,7 +1687,7 @@ async def web_detection_route(
     case_id: str,
     evidence_id: str,
     request: Request,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
     from app.utils.web_detection import detect_web_presence
@@ -1854,7 +1855,7 @@ async def generate_custody_record_route(
     scope: str = "case",
     evidence_id: Optional[str] = None,
     redacted: bool = True,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
     from app.pdf_custody_record import generate_custody_record
@@ -2110,7 +2111,7 @@ async def delete_evidence(
     case_id: str,
     evidence_id: str,
     request: Request,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
     from app.models import EvidenceItem
@@ -2145,7 +2146,7 @@ async def delete_evidence(
 async def delete_all_evidence(
     case_id: str,
     request: Request,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
     case_obj = db.query(Case).filter(Case.case_id == case_id).first()
@@ -2259,7 +2260,7 @@ async def analyze_video_route(
     request: Request,
     case_id: str = Form(...),
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
     from core.video_analyzer import analyze_video
@@ -2350,7 +2351,7 @@ async def compare_video_route(
     request: Request,
     original_file: UploadFile = File(...),
     suspect_file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_verified_email),
 ):
     from core.video_analyzer import analyze_video
     from core.video_compare import compare_frame_sets

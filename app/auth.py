@@ -135,3 +135,18 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Admin access required.")
     return current_user
+
+
+def require_verified_email(current_user: User = Depends(get_current_user)) -> User:
+    """Dependency that ensures the user has verified their email address.
+
+    Raises HTTP 403 if the user is authenticated but has not yet verified.
+    Use this in place of get_current_user on endpoints that should be gated
+    behind email verification (uploads, paid features, etc.).
+    """
+    if not current_user.email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email verification required. Please check your inbox for the verification link.",
+        )
+    return current_user
