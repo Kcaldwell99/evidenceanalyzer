@@ -290,6 +290,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     else:
         y -= 12
         y = _draw_wrapped_lines(c, ["GPS data: No GPS coordinates embedded in file metadata."], 60, y)
+    y -= 8
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y, "3. Similarity Review")
     y -= 15
