@@ -142,6 +142,7 @@ def load_audit_log(
         )
         return [
             {
+                "id":          e.id,
                 "event_type":  e.action,
                 "case_id":     e.case_id,
                 "evidence_id": e.evidence_id,
@@ -149,6 +150,7 @@ def load_audit_log(
                 "ip_address":  e.ip_address,
                 "notes":       e.detail,
                 "chain_hash":  e.chain_hash,
+                "timestamp":   e.created_at,
              }
             for e in entries
         ]
