@@ -52,6 +52,17 @@ class EvidenceItem(Base):
     file_key = Column(String(500), nullable=True)
     web_detection_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
 
+    # C2PA Content Credentials (populated from c2pa_analysis.summarize_for_certificate)
+    c2pa_state = Column(String(20), nullable=True)
+    c2pa_has_ai_generation = Column(Boolean, nullable=False, default=False, server_default="false")
+    c2pa_has_ai_modification = Column(Boolean, nullable=False, default=False, server_default="false")
+    c2pa_signature_valid = Column(Boolean, nullable=True)
+    c2pa_claim_generator = Column(String(255), nullable=True)
+    c2pa_signature_issuer = Column(String(255), nullable=True)
+    c2pa_signature_time = Column(String(50), nullable=True)
+    c2pa_plain_english = Column(Text, nullable=True)
+    c2pa_analyzed_at = Column(DateTime(timezone=True), nullable=True)
+
 
 class FingerprintIndex(Base):
     __tablename__ = "fingerprint_index"

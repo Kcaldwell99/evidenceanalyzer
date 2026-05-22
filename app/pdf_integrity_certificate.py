@@ -145,7 +145,7 @@ def generate_integrity_certificate(
 
     # C2PA status
     c2pa = report.get("c2pa", {})
-    c2pa_present = c2pa.get("present", False)
+    c2pa_present = c2pa.get("state") in ("VALID", "INVALID")
 
     if not c2pa_present:
         content.append(Paragraph(

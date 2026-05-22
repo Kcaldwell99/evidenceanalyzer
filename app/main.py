@@ -186,6 +186,22 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def _parse_c2pa_analyzed_at(s):
+    """Parse C2PA analyzed_at ISO string into a timezone-aware datetime.
+
+    The upstream c2pa_analysis.summarize_for_certificate() returns analyzed_at
+    as an ISO 8601 string with a 'Z' suffix. SQLAlchemy's DateTime(timezone=True)
+    column expects a datetime object, so we parse here. Returns None on any
+    failure so persistence never fails on a malformed timestamp.
+    """
+    if not s:
+        return None
+    try:
+        return datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except (ValueError, AttributeError, TypeError):
+        return None
+
+
 def create_paid_case_id(service: str) -> str:
     ts = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
     return f"{service.upper()}-{ts}"
@@ -693,6 +709,7 @@ async def analyze_file_route(
         file_key=file_key,
         web_detection_enabled=web_detection_enabled,
     )
+    c2pa_data = report.get("c2pa", {}) or {}
     new_item = EvidenceItem(
         evidence_id=evidence_id,
         case_id=case_id,
@@ -703,6 +720,16 @@ async def analyze_file_route(
         sha256=report.get("sha256"),
         analysis_date=datetime.utcnow().isoformat(),
         web_detection_enabled=web_detection_enabled,
+        # C2PA Content Credentials (from c2pa_analysis.summarize_for_certificate)
+        c2pa_state=c2pa_data.get("state"),
+        c2pa_has_ai_generation=bool(c2pa_data.get("has_ai_generation", False)),
+        c2pa_has_ai_modification=bool(c2pa_data.get("has_ai_modification", False)),
+        c2pa_signature_valid=c2pa_data.get("signature_valid"),
+        c2pa_claim_generator=c2pa_data.get("claim_generator"),
+        c2pa_signature_issuer=c2pa_data.get("signature_issuer"),
+        c2pa_signature_time=c2pa_data.get("signature_time"),
+        c2pa_plain_english=c2pa_data.get("plain_english"),
+        c2pa_analyzed_at=_parse_c2pa_analyzed_at(c2pa_data.get("analyzed_at")),
     )
 
     log_audit_event(
@@ -1908,12 +1935,22 @@ async def generate_custody_record_route(
 
     evidence_items = [
         {
-            "evidence_id":   e.evidence_id,
-            "file_name":     e.file_name,
-            "sha256":        e.sha256,
-            "file_key":      e.file_key,
-            "analysis_date": e.analysis_date,
-            "user":          current_user.email,
+            "evidence_id":               e.evidence_id,
+            "file_name":                 e.file_name,
+            "sha256":                    e.sha256,
+            "file_key":                  e.file_key,
+            "analysis_date":             e.analysis_date,
+            "user":                      current_user.email,
+            # C2PA Content Credentials (populated for image uploads)
+            "c2pa_state":                e.c2pa_state,
+            "c2pa_has_ai_generation":   e.c2pa_has_ai_generation,
+            "c2pa_has_ai_modification": e.c2pa_has_ai_modification,
+            "c2pa_signature_valid":     e.c2pa_signature_valid,
+            "c2pa_claim_generator":     e.c2pa_claim_generator,
+            "c2pa_signature_issuer":    e.c2pa_signature_issuer,
+            "c2pa_signature_time":      e.c2pa_signature_time,
+            "c2pa_plain_english":       e.c2pa_plain_english,
+            "c2pa_analyzed_at":         e.c2pa_analyzed_at,
         }
         for e in evidence_rows
     ]
