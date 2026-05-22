@@ -162,9 +162,6 @@ def load_cases_for_user(user: User):
         db.close()
 
 
-def generate_case_id(existing_cases):
-    next_number = len(existing_cases) + 1
-    return f"CASE-{next_number:04d}"
 
 
 def create_case_folder(case_id: str):
@@ -466,16 +463,16 @@ async def create_case(
     current_user: User = Depends(require_verified_email),
     db: Session = Depends(get_db),
 ):
-    existing_cases = db.query(Case).order_by(Case.id.asc()).all()
-    case_id = generate_case_id(existing_cases)
-
     new_case = Case(
-        case_id=case_id,
+        case_id="",  # placeholder; assigned after flush
         case_name=case_name,
         description=description,
         user_id=current_user.id,
     )
     db.add(new_case)
+    db.flush()  # assigns new_case.id without committing
+    case_id = f"CASE-{new_case.id:04d}"
+    new_case.case_id = case_id
     db.commit()
 
     create_case_folder(case_id)
