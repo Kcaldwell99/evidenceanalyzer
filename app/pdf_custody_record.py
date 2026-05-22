@@ -522,8 +522,13 @@ def generate_custody_record(
     # ── BUILD & RETURN ─────────────────────────────────────
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         tmp_path = tmp.name
-    build_document(tmp_path, content, title="Evidentix Custody Record")
-    with open(tmp_path, "rb") as f:
-        pdf_bytes = f.read()
-    os.unlink(tmp_path)
+    try:
+        build_document(tmp_path, content, title="Evidentix Custody Record")
+        with open(tmp_path, "rb") as f:
+            pdf_bytes = f.read()
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
     return record_id, pdf_bytes
