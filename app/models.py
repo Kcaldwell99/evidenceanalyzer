@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, Boolean
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
@@ -54,14 +54,21 @@ class EvidenceItem(Base):
 
     # C2PA Content Credentials (populated from c2pa_analysis.summarize_for_certificate)
     c2pa_state = Column(String(20), nullable=True)
-    c2pa_has_ai_generation = Column(Boolean, nullable=False, default=False, server_default="false")
-    c2pa_has_ai_modification = Column(Boolean, nullable=False, default=False, server_default="false")
+    c2pa_has_ai_generation = Column(Boolean, nullable=True)
+    c2pa_has_ai_modification = Column(Boolean, nullable=True)
     c2pa_signature_valid = Column(Boolean, nullable=True)
     c2pa_claim_generator = Column(String(255), nullable=True)
     c2pa_signature_issuer = Column(String(255), nullable=True)
     c2pa_signature_time = Column(String(50), nullable=True)
     c2pa_plain_english = Column(Text, nullable=True)
     c2pa_analyzed_at = Column(DateTime(timezone=True), nullable=True)
+    c2pa_claim_generator_version = Column(String(100), nullable=True)
+    c2pa_num_assertions = Column(Integer, nullable=True)
+    c2pa_num_ingredients = Column(Integer, nullable=True)
+    c2pa_trust_list_status = Column(String(50), nullable=True)
+    c2pa_revocation_status = Column(String(50), nullable=True)
+    c2pa_ai_agents_found = Column(JSON, nullable=True)
+    c2pa_has_training_mining = Column(Boolean, nullable=True)
 
 
 class FingerprintIndex(Base):

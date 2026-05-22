@@ -722,14 +722,21 @@ async def analyze_file_route(
         web_detection_enabled=web_detection_enabled,
         # C2PA Content Credentials (from c2pa_analysis.summarize_for_certificate)
         c2pa_state=c2pa_data.get("state"),
-        c2pa_has_ai_generation=bool(c2pa_data.get("has_ai_generation", False)),
-        c2pa_has_ai_modification=bool(c2pa_data.get("has_ai_modification", False)),
+        c2pa_has_ai_generation=c2pa_data.get("has_ai_generation"),
+        c2pa_has_ai_modification=c2pa_data.get("has_ai_modification"),
         c2pa_signature_valid=c2pa_data.get("signature_valid"),
         c2pa_claim_generator=c2pa_data.get("claim_generator"),
         c2pa_signature_issuer=c2pa_data.get("signature_issuer"),
         c2pa_signature_time=c2pa_data.get("signature_time"),
         c2pa_plain_english=c2pa_data.get("plain_english"),
         c2pa_analyzed_at=_parse_c2pa_analyzed_at(c2pa_data.get("analyzed_at")),
+        c2pa_claim_generator_version=c2pa_data.get("claim_generator_version"),
+        c2pa_num_assertions=c2pa_data.get("num_assertions"),
+        c2pa_num_ingredients=c2pa_data.get("num_ingredients"),
+        c2pa_trust_list_status=c2pa_data.get("trust_list_status"),
+        c2pa_revocation_status=c2pa_data.get("revocation_status"),
+        c2pa_ai_agents_found=c2pa_data.get("ai_agents_found"),
+        c2pa_has_training_mining=c2pa_data.get("has_training_mining"),
     )
 
     log_audit_event(
@@ -1579,21 +1586,39 @@ async def generate_integrity_certificate_route(
 
     base_url = str(request.base_url).rstrip("/")
 
-    # Run C2PA analysis and inject into report
-    try:
-        from app.c2pa_analysis import analyze_file, summarize_for_certificate
-        from app.storage import get_file as s3_get_file
-        import tempfile, os
-        raw_bytes = s3_get_file(item.file_key)
-        ext = (item.file_name or "file.bin").rsplit(".", 1)[-1]
-        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}") as tmp:
-            tmp.write(raw_bytes)
-            tmp_path = tmp.name
-        c2pa_result = analyze_file(tmp_path)
-        os.unlink(tmp_path)
-        report["c2pa"] = summarize_for_certificate(c2pa_result)
-    except Exception as e:
-        report["c2pa"] = {"state": "UNAVAILABLE", "state_label": "C2PA Analysis Unavailable", "plain_english": f"Analysis could not be completed: {str(e)}", "error_detail": str(e)}
+    # Reconstruct c2pa dict from stored EvidenceItem columns (populated at upload).
+    # This ensures the certificate reports the C2PA findings captured at the time
+    # of analysis, not a re-analysis at certificate-generation time.
+    _state_labels = {
+        "VALID":       "Content Credentials Present and Verified",
+        "INVALID":     "Content Credentials Present \u2014 Verification Failed",
+        "ABSENT":      "No Content Credentials Detected",
+        "UNAVAILABLE": "C2PA Analysis Unavailable",
+    }
+    _state = item.c2pa_state or "UNAVAILABLE"
+    _analyzed_at_iso = (
+        item.c2pa_analyzed_at.isoformat().replace("+00:00", "Z")
+        if item.c2pa_analyzed_at else None
+    )
+    report["c2pa"] = {
+        "state":                   _state,
+        "state_label":             _state_labels.get(_state, "C2PA Analysis Unavailable"),
+        "analyzed_at":             _analyzed_at_iso,
+        "claim_generator":         item.c2pa_claim_generator,
+        "claim_generator_version": item.c2pa_claim_generator_version,
+        "signature_issuer":        item.c2pa_signature_issuer,
+        "signature_time":          item.c2pa_signature_time,
+        "signature_valid":         item.c2pa_signature_valid,
+        "trust_list_status":       item.c2pa_trust_list_status,
+        "revocation_status":       item.c2pa_revocation_status,
+        "has_ai_generation":       item.c2pa_has_ai_generation,
+        "has_ai_modification":     item.c2pa_has_ai_modification,
+        "has_training_mining":     item.c2pa_has_training_mining,
+        "ai_agents_found":         item.c2pa_ai_agents_found or [],
+        "num_assertions":          item.c2pa_num_assertions,
+        "num_ingredients":         item.c2pa_num_ingredients,
+        "plain_english":           item.c2pa_plain_english or "Content Credentials analysis not available.",
+    }
 
     certificate_id, pdf_bytes = generate_integrity_certificate(
 
