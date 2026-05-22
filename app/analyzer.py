@@ -318,11 +318,16 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     y -= 15
 
     c.setFont("Helvetica", 10)
-    y = _draw_wrapped_lines(c, _wrap_text(report.get("c2pa_summary", "Content Credentials not detected.")), 60, y)
-   
-    if c2pa_summary.get("flagged_ai"):
+    c2pa = report.get("c2pa", {})
+    plain_english = c2pa.get("plain_english", "Content Credentials not detected.")
+    y = _draw_wrapped_lines(c, _wrap_text(plain_english), 60, y)
+
+    c2pa_state = c2pa.get("state", "ABSENT")
+    if c2pa.get("has_ai_generation"):
         y = _draw_wrapped_lines(c, ["WARNING: AI-generated content indicators detected in manifest."], 60, y)
-    if c2pa_summary.get("flagged_no_credentials"):
+    if c2pa_state == "INVALID":
+        y = _draw_wrapped_lines(c, ["WARNING: Content Credentials present but signature validation failed."], 60, y)
+    if c2pa_state not in ("VALID", "INVALID"):
         y = _draw_wrapped_lines(c, ["NOTE: No Content Credentials found. File provenance cannot be verified."], 60, y)
 
     y -= 8
