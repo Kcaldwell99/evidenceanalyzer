@@ -94,7 +94,7 @@ PROVENANCE_LABELS = {
 class C2PAResult:
     # Top-level state
     state: C2PAState = C2PAState.UNAVAILABLE
-    analyzed_at: str = field(default_factory=lambda: datetime.datetime.utcnow().isoformat() + "Z")
+    analyzed_at: str = field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"))
 
     # Manifest metadata
     active_manifest_label: Optional[str] = None

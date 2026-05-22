@@ -82,6 +82,15 @@ def _fmt_event_type(event_type: str) -> str:
         "hash_verified":        "Hash Verification",
         "integrity_checked":    "Integrity Check",
         "custody_record_generated": "Custody Record Generated",
+        "case_comparison_completed": "Case Comparison Completed",
+        "global_comparison_completed": "Global Comparison Completed",
+        "video_comparison_performed": "Video Comparison Performed",
+        "intake_submitted":        "Intake Submitted",
+        "evidence_deleted":        "Evidence Deleted",
+        "all_evidence_deleted":    "All Evidence Deleted",
+        "custody_log_cleared":     "Custody Log Cleared",
+        "web_detection_consented": "Web Detection Consent Granted",
+        "UPLOAD_CERTIFIED":        "Upload Certified",
     }.get(event_type, event_type.replace("_", " ").title())
 
 

@@ -11,14 +11,12 @@ from typing import List, Optional
 
 import requests
 from sqlalchemy import Index, event
-from sqlalchemy import event
 import stripe
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Depends, Response
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from app import db
 from app import db
 from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
@@ -203,7 +201,7 @@ def _parse_c2pa_analyzed_at(s):
 
 
 def create_paid_case_id(service: str) -> str:
-    ts = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     return f"{service.upper()}-{ts}"
 
 
@@ -718,7 +716,7 @@ async def analyze_file_route(
         json_report=json_path,
         pdf_report=pdf_path,
         sha256=report.get("sha256"),
-        analysis_date=datetime.utcnow().isoformat(),
+        analysis_date=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         web_detection_enabled=web_detection_enabled,
         # C2PA Content Credentials (from c2pa_analysis.summarize_for_certificate)
         c2pa_state=c2pa_data.get("state"),
@@ -931,7 +929,7 @@ async def compare_against_case_route(
     upload_dir = PROJECT_ROOT / "temp_uploads"
     upload_dir.mkdir(exist_ok=True)
 
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     safe_filename = f"{timestamp}_{file.filename}"
     file_path = upload_dir / safe_filename
 
@@ -1477,7 +1475,7 @@ async def submit_intake(
 
     intake_data = {
         "case_id": case_id,
-        "created_utc": datetime.utcnow().isoformat(),
+        "created_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "service": service,
         "service_name": SERVICE_MAP[service]["name"],
         "stripe_session_id": session_id,
@@ -1574,9 +1572,9 @@ async def generate_integrity_certificate_route(
     report["file_name"] = report.get("file_name") or item.file_name
     report["sha256"] = report.get("sha256") or item.sha256
     try:
-        report["analysis_date"] = datetime.fromisoformat(str(item.analysis_date or datetime.utcnow().isoformat())).strftime("%B %d, %Y at %H:%M:%S UTC")
+        report["analysis_date"] = datetime.fromisoformat(str(item.analysis_date or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"))).strftime("%B %d, %Y at %H:%M:%S UTC")
     except Exception:
-        report["analysis_date"] = datetime.utcnow().strftime("%B %d, %Y at %H:%M:%S UTC")
+        report["analysis_date"] = datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M:%S UTC")
     if "metadata" not in report:
         report["metadata"] = {}
     if not report["metadata"].get("mime_type"):
@@ -2139,7 +2137,7 @@ async def send_monthly_summaries(
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Admin access required.")
 
-    period = datetime.utcnow().strftime("%B %Y")
+    period = datetime.now(timezone.utc).strftime("%B %Y")
     subs = db.query(Subscription).filter(
         Subscription.status == "active",
         Subscription.product.in_(["monitoring_small", "monitoring_standard", "monitoring_large"]),
@@ -2373,7 +2371,7 @@ async def analyze_video_route(
         json_report=json_path,
         pdf_report=pdf_path,
         sha256=result.get("sha256"),
-        analysis_date=datetime.utcnow().isoformat(),
+        analysis_date=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     )
 
     log_audit_event(
