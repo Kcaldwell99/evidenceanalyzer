@@ -89,6 +89,9 @@ async def certify_document(
         + (f" | EXIF time: {payload.exif_timestamp}" if payload.exif_timestamp else "")
     )
 
+    # event_type uses SCREAMING_CASE intentionally - this is part of an
+    # external API contract consumed by an outside service integration.
+    # Do not rename to snake_case without coordinating with the integrator.
     event = log_audit_event(
         event_type="UPLOAD_CERTIFIED",
         case_id=payload.case_id,

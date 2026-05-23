@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import hashlib
+import io
 import tempfile
 import zipfile
 import secrets
@@ -22,7 +23,7 @@ from app.analyzer import analyze_file
 from app.utils.audit_log import log_audit_event
 from app.db import SessionLocal, engine
 from app.models import Base, Case, Certificate, EvidenceItem, Payment, Subscription, User
-from app.storage import upload_file, delete_object, delete_objects
+from app.storage import upload_file, delete_object, delete_objects, get_file, generate_presigned_url
 from app.email_alerts import send_upload_alert, send_chain_failure_alert, send_monthly_summary, send_verification_email
 from app.auth import (
     require_verified_email,
@@ -109,6 +110,10 @@ def get_consent_state(request, current_user):
     if request.headers.get("sec-gpc") == "1":
         return "declined"
     return "pending"
+
+# Privacy policy version - increment when the policy changes meaningfully
+# so users re-consenting are recorded against the new version.
+COOKIE_CONSENT_VERSION = "1"
 
 SERVICE_MAP = {
     "single": {
@@ -814,7 +819,6 @@ async def evidence_file_redirect(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    from app.storage import generate_presigned_url
 
     item = (
         db.query(EvidenceItem)
@@ -1372,7 +1376,7 @@ async def set_cookie_consent(
     if current_user is not None:
         current_user.cookie_consent = (value == "accepted")
         current_user.cookie_consent_at = datetime.now(timezone.utc)
-        current_user.cookie_consent_version = "1"
+        current_user.cookie_consent_version = COOKIE_CONSENT_VERSION
         db.commit()
     # Cookie write for everyone
     referer = request.headers.get("referer", "/")
@@ -1561,8 +1565,6 @@ async def generate_integrity_certificate_route(
     db: Session = Depends(get_db),
 ):
     from app.pdf_integrity_certificate import generate_integrity_certificate
-    from app.storage import upload_file as s3_upload
-    import io
 
     # Verify case ownership
     case_obj = db.query(Case).filter(Case.case_id == case_id).first()
@@ -1586,7 +1588,6 @@ async def generate_integrity_certificate_route(
     report = {}
     if item.json_report:
         try:
-            from app.storage import get_file
             report = json.loads(get_file(item.json_report).decode("utf-8"))
         except Exception:
             report = {}
@@ -1649,7 +1650,7 @@ async def generate_integrity_certificate_route(
     )
 
     # Upload PDF to S3
-    pdf_key = s3_upload(
+    pdf_key = upload_file(
         io.BytesIO(pdf_bytes),
         f"integrity_certificate_{certificate_id}.pdf",
         "application/pdf",
@@ -1771,7 +1772,6 @@ async def web_detection_route(
     db: Session = Depends(get_db),
 ):
     from app.utils.web_detection import detect_web_presence
-    from app.storage import get_file, generate_presigned_url
     import tempfile, os
 
     case_obj = db.query(Case).filter(Case.case_id == case_id).first()
@@ -1865,7 +1865,6 @@ async def download_bundle(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    from app.storage import generate_presigned_url
 
     case_obj = db.query(Case).filter(Case.case_id == case_id).first()
     if case_obj:
@@ -1939,10 +1938,8 @@ async def generate_custody_record_route(
     db: Session = Depends(get_db),
 ):
     from app.pdf_custody_record import generate_custody_record
-    from app.storage import upload_file as s3_upload
     from app.utils.audit_log import verify_chain
     from app.models import CustodyLog
-    import io
 
     # Verify case ownership
     case_obj = db.query(Case).filter(Case.case_id == case_id).first()
@@ -2036,7 +2033,7 @@ async def generate_custody_record_route(
             )
     
     # Upload to S3
-    pdf_key = s3_upload(
+    pdf_key = upload_file(
         io.BytesIO(pdf_bytes),
         f"custody_record_{record_id}.pdf",
         "application/pdf",
@@ -2275,7 +2272,6 @@ async def report_file_redirect(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    from app.storage import generate_presigned_url
 
     case_obj = db.query(Case).filter(Case.case_id == case_id).first()
     if case_obj:
