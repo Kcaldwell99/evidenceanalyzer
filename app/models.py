@@ -16,6 +16,8 @@ class User(Base):
     firm_name = Column(String(255), nullable=True)
     country = Column(String(2), nullable=True, index=True)
     cookie_consent = Column(Boolean, nullable=True)
+    cookie_consent_at = Column(DateTime(timezone=True), nullable=True)
+    cookie_consent_version = Column(String(20), nullable=True)
     email_verified = Column(Boolean, default=False, nullable=False, server_default="false")
     email_verification_token = Column(String(128), nullable=True, index=True)
     email_verification_token_expires = Column(DateTime(timezone=True), nullable=True)

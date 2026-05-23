@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cookie Preferences - Evidence Analyzer by Evidentix</title>
+<link rel="stylesheet" href="/static/css/main.css">
+<style>
+  .consent-prompt {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #2d3148;
+  }
+  .consent-prompt p {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+  }
+  .consent-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .consent-buttons button {
+    background: transparent;
+    border: 1px solid #7c8cf8;
+    color: #7c8cf8;
+    border-radius: 7px;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .consent-buttons button:hover {
+    background: #7c8cf8;
+    color: #fff;
+  }
+  .state-banner {
+    background: #1a1f2e;
+    border-left: 4px solid #7c8cf8;
+    padding: 1rem 1.25rem;
+    border-radius: 6px;
+    margin: 1.5rem 0;
+  }
+  .state-banner.accepted {
+    border-left-color: #10b981;
+  }
+  .state-banner.declined {
+    border-left-color: #ef4444;
+  }
+  .state-label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+    margin-bottom: 0.5rem;
+  }
+  .state-value {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="early-access-banner">
+  <strong>Evidentix is in early access.</strong> Built by a litigator. Active development.
+</div>
+<header class="site-header-wrap">
+  <div class="site-header">
+    <span class="brand">
+      <span class="brand-name">Evidence Analyzer</span>
+      <span class="brand-tag">by Evidentix&trade;</span>
+    </span>
+    <a href="/login?next=/upload" class="sign-in">Sign in</a>
+  </div>
+</header>
+
+<main class="legal-page">
+
+  <section class="legal-header">
+    <h1>Cookie Preferences</h1>
+    <p class="legal-intro">You can change your cookie preferences at any time. Your current preference is shown below; selecting a different option will update it immediately. Changes are recorded and take effect on every page of the Service.</p>
+  </section>
+
+  <section class="legal-section">
+    <h2>Your current preference</h2>
+
+    {% if cookie_consent_state == "accepted" %}
+      <div class="state-banner accepted">
+        <div class="state-label">Current state</div>
+        <div class="state-value">Accepted &mdash; analytics cookies may be set on your visits.</div>
+      </div>
+    {% elif cookie_consent_state == "declined" %}
+      <div class="state-banner declined">
+        <div class="state-label">Current state</div>
+        <div class="state-value">Declined &mdash; analytics cookies will not be set.</div>
+      </div>
+    {% else %}
+      <div class="state-banner">
+        <div class="state-label">Current state</div>
+        <div class="state-value">No preference recorded yet.</div>
+      </div>
+    {% endif %}
+
+    <div class="consent-prompt">
+      <p>We use analytics cookies on certain pages (currently only the checkout-success page) to measure conversions from our advertising. Your choice does not affect your account, your purchases, or your ability to use the Service. If your browser sends a Global Privacy Control (GPC) signal, that signal is treated as a declined preference unless you have explicitly chosen otherwise here.</p>
+      <form method="POST" action="/cookie-consent" class="consent-buttons">
+        <button type="submit" name="value" value="accepted">Accept analytics cookies</button>
+        <button type="submit" name="value" value="declined">Decline analytics cookies</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="legal-section">
+    <h2>Related policies</h2>
+    <p>For more information about how we handle data, please review our <a href="/privacy">Privacy Policy</a>. To submit a copyright infringement notification, see our <a href="/dmca">DMCA Notice and Takedown Procedure</a>.</p>
+  </section>
+
+</main>
+
+<footer class="legal-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <strong>Evidence Analyzer</strong> <span class="brand-tag">by Evidentix&trade;</span>
+    </div>
+    <div class="footer-contact">
+      <p class="footer-brand">Contact</p>
+      <a href="mailto:admin@evidenceanalyzer.com">admin@evidenceanalyzer.com</a>
+      <a href="/cookie-preferences">Cookie preferences</a>
+    </div>
+    <div class="footer-copyright">
+      &copy; 2026 Evidence Analyzer, LLC. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -93,6 +93,7 @@ def get_consent_state(request, current_user):
 
     Logged-in user with non-null cookie_consent in DB wins.
     Otherwise reads the cookie_consent cookie.
+    If neither is set, honors the Sec-GPC: 1 header as a declined signal.
     "pending" means no decision recorded — show banner.
     """
     if current_user is not None and getattr(current_user, "cookie_consent", None) is not None:
@@ -101,6 +102,11 @@ def get_consent_state(request, current_user):
     if cookie_val == "accepted":
         return "accepted"
     if cookie_val == "declined":
+        return "declined"
+    # Honor Global Privacy Control browser signal as an automatic opt-out
+    # per CCPA/CPRA enforcement guidance. User-explicit choices above
+    # supersede this signal.
+    if request.headers.get("sec-gpc") == "1":
         return "declined"
     return "pending"
 
@@ -324,6 +330,18 @@ async def terms(request: Request):
 @app.get("/dmca")
 async def dmca(request: Request):
     return templates.TemplateResponse(request, "dmca.html", {})
+
+@app.get("/cookie-preferences")
+async def cookie_preferences(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    cookie_consent_state = get_consent_state(request, current_user)
+    return templates.TemplateResponse(
+        request,
+        "cookie_preferences.html",
+        {"current_user": current_user, "cookie_consent_state": cookie_consent_state},
+    )
 
 
 @app.get("/subpoena-policy")
@@ -1353,6 +1371,8 @@ async def set_cookie_consent(
     # DB write for logged-in users
     if current_user is not None:
         current_user.cookie_consent = (value == "accepted")
+        current_user.cookie_consent_at = datetime.now(timezone.utc)
+        current_user.cookie_consent_version = "1"
         db.commit()
     # Cookie write for everyone
     referer = request.headers.get("referer", "/")
