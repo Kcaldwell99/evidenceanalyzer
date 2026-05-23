@@ -321,6 +321,10 @@ async def privacy(request: Request):
 async def terms(request: Request):
     return templates.TemplateResponse(request, "terms.html", {})
 
+@app.get("/dmca")
+async def dmca(request: Request):
+    return templates.TemplateResponse(request, "dmca.html", {})
+
 
 @app.get("/subpoena-policy")
 async def subpoena_policy(request: Request):
