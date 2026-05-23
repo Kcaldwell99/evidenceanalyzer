@@ -21,7 +21,12 @@ app/_scratch/
 # Backup files
 *.bak
 *.bak2
+*.bak_*
 Backups/
+
+# Session artifact scripts (interactive editing helpers)
+fix_*.ps1
+strip_*.ps1
 
 # Log files
 *.log
