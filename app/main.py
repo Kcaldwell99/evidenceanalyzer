@@ -2380,6 +2380,17 @@ async def analyze_video_route(
 
     result, json_path, pdf_path = analyze_video(str(file_path), case_dir=str(case_dir))
 
+    # Run C2PA analysis on the video file. The c2pa-python library uses the same
+    # Rust engine for MP4/MOV that it uses for JPEG/PNG, so we call the same
+    # analysis function. Defensive try/except - we never fail the upload because
+    # of a C2PA library error.
+    from app.c2pa_analysis import analyze_file as c2pa_analyze_file, summarize_for_certificate
+    try:
+        c2pa_result = c2pa_analyze_file(str(file_path))
+        c2pa_data = summarize_for_certificate(c2pa_result)
+    except Exception:
+        c2pa_data = {"state": "UNAVAILABLE"}
+
     new_item = EvidenceItem(
         evidence_id=evidence_id,
         case_id=case_id,
@@ -2389,6 +2400,23 @@ async def analyze_video_route(
         pdf_report=pdf_path,
         sha256=result.get("sha256"),
         analysis_date=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        # C2PA Content Credentials (16 columns - matches image analyze path)
+        c2pa_state=c2pa_data.get("state"),
+        c2pa_has_ai_generation=c2pa_data.get("has_ai_generation"),
+        c2pa_has_ai_modification=c2pa_data.get("has_ai_modification"),
+        c2pa_signature_valid=c2pa_data.get("signature_valid"),
+        c2pa_claim_generator=c2pa_data.get("claim_generator"),
+        c2pa_signature_issuer=c2pa_data.get("signature_issuer"),
+        c2pa_signature_time=c2pa_data.get("signature_time"),
+        c2pa_plain_english=c2pa_data.get("plain_english"),
+        c2pa_analyzed_at=_parse_c2pa_analyzed_at(c2pa_data.get("analyzed_at")),
+        c2pa_claim_generator_version=c2pa_data.get("claim_generator_version"),
+        c2pa_num_assertions=c2pa_data.get("num_assertions"),
+        c2pa_num_ingredients=c2pa_data.get("num_ingredients"),
+        c2pa_trust_list_status=c2pa_data.get("trust_list_status"),
+        c2pa_revocation_status=c2pa_data.get("revocation_status"),
+        c2pa_ai_agents_found=c2pa_data.get("ai_agents_found"),
+        c2pa_has_training_mining=c2pa_data.get("has_training_mining"),
     )
 
     log_audit_event(
