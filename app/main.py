@@ -1261,9 +1261,6 @@ STRIPE_PRICES = {
     "monitoring_small": "price_1TPmFhHVHQNKUlwkRHoGFIyF",
     "monitoring_standard": "price_1TPmGvHVHQNKUlwkfr5LTk9G",
     "monitoring_large": "price_1TPmISHVHQNKUlwkcyt08yd4",
-
-    # Retired — do not use in new checkouts
-    # "integrity": "price_1TIqGdHVHQNKUlwk4oPa5cRp",
 }
 PRICING = {
     "single":                {"name": "Single Image Analysis",   "price": "$79",       "per": "per image"},
