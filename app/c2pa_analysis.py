@@ -110,9 +110,14 @@ class C2PAResult:
     revocation_status: Optional[str] = None    # "not_revoked" | "revoked" | "unknown"
 
     # Assertions
-    has_ai_generation: bool = False
-    has_ai_modification: bool = False
-    has_training_mining: bool = False
+    # Note: ai_generation / ai_modification / training_mining are Optional[bool] - not bool.
+    # For files with no manifest (state == ABSENT), the truth value is genuinely UNKNOWN,
+    # not False. None correctly conveys "no information"; False would assert a fact we
+    # cannot assert. These fields are set to True only when a manifest contains an
+    # affirmative AI assertion (see analyze_file).
+    has_ai_generation: Optional[bool] = None
+    has_ai_modification: Optional[bool] = None
+    has_training_mining: Optional[bool] = None
     training_mining_allowed: Optional[bool] = None
     creative_actions: list = field(default_factory=list)
     provenance_assertions: list = field(default_factory=list)
