@@ -89,7 +89,7 @@ class Payment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     stripe_session_id = Column(String(255), unique=True, nullable=False, index=True)
-    stripe_event_id = Column(String(255), unique=True, nullable=True, index=True)
+    stripe_event_id = Column(String(255), unique=True, nullable=True)
     stripe_customer_email = Column(String(255), nullable=True)
     stripe_amount_total = Column(Integer, nullable=True)
     stripe_currency = Column(String(10), nullable=True)
