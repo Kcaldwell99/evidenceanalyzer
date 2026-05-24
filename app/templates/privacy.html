@@ -7,9 +7,6 @@
 <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body>
-<div class="early-access-banner">
-  <strong>Evidentix is in early access.</strong> Built by a litigator. Active development.
-</div>
 <header class="site-header-wrap">
   <div class="site-header">
     <span class="brand">
@@ -24,123 +21,351 @@
 
   <section class="legal-header">
     <h1>Privacy Policy</h1>
-    <p class="legal-coming-soon" style="background:#fef3c7; border-left:4px solid #d97706; padding:12px 16px; border-radius:6px; margin:16px 0; color:#78350f;"><strong>Notice:</strong> This policy is being finalized and will be published shortly. Please contact us if you have questions about data handling in the interim.</p>
-    <p class="legal-meta">Last updated: <!-- UPDATE DATE WHEN PUBLISHED --></p>
-    <p class="legal-intro"><!-- DRAFT NEEDED: one-paragraph plain-English summary of what this policy covers and who publishes it --></p>
+    <p class="legal-meta"><strong>Effective date:</strong> May 23, 2026<br><strong>Last updated:</strong> May 23, 2026</p>
   </section>
 
   <nav class="legal-toc">
     <h2>Contents</h2>
     <ol>
-      <li><a href="#who-we-are">Who we are</a></li>
+      <li><a href="#who-we-are">Who we are and what this Policy covers</a></li>
       <li><a href="#information-we-collect">Information we collect</a></li>
       <li><a href="#how-we-use">How we use information</a></li>
       <li><a href="#how-we-share">How we share information</a></li>
-      <li><a href="#retention">Data retention</a></li>
-      <li><a href="#security">Security</a></li>
-      <li><a href="#your-rights">Your rights</a></li>
-      <li><a href="#state-specific">State-specific disclosures</a></li>
       <li><a href="#cookies">Cookies and tracking</a></li>
-      <li><a href="#children">Children's privacy</a></li>
+      <li><a href="#retention">Data retention</a></li>
+      <li><a href="#your-rights">Your rights</a></li>
+      <li><a href="#security">Security</a></li>
       <li><a href="#international">International users</a></li>
-      <li><a href="#changes">Changes to this policy</a></li>
+      <li><a href="#children">Children&rsquo;s privacy</a></li>
+      <li><a href="#changes">Changes to this Policy</a></li>
       <li><a href="#contact">Contact us</a></li>
     </ol>
   </nav>
 
   <section id="who-we-are" class="legal-section">
-    <h2>1. Who we are</h2>
-    <p><!-- TODO: replace with finalized Privacy Policy body during publication --></p>
+    <h2>1. Who We Are and What This Policy Covers</h2>
+    <p>This Privacy Policy describes how Evidence Analyzer, LLC, a Texas limited liability company (&ldquo;Evidence Analyzer,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), collects, uses, shares, and protects information when you use Evidentix&trade;, our digital evidence authentication platform available at evidenceanalyzer.com (the &ldquo;Service&rdquo;).</p>
+    <p>This Policy applies to information we collect:</p>
+    <ul>
+      <li>when you create an account, sign in, or otherwise interact with the Service;</li>
+      <li>when you upload digital evidence files, create cases, or generate reports through the Service;</li>
+      <li>when you purchase a subscription, one-time report, or other product offered through the Service;</li>
+      <li>when you communicate with us by email or other means; and</li>
+      <li>through cookies and similar technologies used on our website, subject to your consent where required.</li>
+    </ul>
+    <p>This Policy does not apply to information collected by third parties that operate their own services, even where those services are integrated with or linked from the Service. Those third parties&rsquo; privacy practices are governed by their own policies. We identify the principal third parties we work with in Section 4 (How We Share Information).</p>
+    <p><strong>Contact.</strong> Questions about this Policy or our privacy practices may be directed to:</p>
+    <address>
+      Evidence Analyzer, LLC<br>
+      2001 Timberloch Place, Suite 500<br>
+      The Woodlands, TX 77380<br>
+      <a href="mailto:admin@evidenceanalyzer.com">admin@evidenceanalyzer.com</a>
+    </address>
   </section>
 
   <section id="information-we-collect" class="legal-section">
-    <h2>2. Information we collect</h2>
-    <p><!-- DRAFT NEEDED: intro paragraph --></p>
-    <h3>Information you provide</h3>
-    <p><!-- DRAFT NEEDED: account registration (email, password), uploaded evidence files, case metadata, payment information processed through Stripe --></p>
-    <h3>Information collected automatically</h3>
-    <p><!-- DRAFT NEEDED: IP address, browser/device info, usage logs, custody log timestamps and actions --></p>
-    <h3>Information from third parties</h3>
-    <p><!-- DRAFT NEEDED: Stripe (payment confirmations), Google Ads (conversion tracking if user came from ad), any future integrations --></p>
+    <h2>2. Information We Collect</h2>
+    <p>We collect information in the following categories.</p>
+
+    <h3>2.1 Account Information</h3>
+    <p>When you register for an account, we collect:</p>
+    <ul>
+      <li>your email address;</li>
+      <li>a password, which we store only as a salted cryptographic hash (we never store your password in plain text);</li>
+      <li>your full name;</li>
+      <li>the name of your firm or organization; and</li>
+      <li>your country of residence.</li>
+    </ul>
+    <p>Once you verify your email address, we record the date and time of verification. Until you verify, your account is created but limited in functionality.</p>
+
+    <h3>2.2 Case and Evidence Data</h3>
+    <p>When you use the Service to authenticate digital evidence, you may upload files (images, documents, video, audio) and associate them with cases you create. For each file you upload, we collect and store:</p>
+    <ul>
+      <li>the file itself, stored in encrypted form on Amazon Web Services S3 (region: US West);</li>
+      <li>a SHA-256 cryptographic hash of the file&rsquo;s contents;</li>
+      <li>a perceptual hash (&ldquo;pHash&rdquo;) of image files, used for similarity detection;</li>
+      <li>file metadata extracted from the file, including EXIF data, embedded GPS coordinates (if present), and creation/modification timestamps;</li>
+      <li>the case identifier and case name you supply;</li>
+      <li>any description you supply for the case; and</li>
+      <li>timestamps for each upload, modification, and access event.</li>
+    </ul>
+    <p>If you specifically opt in to web-source detection for a given image, we transmit the image to Google Cloud Vision for analysis and store the response.</p>
+
+    <h3>2.3 Chain-of-Custody Log</h3>
+    <p>The Service maintains an automatic, cryptographically chained audit log of actions taken on the platform. Each log entry records:</p>
+    <ul>
+      <li>the action taken (including file upload, file access, certificate generation, deletion, and similar);</li>
+      <li>the user account associated with the action and that user&rsquo;s email address;</li>
+      <li>the case identifier and, where applicable, the evidence identifier;</li>
+      <li>a free-text detail field describing the action, which may include file names and error messages;</li>
+      <li>the IP address from which the action was taken;</li>
+      <li>a cryptographic hash chaining the entry to the prior entry; and</li>
+      <li>a timestamp.</li>
+    </ul>
+    <p>Because the log is cryptographically chained, log entries cannot be modified or deleted without breaking the chain. We retain this log indefinitely for the integrity of the evidentiary record. See Section 6 (Data Retention).</p>
+
+    <h3>2.4 Payment Information</h3>
+    <p>When you purchase a subscription or one-time product, payment is processed by Stripe, Inc. We do not collect, store, or have access to your full payment card number or card security code. Stripe collects and processes that information directly under its own privacy policy. We do receive and store the following payment metadata from Stripe:</p>
+    <ul>
+      <li>the Stripe customer identifier;</li>
+      <li>the Stripe checkout session identifier and event identifier;</li>
+      <li>the email address associated with the payment (which may differ from your account email);</li>
+      <li>the amount, currency, and product purchased;</li>
+      <li>for subscriptions, the subscription identifier and current status; and</li>
+      <li>a record of each successful or refunded transaction.</li>
+    </ul>
+
+    <h3>2.5 Authentication and Session Information</h3>
+    <p>When you sign in, we issue a session cookie (an &ldquo;access token&rdquo;) that allows you to remain signed in across requests. The cookie is marked HttpOnly, Secure, and SameSite=Lax, and expires eight hours after sign-in.</p>
+
+    <h3>2.6 Communications</h3>
+    <p>If you contact us by email, we receive your email address, the contents of your message, and any attachments you choose to send.</p>
+
+    <h3>2.7 Information Collected Automatically</h3>
+    <p>When you access the Service, our servers and hosting providers automatically record standard log data including IP address, browser type, referring page, pages requested, and timestamps. This information is used for security, debugging, and basic analytics, and is described further in Section 5 (Cookies and Tracking).</p>
   </section>
 
   <section id="how-we-use" class="legal-section">
-    <h2>3. How we use information</h2>
-    <p><!-- DRAFT NEEDED: service provision, account management, payment processing, custody log generation, security monitoring, legal compliance, product improvement. Explicit: we do NOT train AI models on uploaded evidence --></p>
+    <h2>3. How We Use Information</h2>
+    <p>We use the information described in Section 2 for the following purposes. Where applicable, we identify the lawful basis for processing under the European Union General Data Protection Regulation (GDPR) and analogous frameworks.</p>
+
+    <h3>3.1 To Provide the Service</h3>
+    <p>We use your account information, case and evidence data, and authentication information to create and maintain your account, allow you to sign in, store and process the files you upload, generate the cryptographic hashes and reports the Service exists to produce, and make those reports available to you. We use the country of residence you provide at registration both to determine which privacy and consumer-protection laws apply to your use of the Service and to set defaults in payment-processing workflows where useful. <strong>Lawful basis:</strong> performance of a contract (GDPR Article 6(1)(b)); legal obligation (Article 6(1)(c)) for the purpose of identifying applicable law; legitimate interest (Article 6(1)(f)) for the purpose of setting payment defaults.</p>
+
+    <h3>3.2 To Maintain the Chain-of-Custody Log</h3>
+    <p>We use case and evidence data, account information, and IP address information to create and maintain the cryptographically chained audit log described in Section 2.3. This log exists to support the evidentiary admissibility of materials processed through the Service, including under Federal Rule of Evidence 901 and analogous authentication standards in other jurisdictions. <strong>Lawful basis:</strong> legitimate interest (GDPR Article 6(1)(f)) in maintaining evidentiary integrity; and, for users in the United States, our and our users&rsquo; legal obligations regarding evidence authentication.</p>
+
+    <h3>3.3 To Process Payments</h3>
+    <p>We use payment metadata received from Stripe to confirm payment, fulfill orders, manage subscriptions, and maintain transaction records for accounting and tax purposes. <strong>Lawful basis:</strong> performance of a contract (Article 6(1)(b)); legal obligation for retention of tax records (Article 6(1)(c)).</p>
+
+    <h3>3.4 To Communicate With You</h3>
+    <p>We use your email address and, where applicable, the contents of your communications with us to respond to inquiries, send account-related notices (including email verification, password reset, and similar transactional messages), and, for users who subscribe to our Custody Monitoring product, send the alert emails that product is designed to deliver. <strong>Lawful basis:</strong> performance of a contract (Article 6(1)(b)) for transactional and product-feature emails; legitimate interest (Article 6(1)(f)) for responses to inquiries.</p>
+
+    <h3>3.5 To Perform Optional Web-Source Detection</h3>
+    <p>If you specifically opt in to web-source detection for a given image, we use the image bytes to query the Google Cloud Vision API and store the response. We do not transmit images to Google Cloud Vision without your opt-in for that image. <strong>Lawful basis:</strong> consent (Article 6(1)(a)). You may withdraw consent at any time by not opting in to the feature for future files; images already submitted will have already been transmitted at the moment of opt-in.</p>
+
+    <h3>3.6 To Secure the Service</h3>
+    <p>We use IP addresses, custody-log entries, and standard server logs to detect, investigate, and prevent unauthorized access, fraud, abuse, and other security incidents, and to maintain the integrity of the Service. <strong>Lawful basis:</strong> legitimate interest (Article 6(1)(f)).</p>
+
+    <h3>3.7 To Improve the Service</h3>
+    <p>We use aggregated, de-identified usage information to understand how the Service is used, diagnose errors, and improve features. We do not currently use the contents of evidence files you upload to train machine-learning models. If this practice changes in the future, we will update this Policy and provide notice to affected users before any such use begins. <strong>Lawful basis:</strong> legitimate interest (Article 6(1)(f)).</p>
+
+    <h3>3.8 To Comply With Legal Obligations</h3>
+    <p>We may use any information described in Section 2 to comply with applicable law, respond to lawful process (including subpoenas and court orders, subject to the procedures described in our <a href="/subpoena-policy">Subpoena Policy</a>), enforce our Terms of Use, and protect our rights and the rights of others. <strong>Lawful basis:</strong> legal obligation (Article 6(1)(c)); legitimate interest (Article 6(1)(f)).</p>
+
+    <h3>3.9 Conversion Tracking</h3>
+    <p>Upon successful purchase, we use a conversion-tracking pixel (Google Ads) to record the completed transaction for marketing-attribution purposes. This is described in Section 5 (Cookies and Tracking). <strong>Lawful basis:</strong> consent (Article 6(1)(a)).</p>
+
+    <h3>No automated decision-making with legal effect</h3>
+    <p>We do not use your information to make automated decisions that produce legal effects concerning you or similarly significantly affect you, within the meaning of GDPR Article 22.</p>
+
+    <h3>No sale of personal information</h3>
+    <p>We do not sell your personal information. We do not share your personal information with third parties for cross-context behavioral advertising, as those terms are defined under the California Consumer Privacy Act.</p>
   </section>
 
   <section id="how-we-share" class="legal-section">
-    <h2>4. How we share information</h2>
-    <p><!-- DRAFT NEEDED: intro - we do not sell personal information --></p>
-    <h3>Service providers</h3>
-    <p><!-- DRAFT NEEDED: Stripe (payments), AWS S3 (file storage), Render (hosting), Google Ads (conversion tracking) --></p>
-    <h3>Legal requirements</h3>
-    <p><!-- DRAFT NEEDED: subpoena, court order, valid legal process; note that custody log integrity requires preservation --></p>
-    <h3>Business transfers</h3>
-    <p><!-- DRAFT NEEDED: standard M&A language --></p>
-  </section>
+    <h2>4. How We Share Information</h2>
+    <p>We do not sell your personal information. We share information only as described below.</p>
 
-  <section id="retention" class="legal-section">
-    <h2>5. Data retention</h2>
-    <p><!-- DRAFT NEEDED: DECISION REQUIRED - how long do you retain uploaded files? Custody logs? Closed accounts? This is a policy decision that needs to be made before publication --></p>
-  </section>
+    <h3>4.1 Service Providers</h3>
+    <p>We rely on a small set of third-party service providers to operate the Service. Each is subject to a contract requiring it to process information only on our instructions and to maintain appropriate security. The principal service providers are:</p>
+    <table class="legal-table">
+      <thead>
+        <tr><th>Provider</th><th>Purpose</th><th>Information Shared</th><th>Location</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Amazon Web Services, Inc.</td>
+          <td>File storage (Amazon S3)</td>
+          <td>Evidence files, generated reports, and certificate PDFs</td>
+          <td>United States (US West region)</td>
+        </tr>
+        <tr>
+          <td>Stripe, Inc.</td>
+          <td>Payment processing</td>
+          <td>Information you submit through the Stripe checkout interface, including payment card information (which we do not see), and the email address and amount associated with the transaction</td>
+          <td>United States</td>
+        </tr>
+        <tr>
+          <td>Resend, Inc.</td>
+          <td>Transactional and alert email delivery, including Custody Monitoring alerts</td>
+          <td>Recipient email address, case identifier, case name, file name, evidence identifier, SHA-256 hash, uploading user&rsquo;s email, and event timestamp</td>
+          <td>United States</td>
+        </tr>
+        <tr>
+          <td>Google LLC (Google Cloud Vision)</td>
+          <td>Optional, opt-in web-source detection for images</td>
+          <td>The image bytes you specifically authorize for analysis</td>
+          <td>United States</td>
+        </tr>
+        <tr>
+          <td>Google LLC (Google Ads)</td>
+          <td>Conversion tracking on purchase completion (subject to consent)</td>
+          <td>The fact that a purchase occurred and the Stripe session identifier of that purchase</td>
+          <td>United States</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>In addition to the providers listed above, we use commercial cloud-hosting providers to host our application servers and databases. These providers have access to information described in Section 2 in the course of providing hosting services, but do not use that information for their own purposes.</p>
+    <p>Each provider processes information under its own privacy policy and security practices. Links to those policies are available on request.</p>
 
-  <section id="security" class="legal-section">
-    <h2>6. Security</h2>
-    <p><!-- DRAFT NEEDED: encryption in transit (HTTPS), encryption at rest (S3 default), hashing for file integrity, Stripe PCI compliance for payments, admin access controls, caveat that no system is perfectly secure --></p>
-  </section>
+    <h3>4.2 Professional Advisors</h3>
+    <p>We may share information with our attorneys, accountants, auditors, and insurers when reasonably necessary to obtain advice, defend legal claims, or comply with professional obligations. These advisors are bound by professional duties of confidentiality.</p>
 
-  <section id="your-rights" class="legal-section">
-    <h2>7. Your rights</h2>
-    <p><!-- DRAFT NEEDED: generic baseline - access, correction, deletion, portability, opt-out of marketing. State-specific rights covered separately below --></p>
-  </section>
+    <h3>4.3 Legal Process</h3>
+    <p>We may disclose information when we believe in good faith that disclosure is required by law, regulation, court order, subpoena, or other legal process; necessary to protect the rights, property, or safety of Evidence Analyzer, our users, or others; or appropriate to investigate fraud, security incidents, or violations of our Terms of Use. Our procedures for responding to subpoenas and other legal process are described in our <a href="/subpoena-policy">Subpoena Policy</a>.</p>
 
-  <section id="state-specific" class="legal-section">
-    <h2>8. State-specific disclosures</h2>
-    <h3>California residents (CCPA/CPRA)</h3>
-    <p><!-- DRAFT NEEDED: California-specific rights, categories of personal info collected, right to know, right to delete, right to opt out of sale/sharing, right to correct, notice at collection, do not sell/share --></p>
-    <h3>Virginia residents (VCDPA)</h3>
-    <p><!-- DRAFT NEEDED: Virginia-specific rights and appeal process --></p>
-    <h3>Colorado residents (CPA)</h3>
-    <p><!-- DRAFT NEEDED: Colorado-specific rights --></p>
-    <h3>Connecticut residents (CTDPA)</h3>
-    <p><!-- DRAFT NEEDED: Connecticut-specific rights --></p>
-    <h3>Utah residents (UCPA)</h3>
-    <p><!-- DRAFT NEEDED: Utah-specific rights --></p>
+    <h3>4.4 Business Transfers</h3>
+    <p>If we are involved in a merger, acquisition, financing, reorganization, sale of assets, or bankruptcy, information described in this Policy may be transferred or disclosed as part of that transaction. Any successor entity may adopt its own privacy practices with respect to the transferred information, and we will provide notice of any material change before the change takes effect.</p>
+
+    <h3>4.5 With Your Direction</h3>
+    <p>We may share information when you specifically direct us to do so &mdash; for example, by sharing a report you generated through the Service with a third party.</p>
+
+    <h3>4.6 No Other Sharing</h3>
+    <p>We do not share your personal information with any third party except as described in this Section 4.</p>
   </section>
 
   <section id="cookies" class="legal-section">
-    <h2>9. Cookies and tracking</h2>
+    <h2>5. Cookies and Tracking</h2>
     <p>The Evidentix platform sets a small number of cookies to operate. None of them are used for advertising or tracking across other websites except as described below.</p>
     <p><strong>Cookies we always set:</strong> A session cookie (named <code>access_token</code>) records that you are logged in. It is HttpOnly, Secure, and expires when your session ends or you log out. A consent cookie (named <code>cookie_consent</code>) records your choice about analytics cookies. It is set when you make a choice and persists for twelve months unless you change it.</p>
     <p><strong>Analytics cookies (conditional):</strong> On the checkout-success page only, and only if you have accepted analytics cookies, we load Google&rsquo;s gtag.js script to record that an advertising click resulted in a purchase. This allows us to measure the effectiveness of advertising spend. No analytics cookies are set on any other page of the Service, and none are set if you decline or if your browser sends a Global Privacy Control signal as described below.</p>
     <p><strong>Global Privacy Control:</strong> If your browser sends a <code>Sec-GPC: 1</code> header, we treat that as a declined preference for analytics cookies, consistent with California Consumer Privacy Act enforcement guidance. If you later affirmatively accept analytics cookies through the Service, your explicit choice supersedes the GPC signal.</p>
     <p><strong>Changing your preference:</strong> You may view or change your cookie preference at any time at <a href="/cookie-preferences">/cookie-preferences</a>. You may also clear cookies through your browser&rsquo;s settings, which will reset both the session cookie (logging you out) and the consent cookie (returning your state to undecided).</p>
+    <p><strong>Do Not Track.</strong> The Service does not currently respond to Do Not Track browser signals, because there is no consistent industry standard for how to interpret them. The Service does honor Global Privacy Control signals as described above where required by applicable law.</p>
   </section>
 
-  <section id="children" class="legal-section">
-    <h2>10. Children's privacy</h2>
-    <p><!-- DRAFT NEEDED: service not intended for users under 18; no knowing collection from children --></p>
+  <section id="retention" class="legal-section">
+    <h2>6. Data Retention</h2>
+    <p>We retain information for the periods described below.</p>
+
+    <h3>6.1 Account Information and Case Data</h3>
+    <p>We retain your account information and the case and evidence data you upload for as long as your account remains active. We do not automatically delete inactive accounts. If you wish to delete your account or any case or evidence file you have uploaded, you may do so as described in Section 7 (Your Rights) or by contacting us at <a href="mailto:admin@evidenceanalyzer.com">admin@evidenceanalyzer.com</a>.</p>
+
+    <h3>6.2 Chain-of-Custody Log</h3>
+    <p>Because the chain-of-custody log described in Section 2.3 is cryptographically chained, removing individual entries would invalidate the integrity of the entire log. We therefore retain custody-log entries indefinitely, even after the corresponding case or evidence file is deleted, to preserve the evidentiary integrity of the record. Custody-log entries associated with a deleted case retain only the identifiers and metadata necessary to maintain the chain; the underlying evidence files are removed at the time of deletion.</p>
+
+    <h3>6.3 Payment Records</h3>
+    <p>We retain payment metadata (Section 2.4) for at least seven years following the transaction date, as required by applicable tax and recordkeeping laws.</p>
+
+    <h3>6.4 Communications</h3>
+    <p>We retain communications you send to us for as long as reasonably necessary to respond to and resolve your inquiry, and thereafter for a reasonable period to maintain a record of the communication.</p>
+
+    <h3>6.5 Server Logs</h3>
+    <p>Standard server logs (Section 2.7) are retained for a limited period determined by our hosting provider&rsquo;s standard log-retention practices, after which they are deleted automatically.</p>
+
+    <h3>6.6 Deletion Mechanics</h3>
+    <p>When you delete a case or an individual evidence file, we remove (a) the corresponding database records, (b) the associated files from our file-storage provider, and (c) the related fingerprint index entries. The action of deletion is itself recorded in the chain-of-custody log to preserve evidentiary integrity. We do not maintain backup copies of deleted files outside of standard provider-level backup-retention windows, which expire on a rolling basis.</p>
+  </section>
+
+  <section id="your-rights" class="legal-section">
+    <h2>7. Your Rights</h2>
+    <p>You have rights with respect to the information we hold about you. The specific rights available to you depend on the law of the jurisdiction in which you reside. The rights described in this Section may be exercised by contacting us at <a href="mailto:admin@evidenceanalyzer.com">admin@evidenceanalyzer.com</a> or, where available, by using the controls in your account.</p>
+
+    <h3>7.1 Rights Available to All Users</h3>
+    <p>Regardless of where you reside, you may:</p>
+    <ul>
+      <li><strong>Access:</strong> request a copy of the personal information we hold about you;</li>
+      <li><strong>Correct:</strong> request that we correct inaccurate or incomplete personal information;</li>
+      <li><strong>Delete:</strong> request that we delete your account and the personal information associated with it, subject to the limitations described in Section 7.4;</li>
+      <li><strong>Export:</strong> request a portable copy of information you have provided to us, in a commonly used format; and</li>
+      <li><strong>Withdraw consent:</strong> withdraw any consent you have previously given (for example, for web-source detection or for analytics and advertising cookies), without affecting the lawfulness of processing carried out before withdrawal.</li>
+    </ul>
+
+    <h3>7.2 Additional Rights for California Residents</h3>
+    <p>If you are a California resident, the California Consumer Privacy Act (&ldquo;CCPA&rdquo;) gives you additional rights, including:</p>
+    <ul>
+      <li>the right to know the categories and specific pieces of personal information we have collected about you, the categories of sources from which the information was collected, the business purposes for collecting it, and the categories of third parties with whom we share it;</li>
+      <li>the right to opt out of the sale or sharing of personal information for cross-context behavioral advertising (we do not sell or share your personal information in this manner, but you may submit a request to confirm this);</li>
+      <li>the right to limit the use of sensitive personal information (we do not use sensitive personal information for purposes that trigger this right);</li>
+      <li>the right not to be discriminated against for exercising any of your rights under the CCPA; and</li>
+      <li>the right to designate an authorized agent to exercise these rights on your behalf.</li>
+    </ul>
+
+    <h3>7.2A Additional Rights for Residents of Texas, Virginia, Colorado, Connecticut, and Utah</h3>
+    <p>If you reside in Texas, Virginia, Colorado, Connecticut, or Utah, the Texas Data Privacy and Security Act (&ldquo;TDPSA&rdquo;), Virginia Consumer Data Protection Act (&ldquo;VCDPA&rdquo;), Colorado Privacy Act (&ldquo;CPA&rdquo;), Connecticut Data Privacy Act (&ldquo;CTDPA&rdquo;), or Utah Consumer Privacy Act (&ldquo;UCPA&rdquo;), as applicable, gives you the following rights:</p>
+    <ul>
+      <li>the right to confirm whether we are processing your personal data and to access that data;</li>
+      <li>the right to correct inaccuracies in your personal data;</li>
+      <li>the right to delete personal data we have collected from you or about you;</li>
+      <li>the right to obtain a portable copy of personal data you previously provided to us;</li>
+      <li>the right to opt out of the processing of your personal data for purposes of targeted advertising, the sale of personal data, or profiling in furtherance of decisions that produce legal or similarly significant effects (we do not engage in any of these activities, but you may submit a request to confirm this);</li>
+      <li>the right to appeal a decision we make in response to a rights request; and</li>
+      <li>the right not to be discriminated against for exercising any of these rights.</li>
+    </ul>
+    <p>To submit an appeal, email <a href="mailto:admin@evidenceanalyzer.com">admin@evidenceanalyzer.com</a> with the subject line &ldquo;Privacy Rights Appeal.&rdquo; We will respond to your appeal within sixty days. If we deny your appeal, we will provide you with information about how to contact the attorney general or equivalent regulator in your state.</p>
+
+    <h3>7.3 Additional Rights for Residents of the European Economic Area, the United Kingdom, and Switzerland</h3>
+    <p>If you reside in the European Economic Area, the United Kingdom, or Switzerland, the General Data Protection Regulation and analogous laws give you additional rights, including:</p>
+    <ul>
+      <li>the right to object to processing based on legitimate interests;</li>
+      <li>the right to restrict processing in certain circumstances;</li>
+      <li>the right to lodge a complaint with your local data protection authority; and</li>
+      <li>the rights described in GDPR Articles 15&ndash;22 generally.</li>
+    </ul>
+    <p>The legal basis on which we rely for each processing activity is described in Section 3 (How We Use Information).</p>
+
+    <h3>7.4 Limits on Deletion</h3>
+    <p>When you exercise the right to delete, we will delete the personal information we hold about you, subject to the following limits:</p>
+    <ul>
+      <li><strong>Chain-of-custody log entries</strong> that document actions taken on the platform will not be removed from the cryptographically chained audit log, because doing so would invalidate the integrity of the log. After deletion of your account, custody-log entries that referenced you will be retained in a form that preserves the chain but does not associate the entries with personal information beyond what is necessary for that purpose.</li>
+      <li><strong>Payment and transaction records</strong> will be retained for the period required by applicable tax and recordkeeping laws (see Section 6.3).</li>
+      <li><strong>Information we are required to retain</strong> to comply with legal obligations, exercise or defend legal claims, or maintain the security of the Service will be retained as necessary for those purposes.</li>
+    </ul>
+
+    <h3>7.5 How to Exercise Your Rights</h3>
+    <p>To exercise any of the rights described in this Section, email <a href="mailto:admin@evidenceanalyzer.com">admin@evidenceanalyzer.com</a> from the email address associated with your account. We may ask for additional information to verify your identity before fulfilling the request, particularly for requests to delete or export data. We will respond to verifiable requests within forty-five days, or such shorter period as may be required by applicable law. If we need additional time, we will tell you why and when to expect a response.</p>
+
+    <h3>7.6 No Discrimination</h3>
+    <p>We will not deny service, charge a different price, or provide a different level of quality to you because you exercised any right described in this Section.</p>
+
+    <h3>7.7 Authorized Agents</h3>
+    <p>You may designate an authorized agent to make a request on your behalf. To do so, the agent must provide written authorization signed by you, and we may ask you to verify your identity directly with us before processing the request.</p>
+  </section>
+
+  <section id="security" class="legal-section">
+    <h2>8. Security</h2>
+    <p>We use commercially reasonable administrative, technical, and physical safeguards designed to protect the information we hold against unauthorized access, disclosure, alteration, and destruction. These safeguards include:</p>
+    <ul>
+      <li>transport-layer encryption (HTTPS/TLS) for all communications between your browser and the Service;</li>
+      <li>at-rest encryption of evidence files stored with our file-storage provider;</li>
+      <li>storage of account passwords only as salted cryptographic hashes;</li>
+      <li>session cookies marked HttpOnly, Secure, and SameSite=Lax, with limited session lifetimes;</li>
+      <li>restricted administrative access to production systems on a least-privilege basis; and</li>
+      <li>maintenance of the cryptographically chained chain-of-custody log described in Section 2.3, which is itself a security control against undetected alteration of evidentiary records.</li>
+    </ul>
+    <p>No system is perfectly secure, and we cannot guarantee that information will never be subject to unauthorized access or disclosure. If we become aware of a security incident affecting your personal information, we will notify you and the appropriate authorities as required by applicable law.</p>
   </section>
 
   <section id="international" class="legal-section">
-    <h2>11. International users</h2>
-    <p><!-- DRAFT NEEDED: service is US-based; data stored in US; caveat for users outside US --></p>
+    <h2>9. International Users</h2>
+    <p>The Service is operated from the United States, and our service providers identified in Section 4 are located in the United States. If you access the Service from outside the United States, your information will be transferred to, stored in, and processed in the United States. The laws of the United States may differ from those of your country of residence, and may not provide the same level of protection.</p>
+    <p>For transfers of personal information from the European Economic Area, the United Kingdom, or Switzerland to the United States, we rely on appropriate safeguards under the GDPR and analogous laws, including, where applicable, the European Commission&rsquo;s Standard Contractual Clauses and the data transfer addenda incorporated into our contracts with service providers.</p>
+    <p>By using the Service, you understand that your information will be processed in the United States as described in this Policy.</p>
+  </section>
+
+  <section id="children" class="legal-section">
+    <h2>10. Children&rsquo;s Privacy</h2>
+    <p>The Service is not directed to children under sixteen, and we do not knowingly collect personal information from anyone under sixteen. If you are under sixteen, do not use the Service or provide any information to us. If we learn that we have collected personal information from a person under sixteen, we will delete that information promptly. If you believe we may have collected information from a person under sixteen, contact us at <a href="mailto:admin@evidenceanalyzer.com">admin@evidenceanalyzer.com</a>.</p>
   </section>
 
   <section id="changes" class="legal-section">
-    <h2>12. Changes to this policy</h2>
-    <p><!-- DRAFT NEEDED: how changes are communicated; effective date on updates; continued use as acceptance --></p>
+    <h2>11. Changes to This Policy</h2>
+    <p>We may update this Policy from time to time. When we do, we will revise the &ldquo;Last updated&rdquo; date at the top of this Policy. For material changes, we will email you at the address associated with your account before the change takes effect. Your continued use of the Service after a change becomes effective constitutes acceptance of the revised Policy. If you do not agree to a revised Policy, you should stop using the Service and may request deletion of your account as described in Section 7.</p>
   </section>
 
   <section id="contact" class="legal-section">
-    <h2>13. Contact us</h2>
-    <p><!-- DRAFT NEEDED: privacy-related questions contact; mailing address; note that privacy requests may require identity verification --></p>
-    <p>Email: <a href="mailto:admin@evidenceanalyzer.com">admin@evidenceanalyzer.com</a></p>
+    <h2>12. Contact Us</h2>
+    <p>If you have questions, concerns, or requests regarding this Policy or our handling of your personal information, contact us at:</p>
     <address>
+      Evidence Analyzer, LLC<br>
       2001 Timberloch Place, Suite 500<br>
-      The Woodlands, TX 77380
+      The Woodlands, TX 77380<br>
+      <a href="mailto:admin@evidenceanalyzer.com">admin@evidenceanalyzer.com</a>
     </address>
+    <p>If you reside in the European Economic Area, the United Kingdom, or Switzerland and we have not satisfactorily addressed your concern, you have the right to lodge a complaint with your local data protection authority.</p>
+    <p>If you reside in California and we have not satisfactorily addressed your concern, you may contact the California Privacy Protection Agency.</p>
+    <p>If you reside in Texas and we have not satisfactorily addressed your concern, you may contact the Texas Attorney General. Information on the appeal process for Texas, Virginia, Colorado, Connecticut, and Utah residents is provided in Section 7.2A.</p>
   </section>
 
 </main>
