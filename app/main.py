@@ -1278,7 +1278,8 @@ STRIPE_PRICES = {
     "video_image_bundle": "price_1TIqE7HVHQNKUlwk8v4FmJnP",
     "video_bundle": "price_1TIqCcHVHQNKUlwk6tJXz5Uo",
     "professional": "price_1THV2DHVHQNKUlwkZ5lyCBsE",
-    "firm": "price_1THV6cHVHQNKUlwkViPyHk4f",
+    # RETIRED 2026-05-25: Firm License SKU pulled per pricing rationalization; Stripe price deactivated.
+    # "firm": "price_1THV6cHVHQNKUlwkViPyHk4f",
 
     # New Phase 2 SKUs — replace placeholder values with real Stripe price IDs
     # after creating them in the Stripe dashboard
@@ -1300,12 +1301,13 @@ PRICING = {
     "monitoring_standard":   {"name": "Monitoring — Standard",   "price": "$99/mo",   "per": "up to 100 files"},
     "monitoring_large":      {"name": "Monitoring — Large",      "price": "$199/mo",   "per": "up to 500 files"},
     "professional":          {"name": "Professional Plan",       "price": "$399/mo",   "per": "up to 150 analyses"},
-    "firm":                  {"name": "Firm License",            "price": "$7,500/yr", "per": "unlimited"},
+    # RETIRED 2026-05-25: Firm License SKU pulled per pricing rationalization; Stripe price deactivated.
+    # "firm":                  {"name": "Firm License",            "price": "$7,500/yr", "per": "unlimited"},
 }
 
 # Subscription products — used to determine checkout mode
 SUBSCRIPTION_PRODUCTS = {
-    "professional", "firm", "monitoring_small", "monitoring_standard", "monitoring_large"
+    "professional", "monitoring_small", "monitoring_standard", "monitoring_large"  # "firm" RETIRED 2026-05-25
 }
 
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
