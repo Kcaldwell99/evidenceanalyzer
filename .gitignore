@@ -36,3 +36,8 @@ strip_*.ps1
 Thumbs.db
 .vscode/
 _scratch/
+
+# Session-generated artifacts (added 2026-05-25)
+*.deleted_*
+*.bak.*
+tools/*.ps1
