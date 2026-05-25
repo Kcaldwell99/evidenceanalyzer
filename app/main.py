@@ -1179,7 +1179,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
     event_type = event["type"]
     event_id = event["id"]
-    data_object = event["data"]["object"]
+    data_object = event["data"]["object"].to_dict()
 
     # Idempotency guard — skip if we've already processed this event
     existing = db.query(Payment).filter(Payment.stripe_event_id == event_id).first()
