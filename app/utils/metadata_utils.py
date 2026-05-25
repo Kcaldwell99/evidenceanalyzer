@@ -1,8 +1,19 @@
+import os
+
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 
+# Mirror web_detection.py: extensions PIL can reliably read.
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif"}
+
+
+def _is_image(file_path: str) -> bool:
+    return os.path.splitext(file_path)[1].lower() in IMAGE_EXTENSIONS
+
 
 def get_image_metadata(file_path):
+    if not _is_image(file_path):
+        return {}
     metadata = {}
     try:
         img = Image.open(file_path)
@@ -17,6 +28,8 @@ def get_image_metadata(file_path):
 
 
 def extract_exif(file_path):
+    if not _is_image(file_path):
+        return {}
     try:
         with Image.open(file_path) as img:
             exif_raw = img._getexif()
@@ -54,6 +67,8 @@ def _dms_to_decimal(dms, ref):
 
 def extract_gps(file_path):
     """Return (latitude, longitude) as decimal degrees if EXIF contains GPS, else None."""
+    if not _is_image(file_path):
+        return None
     try:
         with Image.open(file_path) as img:
             exif_raw = img._getexif()
