@@ -1218,7 +1218,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                 db.commit()
             else:
                 # First invoice.paid for this subscription — create the record
-                stripe_sub = stripe.Subscription.retrieve(subscription_id)
+                stripe_sub = stripe.Subscription.retrieve(subscription_id).to_dict()
                 product_id = stripe_sub["items"]["data"][0]["price"]["id"] if stripe_sub["items"]["data"] else None
 
                 new_sub = Subscription(
