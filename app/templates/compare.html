@@ -1,75 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Compare Files</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px auto;
-            max-width: 900px;
-            background: #f9fafb;
-        }
-        .section {
-            background: white;
-            padding: 20px;
-            margin-top: 25px;
-            border-radius: 8px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        }
-        h1, h2 {
-            color: #1f2937;
-        }
-        label {
-            display: block;
-            margin-top: 12px;
-            font-weight: bold;
-        }
-        input[type="file"], input[type="text"] {
-            margin-top: 6px;
-            width: 100%;
-            max-width: 500px;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        button {
-            margin-top: 18px;
-            padding: 10px 16px;
-            cursor: pointer;
-        }
-        a {
-            color: #2563eb;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compare Files - Evidentix</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 2rem 1rem;
+    }
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 600px;
+    }
+    .brand { text-align: center; margin-bottom: 2rem; }
+    .brand h1 { font-size: 1.6rem; font-weight: 700; color: #7c8cf8; }
+    .brand p { font-size: 0.85rem; color: #64748b; margin-top: 0.3rem; }
+    h2 { font-size: 1.1rem; color: #e2e8f0; margin-bottom: 1.25rem; font-weight: 600; }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+      margin-top: 1.1rem;
+    }
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 7px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      padding: 0.65rem 0.9rem;
+      outline: none;
+      min-height: 42px;
+    }
+    input[type="text"]:focus, input[type="file"]:focus { border-color: #7c8cf8; }
+    input[type="file"] {
+      padding: 0.5rem 0.9rem;
+      cursor: pointer;
+    }
+    input[type="file"]::file-selector-button {
+      background: #2d3148;
+      color: #e2e8f0;
+      border: none;
+      border-radius: 5px;
+      padding: 0.4rem 0.8rem;
+      margin-right: 0.75rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    input[type="file"]::file-selector-button:hover { background: #3a3f5c; }
+    button[type="submit"] {
+      width: 100%;
+      background: #7c8cf8;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.75rem;
+      cursor: pointer;
+      margin-top: 1.75rem;
+    }
+    button[type="submit"]:hover { background: #6470e6; }
+    .footer-link { text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: #64748b; }
+    .footer-link a { color: #7c8cf8; text-decoration: none; }
+    .footer-link a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-    <h1>Compare Two Files</h1>
-<form action="/compare" method="post" enctype="multipart/form-data">
-
-<label for="case_name">Case Name</label>
-<input type="text" id="case_name" name="case_name" required>
-
-<label for="client_name">Client Name</label>
-<input type="text" id="client_name" name="client_name">
-
-<label for="case_notes">Notes</label>
-<input type="text" id="case_notes" name="case_notes">
-
-<label for="original_file">Original File</label>
-<input type="file" name="original_file" required>
-
-<label for="suspected_file">Suspected Copy</label>
-<input type="file" name="suspected_file" required>
-
-<button type="submit">Compare Files</button>
-
-</form>
-  
-    <div class="section">
-        <a href="/dashboard">Back to Upload</a>
+  <div class="card">
+    <div class="brand">
+      <h1>Evidentix&#8482;</h1>
+      <p>Digital Evidence Platform</p>
     </div>
+    <h2>Compare Two Files</h2>
+    <form action="/compare" method="post" enctype="multipart/form-data">
+      <label for="case_name">Case Name</label>
+      <input type="text" id="case_name" name="case_name" required>
+      <label for="client_name">Client Name</label>
+      <input type="text" id="client_name" name="client_name">
+      <label for="case_notes">Notes</label>
+      <input type="text" id="case_notes" name="case_notes">
+      <label for="original_file">Original File</label>
+      <input type="file" id="original_file" name="original_file" required>
+      <label for="suspected_file">Suspected Copy</label>
+      <input type="file" id="suspected_file" name="suspected_file" required>
+      <button type="submit">Compare Files</button>
+    </form>
+    <div class="footer-link">
+      <a href="/dashboard">Back to Upload</a>
+    </div>
+  </div>
 </body>
 </html>
