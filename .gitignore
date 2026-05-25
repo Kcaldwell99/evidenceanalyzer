@@ -41,3 +41,4 @@ _scratch/
 *.deleted_*
 *.bak.*
 tools/*.ps1
+tools/*.py
