@@ -481,7 +481,7 @@
 
           <div class="pricing-section-label subscriptions">Subscriptions</div>
           <div class="pricing-grid subscriptions">
-            {% for slug in ["monitoring_small", "monitoring_standard", "monitoring_large", "professional", "firm"] %}
+            {% for slug in ["monitoring_small", "monitoring_standard", "monitoring_large"] %}
             {% set p = pricing[slug] %}
             <div class="price-card {% if slug == 'monitoring_standard' %}featured{% endif %}">
               {% if slug == "monitoring_standard" %}<span class="badge">Most Popular</span>{% endif %}
