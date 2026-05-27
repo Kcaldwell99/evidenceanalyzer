@@ -147,16 +147,10 @@ def generate_integrity_certificate(
     c2pa = report.get("c2pa", {})
     c2pa_present = c2pa.get("state") in ("VALID", "INVALID")
 
-    if not c2pa_present:
-        content.append(Paragraph(
-            "No C2PA Content Credentials were present in the submitted file.",
-            styles["disclaimer"]
-        ))
-    else:
-        content.append(Paragraph(
-            "C2PA Content Credentials detected. See Section 3 for full findings.",
-            styles["body"]
-        ))
+    content.append(Paragraph(
+        "C2PA Content Credentials analysis is provided in Section 3.",
+        styles["body"]
+    ))
 
     content.append(Paragraph(
         "Scope: This finding establishes integrity from the time of upload to Evidentix forward. "
