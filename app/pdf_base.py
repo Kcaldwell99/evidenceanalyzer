@@ -130,10 +130,19 @@ def section_spacer():
     return Spacer(1, 0.15 * inch)
 
 
+def _looks_like_hash(value):
+    """True if value is a hex string of common cryptographic-hash length (MD5/SHA-1/SHA-256/SHA-512)."""
+    if not isinstance(value, str):
+        return False
+    v = value.strip()
+    return len(v) in (32, 40, 64, 128) and all(c in "0123456789abcdefABCDEF" for c in v)
+
+
 def build_metadata_table(rows, col_widths=None):
     """
     rows: list of (label, value) tuples
     Renders a two-column label/value table with alternating row shading.
+    Values that look like cryptographic hashes are rendered in monospace.
     """
     if col_widths is None:
         col_widths = [2.0 * inch, 4.5 * inch]
@@ -141,9 +150,11 @@ def build_metadata_table(rows, col_widths=None):
     styles = build_styles()
     table_data = []
     for label, value in rows:
+        value_str = str(value) if value is not None else "—"
+        value_style = styles["mono"] if _looks_like_hash(value_str) else styles["body"]
         table_data.append([
             Paragraph(str(label), styles["label"]),
-            Paragraph(str(value) if value is not None else "—", styles["body"]),
+            Paragraph(value_str, value_style),
         ])
 
     table = Table(table_data, colWidths=col_widths)
