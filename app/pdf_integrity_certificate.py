@@ -163,12 +163,17 @@ def generate_integrity_certificate(
     c2pa_has_manifest = c2pa_state in ("VALID", "INVALID")
 
     content.append(hr(styles))
-    content.append(Paragraph("Section 3 — Content Credentials (C2PA) Analysis", styles["h2"]))
-
-    # State banner
+    # Section 3 opening flowables: staged so unsigned files can keep the whole
+    # short section together; signed files append immediately (too tall to unify).
     state_label = c2pa.get("state_label", "No Content Credentials Detected")
-    content.append(Paragraph(f"<b>Result: {state_label}</b>", styles["body"]))
-    content.append(section_spacer())
+    _s3_head = [
+        Paragraph("Section 3 — Content Credentials (C2PA) Analysis", styles["h2"]),
+        Paragraph(f"<b>Result: {state_label}</b>", styles["body"]),
+    ]
+    if c2pa_has_manifest:
+        for _f in _s3_head:
+            content.append(_f)
+        content.append(section_spacer())
 
     if c2pa_has_manifest:
         # 3a — Manifest Summary
@@ -207,13 +212,18 @@ def generate_integrity_certificate(
         content.append(section_spacer())
 
     # 3d — Plain English Findings (always shown)
-    content.append(KeepTogether([
+    _summary_block = [
         Paragraph(f"<b>{'3d — ' if c2pa_has_manifest else ''}Expert Summary</b>", styles["body"]),
         Paragraph(
             c2pa.get("plain_english", "Content Credentials analysis not available."),
             styles["body"]
         ),
-    ]))
+    ]
+    if c2pa_has_manifest:
+        content.append(KeepTogether(_summary_block))
+    else:
+        # Unsigned: keep heading + Result + Expert Summary as one unit
+        content.append(KeepTogether(_s3_head + _summary_block))
     content.append(section_spacer())
 
     content.append(Paragraph(
