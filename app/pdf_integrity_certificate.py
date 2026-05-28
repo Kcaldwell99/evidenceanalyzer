@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 import qrcode
 from reportlab.lib.units import inch
-from reportlab.platypus import Image, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import Image, KeepTogether, Paragraph, Spacer, Table, TableStyle
 
 from app.pdf_base import (
     DARK, GREY_LINE, PURPLE, PURPLE_BG, WHITE,
@@ -207,11 +207,13 @@ def generate_integrity_certificate(
         content.append(section_spacer())
 
     # 3d — Plain English Findings (always shown)
-    content.append(Paragraph("<b>3d — Expert Summary</b>", styles["body"]))
-    content.append(Paragraph(
-        c2pa.get("plain_english", "Content Credentials analysis not available."),
-        styles["body"]
-    ))
+    content.append(KeepTogether([
+        Paragraph("<b>3d — Expert Summary</b>", styles["body"]),
+        Paragraph(
+            c2pa.get("plain_english", "Content Credentials analysis not available."),
+            styles["body"]
+        ),
+    ]))
     content.append(section_spacer())
 
     content.append(Paragraph(
