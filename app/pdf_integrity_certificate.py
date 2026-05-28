@@ -208,7 +208,7 @@ def generate_integrity_certificate(
 
     # 3d — Plain English Findings (always shown)
     content.append(KeepTogether([
-        Paragraph("<b>3d — Expert Summary</b>", styles["body"]),
+        Paragraph(f"<b>{'3d — ' if c2pa_has_manifest else ''}Expert Summary</b>", styles["body"]),
         Paragraph(
             c2pa.get("plain_english", "Content Credentials analysis not available."),
             styles["body"]
