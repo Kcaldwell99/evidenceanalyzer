@@ -12,6 +12,8 @@ from app.pdf_base import (
     DARK, GREY_LINE, PURPLE, PURPLE_BG, WHITE,
     build_document, build_metadata_table, build_styles, hr, section_spacer,
 )
+from app.utils.map_render import render_map_png
+from app.utils.geocode import reverse_geocode
 
 
 # =========================================================
@@ -148,17 +150,92 @@ def generate_integrity_certificate(
     c2pa_present = c2pa.get("state") in ("VALID", "INVALID")
 
     content.append(Paragraph(
-        "C2PA Content Credentials analysis is provided in Section 3.",
-        styles["body"]
-    ))
-
-    content.append(Paragraph(
         "Scope: This finding establishes integrity from the time of upload to Evidentix forward. "
         "It does not address the file's history, origin, or authenticity prior to upload.",
         styles["disclaimer"]
     ))
 
-# ── SECTION 3: C2PA ───────────────────────────────────
+    # ── SECTION 3: CAPTURED METADATA ──────────────────────
+    content.append(hr(styles))
+    content.append(Paragraph("Section 3 — Captured Metadata", styles["h2"]))
+
+    exif = report.get("exif") or {}
+    exif_present = bool(exif) and "error" not in exif
+
+    if exif_present:
+        content.append(Paragraph(
+            "The following metadata was read from the file as submitted. Metadata reflects "
+            "values embedded in the file and is not independently validated by Evidentix.",
+            styles["body"]
+        ))
+
+        meta_rows = []
+        if exif.get("Make"):
+            meta_rows.append(("Camera Make", exif["Make"]))
+        if exif.get("Model"):
+            meta_rows.append(("Device", exif["Model"]))
+        if exif.get("DateTimeOriginal"):
+            meta_rows.append(("Date Taken", exif["DateTimeOriginal"]))
+
+        _lens_bits = []
+        if exif.get("FNumber"):
+            _lens_bits.append(f"f/{exif['FNumber']}")
+        if exif.get("ExposureTime"):
+            _lens_bits.append(f"{exif['ExposureTime']}s")
+        if exif.get("ISOSpeedRatings"):
+            _lens_bits.append(f"ISO {exif['ISOSpeedRatings']}")
+        if exif.get("FocalLength"):
+            _lens_bits.append(f"{exif['FocalLength']}mm")
+        if _lens_bits:
+            meta_rows.append(("Lens / Exposure", "  ".join(_lens_bits)))
+
+        _gps = report.get("gps_coords")
+        if _gps:
+            _lat, _lon = _gps
+            meta_rows.append(("GPS Coordinates", f"{_lat:.6f}, {_lon:.6f}"))
+            _place = reverse_geocode(_lat, _lon)
+            if _place:
+                meta_rows.append(("Place Name", _place))
+
+        if meta_rows:
+            content.append(build_metadata_table(meta_rows))
+            content.append(section_spacer())
+
+        if _gps:
+            _map_path = render_map_png(_lat, _lon)
+            if _map_path:
+                _map_block = [
+                    Paragraph("<b>3a — Embedded Location Map</b>", styles["body"]),
+                    Image(_map_path, width=4.5 * inch, height=3.375 * inch),
+                    Paragraph(
+                        "Map shows the GPS coordinates embedded in the file metadata. Embedded "
+                        "coordinates reflect the capturing device's reported location at the time "
+                        "of capture and may be subject to GPS error, signal degradation, or "
+                        "post-capture manipulation. This certificate does not validate the "
+                        "authenticity of embedded GPS data. Map data © OpenStreetMap contributors.",
+                        styles["disclaimer"]
+                    ),
+                ]
+                content.append(KeepTogether(_map_block))
+                content.append(section_spacer())
+
+        content.append(Paragraph(
+            "Scope: EXIF metadata can be edited, stripped, or fabricated by ordinary software. "
+            "Evidentix reports the metadata present in the file as submitted and does not certify "
+            "its accuracy. The absence of metadata is not evidence of manipulation; many "
+            "legitimate workflows remove it.",
+            styles["disclaimer"]
+        ))
+    else:
+        content.append(Paragraph(
+            "No embedded capture metadata was found in this file. The absence of metadata is not "
+            "evidence of manipulation; many legitimate workflows — screenshots, exports, and "
+            "messaging applications — remove it during processing or transmission.",
+            styles["disclaimer"]
+        ))
+    content.append(section_spacer())
+
+# ── SECTION 4: C2PA ───────────────────────────────────
     c2pa_state = c2pa.get("state", "ABSENT")
     c2pa_has_manifest = c2pa_state in ("VALID", "INVALID")
 
@@ -166,18 +243,18 @@ def generate_integrity_certificate(
     # Section 3 opening flowables: staged so unsigned files can keep the whole
     # short section together; signed files append immediately (too tall to unify).
     state_label = c2pa.get("state_label", "No Content Credentials Detected")
-    _s3_head = [
-        Paragraph("Section 3 — Content Credentials (C2PA) Analysis", styles["h2"]),
+    _s4_head = [
+        Paragraph("Section 4 — Content Credentials (C2PA) Analysis", styles["h2"]),
         Paragraph(f"<b>Result: {state_label}</b>", styles["body"]),
     ]
     if c2pa_has_manifest:
-        for _f in _s3_head:
+        for _f in _s4_head:
             content.append(_f)
         content.append(section_spacer())
 
     if c2pa_has_manifest:
         # 3a — Manifest Summary
-        content.append(Paragraph("<b>3a — Manifest Summary</b>", styles["body"]))
+        content.append(Paragraph("<b>4a — Manifest Summary</b>", styles["body"]))
         manifest_rows = [
             ("Claim Generator",   c2pa.get("claim_generator") or "—"),
             ("Generator Version", c2pa.get("claim_generator_version") or "—"),
@@ -190,7 +267,7 @@ def generate_integrity_certificate(
         content.append(section_spacer())
 
         # 3b — Trust & Signature Validation
-        content.append(Paragraph("<b>3b — Trust & Signature Validation</b>", styles["body"]))
+        content.append(Paragraph("<b>4b — Trust & Signature Validation</b>", styles["body"]))
         sig_valid = c2pa.get("signature_valid")
         trust_rows = [
             ("Signature Valid",   "Yes" if sig_valid is True else "No" if sig_valid is False else "Unknown"),
@@ -201,7 +278,7 @@ def generate_integrity_certificate(
         content.append(section_spacer())
 
         # 3c — AI & Content Assertions
-        content.append(Paragraph("<b>3c — AI & Content Assertions</b>", styles["body"]))
+        content.append(Paragraph("<b>4c — AI & Content Assertions</b>", styles["body"]))
         ai_rows = [
             ("AI Generated",      "YES — See findings below" if c2pa.get("has_ai_generation") else "Not detected"),
             ("AI Modified",       "YES — See findings below" if c2pa.get("has_ai_modification") else "Not detected"),
@@ -213,7 +290,7 @@ def generate_integrity_certificate(
 
     # 3d — Plain English Findings (always shown)
     _summary_block = [
-        Paragraph(f"<b>{'3d — ' if c2pa_has_manifest else ''}Expert Summary</b>", styles["body"]),
+        Paragraph(f"<b>{'4d — ' if c2pa_has_manifest else ''}Expert Summary</b>", styles["body"]),
         Paragraph(
             c2pa.get("plain_english", "Content Credentials analysis not available."),
             styles["body"]
@@ -223,7 +300,7 @@ def generate_integrity_certificate(
         content.append(KeepTogether(_summary_block))
     else:
         # Unsigned: keep heading + Result + Expert Summary as one unit
-        content.append(KeepTogether(_s3_head + _summary_block))
+        content.append(KeepTogether(_s4_head + _summary_block))
     content.append(section_spacer())
 
     content.append(Paragraph(
