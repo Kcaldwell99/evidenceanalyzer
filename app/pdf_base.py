@@ -135,7 +135,7 @@ def _looks_like_hash(value):
     if not isinstance(value, str):
         return False
     v = value.strip()
-    return len(v) in (32, 40, 64, 128) and all(c in "0123456789abcdefABCDEF" for c in v)
+    return len(v) in (16, 32, 40, 64, 128) and all(c in "0123456789abcdefABCDEF" for c in v)
 
 
 def build_metadata_table(rows, col_widths=None):
