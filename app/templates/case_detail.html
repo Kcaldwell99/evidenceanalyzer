@@ -281,11 +281,7 @@
                     {% endif %}
                 </td>
                 <td>
-                    {% if m.pdf_report %}
-                        <a href="/report-file/{{ case.case_id }}/{{ m.evidence_id }}/pdf" target="_blank">Open PDF</a>
-                    {% else %}
-                        -
-                    {% endif %}
+                    -
                 </td>
                 <td>
                     <a href="/download-bundle/{{ case.case_id }}/{{ m.evidence_id }}">Download Bundle</a>
