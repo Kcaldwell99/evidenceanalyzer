@@ -314,28 +314,31 @@ def generate_integrity_certificate(
 
     # ── SECTION 5: STRUCTURAL FINGERPRINT ──────
     content.append(hr(styles))
-    content.append(Paragraph("Section 5 — Structural Fingerprint", styles["h2"]))
-
     _phash = report.get("phash")
     if _phash:
-        content.append(build_metadata_table([
-            ("Perceptual Hash (pHash)", str(_phash)),
-        ]))
-        content.append(section_spacer())
-        content.append(Paragraph(
-            "A perceptual hash is a compact fingerprint derived from the visual structure of an "
-            "image rather than its raw bytes. Unlike the SHA-256 value in Section 2, which changes "
-            "completely if a single byte is altered, a perceptual hash remains stable across minor "
-            "re-encoding and reflects the image's visual content.",
-            styles["body"]
-        ))
-        content.append(Paragraph(
-            "Scope: This certificate records the perceptual hash as a forensic property of the file. "
-            "It does not compare the file against any external database and makes no representation "
-            "regarding the existence, identity, or content of any other file.",
-            styles["disclaimer"]
-        ))
+        _s5_block = [
+            Paragraph("Section 5 — Structural Fingerprint", styles["h2"]),
+            build_metadata_table([
+                ("Perceptual Hash (pHash)", str(_phash)),
+            ]),
+            section_spacer(),
+            Paragraph(
+                "A perceptual hash is a compact fingerprint derived from the visual structure of an "
+                "image rather than its raw bytes. Unlike the SHA-256 value in Section 2, which changes "
+                "completely if a single byte is altered, a perceptual hash remains stable across minor "
+                "re-encoding and reflects the image's visual content.",
+                styles["body"]
+            ),
+            Paragraph(
+                "Scope: This certificate records the perceptual hash as a forensic property of the file. "
+                "It does not compare the file against any external database and makes no representation "
+                "regarding the existence, identity, or content of any other file.",
+                styles["disclaimer"]
+            ),
+        ]
+        content.append(KeepTogether(_s5_block))
     else:
+        content.append(Paragraph("Section 5 — Structural Fingerprint", styles["h2"]))
         content.append(Paragraph(
             "A perceptual hash could not be derived for this file. This does not indicate "
             "manipulation; perceptual hashing applies to supported image formats and may be "
@@ -344,9 +347,9 @@ def generate_integrity_certificate(
         ))
     content.append(section_spacer())
 
-    # ── SECTION 7: METHODOLOGY & LIMITATIONS ──────
+    # ── SECTION 6: METHODOLOGY & LIMITATIONS ──────
     content.append(hr(styles))
-    content.append(Paragraph("Section 7 — Methodology & Limitations", styles["h2"]))
+    content.append(Paragraph("Section 6 — Methodology & Limitations", styles["h2"]))
     content.append(Paragraph(
         "<b>Methodology.</b> The submitted file was analyzed using a combination of forensic "
         "techniques, including SHA-256 hashing for file integrity verification, perceptual hashing "
