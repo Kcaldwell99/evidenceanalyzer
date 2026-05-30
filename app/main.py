@@ -1284,7 +1284,7 @@ STRIPE_PRICES = {
 
     # New Phase 2 SKUs — replace placeholder values with real Stripe price IDs
     # after creating them in the Stripe dashboard
-    "integrity_certificate": "price_1TPknOHVHQNKUlwkTbhQdEgN",
+    "integrity_certificate": "price_1TcliWHVHQNKUlwkmGokLuMI",
     "custody_record": "price_1TPmDkHVHQNKUlwkj0AweJ9g",
     "monitoring_small": "price_1TPmFhHVHQNKUlwkRHoGFIyF",
     "monitoring_standard": "price_1TPmGvHVHQNKUlwkfr5LTk9G",
@@ -1292,7 +1292,7 @@ STRIPE_PRICES = {
 }
 PRICING = {
     "single":                {"name": "Single Image Analysis",   "price": "$79",       "per": "per image"},
-    "integrity_certificate": {"name": "Integrity Certificate",   "price": "$49",       "per": "per file"},
+    "integrity_certificate": {"name": "Integrity Certificate",   "price": "$99",       "per": "per file"},
     "custody_record":        {"name": "Custody Record",          "price": "$199",      "per": "per case"},
     "video_single":          {"name": "Single Video Analysis",   "price": "$199",      "per": "per video"},
     "bundle":                {"name": "Case Bundle",             "price": "$299",      "per": "up to 10 images"},
