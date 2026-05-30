@@ -147,7 +147,6 @@ def generate_integrity_certificate(
 
     # C2PA status
     c2pa = report.get("c2pa", {})
-    c2pa_present = c2pa.get("state") in ("VALID", "INVALID")
 
     content.append(Paragraph(
         "Scope: This finding establishes integrity from the time of upload to Evidentix forward. "
@@ -235,12 +234,12 @@ def generate_integrity_certificate(
         ))
     content.append(section_spacer())
 
-# ── SECTION 4: C2PA ───────────────────────────────────
+    # ── SECTION 4: CONTENT CREDENTIALS (C2PA) ────────────────
     c2pa_state = c2pa.get("state", "ABSENT")
     c2pa_has_manifest = c2pa_state in ("VALID", "INVALID")
 
     content.append(hr(styles))
-    # Section 3 opening flowables: staged so unsigned files can keep the whole
+    # Section 4 opening flowables: staged so unsigned files can keep the whole
     # short section together; signed files append immediately (too tall to unify).
     state_label = c2pa.get("state_label", "No Content Credentials Detected")
     _s4_head = [
@@ -253,7 +252,7 @@ def generate_integrity_certificate(
         content.append(section_spacer())
 
     if c2pa_has_manifest:
-        # 3a — Manifest Summary
+        # 4a — Manifest Summary
         content.append(Paragraph("<b>4a — Manifest Summary</b>", styles["body"]))
         manifest_rows = [
             ("Claim Generator",   c2pa.get("claim_generator") or "—"),
@@ -266,7 +265,7 @@ def generate_integrity_certificate(
         content.append(build_metadata_table(manifest_rows))
         content.append(section_spacer())
 
-        # 3b — Trust & Signature Validation
+        # 4b — Trust & Signature Validation
         content.append(Paragraph("<b>4b — Trust & Signature Validation</b>", styles["body"]))
         sig_valid = c2pa.get("signature_valid")
         trust_rows = [
@@ -277,7 +276,7 @@ def generate_integrity_certificate(
         content.append(build_metadata_table(trust_rows))
         content.append(section_spacer())
 
-        # 3c — AI & Content Assertions
+        # 4c — AI & Content Assertions
         content.append(Paragraph("<b>4c — AI & Content Assertions</b>", styles["body"]))
         ai_rows = [
             ("AI Generated",      "YES — See findings below" if c2pa.get("has_ai_generation") else "Not detected"),
@@ -288,7 +287,7 @@ def generate_integrity_certificate(
         content.append(build_metadata_table(ai_rows))
         content.append(section_spacer())
 
-    # 3d — Plain English Findings (always shown)
+    # 4d — Plain English Findings (always shown)
     _summary_block = [
         Paragraph(f"<b>{'4d — ' if c2pa_has_manifest else ''}Expert Summary</b>", styles["body"]),
         Paragraph(
@@ -311,7 +310,7 @@ def generate_integrity_certificate(
         styles["disclaimer"]
     ))
 
-    # ---- SECTION 5: STRUCTURAL FINGERPRINT ----
+    # ── SECTION 5: STRUCTURAL FINGERPRINT ──────
     content.append(hr(styles))
     content.append(Paragraph("Section 5 — Structural Fingerprint", styles["h2"]))
 
@@ -343,7 +342,7 @@ def generate_integrity_certificate(
         ))
     content.append(section_spacer())
 
-    # ---- SECTION 7: METHODOLOGY and LIMITATIONS ----
+    # ── SECTION 7: METHODOLOGY & LIMITATIONS ──────
     content.append(hr(styles))
     content.append(Paragraph("Section 7 — Methodology & Limitations", styles["h2"]))
     content.append(Paragraph(
