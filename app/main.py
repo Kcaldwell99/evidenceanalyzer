@@ -324,6 +324,11 @@ async def pricing(request: Request):
 async def sample():
     return RedirectResponse(url="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/Evidentix-Sample-Integrity-Certificate.pdf", status_code=303)
 
+
+@app.get("/ai-sanctions")
+async def ai_sanctions(request: Request):
+    return templates.TemplateResponse(request, "ai_sanctions.html", {})
+
 @app.get("/privacy")
 async def privacy(request: Request):
     return templates.TemplateResponse(request, "privacy.html", {})
