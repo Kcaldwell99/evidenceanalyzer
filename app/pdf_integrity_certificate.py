@@ -79,6 +79,7 @@ def generate_integrity_certificate(
 
     styles = build_styles()
     content = []
+    _temp_files = []
 
     # ── SECTION 1: HEADER ─────────────────────────────────
     content.append(Paragraph("Evidentix\u2122 Integrity Certificate", styles["title"]))
@@ -203,6 +204,7 @@ def generate_integrity_certificate(
         if _gps:
             _map_path = render_map_png(_lat, _lon)
             if _map_path:
+                _temp_files.append(_map_path)
                 _map_block = [
                     Paragraph("<b>3a — Embedded Location Map</b>", styles["body"]),
                     Image(_map_path, width=4.5 * inch, height=3.375 * inch),
@@ -379,4 +381,9 @@ def generate_integrity_certificate(
             os.unlink(tmp_path)
         except OSError:
             pass
+        for _tf in _temp_files:
+            try:
+                os.unlink(_tf)
+            except OSError:
+                pass
     return certificate_id, pdf_bytes
