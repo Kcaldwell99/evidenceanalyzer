@@ -15,7 +15,14 @@ def generate_phash(file_path: str) -> Optional[str]:
     """
     try:
         ext = os.path.splitext(file_path)[1].lower()
-        if ext == ".pdf":
+        is_pdf = ext == ".pdf"
+        if not is_pdf:
+            try:
+                with open(file_path, "rb") as _fh:
+                    is_pdf = b"%PDF" in _fh.read(1024)
+            except OSError:
+                is_pdf = False
+        if is_pdf:
             import pypdfium2 as pdfium
             pdf = pdfium.PdfDocument(file_path)
             try:
