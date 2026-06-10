@@ -14,6 +14,7 @@ from app.pdf_base import (
 )
 from app.utils.map_render import render_map_png
 from app.utils.geocode import reverse_geocode
+from app.utils.integrity import verify_integrity
 
 
 # =========================================================
@@ -63,6 +64,7 @@ def generate_integrity_certificate(
     generated_by: str,
     base_url: str = "https://evidenceanalyzer.com",
     chain_verified: bool = None,
+    file_key: str = None,
 ) -> tuple:
     """
     Generates the Integrity Certificate PDF.
@@ -115,11 +117,22 @@ def generate_integrity_certificate(
     content.append(Paragraph("File Information", styles["h2"]))
     content.append(build_metadata_table(file_rows))
 
+    content.append(section_spacer())
+    content.append(Paragraph(
+        "This certificate documents the technical characteristics of the file identified above "
+        "as received and stored by Evidentix on the date shown. It does not establish the truth, "
+        "origin, authorship, or completeness of the file's contents, nor does it constitute a "
+        "determination of the file's admissibility in any proceeding. Admissibility is determined "
+        "by the court under the applicable rules of evidence.",
+        styles["disclaimer"]
+    ))
+
     # One-sentence summary finding
     content.append(section_spacer())
     content.append(Paragraph(
-        f"<b>Finding:</b> The file <i>{file_name}</i> has been cryptographically verified. "
-        f"Its SHA-256 hash is recorded above and serves as the integrity reference for this certificate.",
+        "<b>Finding:</b> A SHA-256 cryptographic hash of the file identified above was recorded "
+        "at upload and is shown above as the integrity reference for this certificate. "
+        "Re-verification of file integrity is reported in Section 2.",
         styles["body"]
     ))
 
@@ -128,11 +141,36 @@ def generate_integrity_certificate(
     content.append(Paragraph("Section 2 — Integrity Finding", styles["h2"]))
 
     hash_at_upload = report.get("sha256", "—")
-    integrity_rows = [
-        ("Hash at Upload",               hash_at_upload),
-        ("Hash at Certificate Generation", hash_at_upload),
-        ("Comparison Result",            "MATCH — File integrity confirmed"),
-    ]
+    verification = verify_integrity(hash_at_upload, file_key)
+    recomputed = verification["recomputed"]
+    match = verification["match"]
+
+    if match is True:
+        integrity_rows = [
+            ("Hash at Upload",          hash_at_upload),
+            ("Hash at Re-Verification", recomputed),
+            ("Result",
+             "VERIFIED — file re-read from storage and hash recomputed; recomputed hash "
+             "matches the hash recorded at upload, indicating the file has not been altered "
+             "while in Evidentix's custody."),
+        ]
+    elif match is False:
+        integrity_rows = [
+            ("Hash at Upload",          hash_at_upload),
+            ("Hash at Re-Verification", recomputed),
+            ("Result",
+             "DISCREPANCY DETECTED — the hash recomputed from storage does not match the hash "
+             "recorded at upload. This indicates the stored file differs from the file as "
+             "originally received and should be investigated before reliance."),
+        ]
+    else:
+        integrity_rows = [
+            ("Hash at Upload",          hash_at_upload),
+            ("Result",
+             "NOT RE-VERIFIED — the file could not be re-read from storage at the time of "
+             "generation, so its hash was not recomputed. The hash recorded at upload is shown "
+             "above as the integrity reference; no current comparison was performed."),
+        ]
     content.append(build_metadata_table(integrity_rows))
     content.append(section_spacer())
 
@@ -141,7 +179,9 @@ def generate_integrity_certificate(
         "fingerprint for any digital file. If even a single byte of the file is changed, "
         "the SHA-256 value changes entirely. By comparing the hash recorded at upload to the "
         "hash computed at certificate generation, Evidentix can establish that the file has "
-        "not been altered within the platform.",
+        "not been altered within the platform. "
+        "SHA-256 is a published, generally accepted cryptographic standard (FIPS 180-4) with "
+        "no known practical collision.",
         styles["body"]
     ))
     content.append(section_spacer())
@@ -236,81 +276,41 @@ def generate_integrity_certificate(
         ))
     content.append(section_spacer())
 
-    # ── SECTION 4: CONTENT CREDENTIALS (C2PA) ────────────────
-    c2pa_state = c2pa.get("state", "ABSENT")
-    c2pa_has_manifest = c2pa_state in ("VALID", "INVALID")
-
+    # ── SECTION 4: CHAIN OF CUSTODY ──────
     content.append(hr(styles))
-    # Section 4 opening flowables: staged so unsigned files can keep the whole
-    # short section together; signed files append immediately (too tall to unify).
-    state_label = c2pa.get("state_label", "No Content Credentials Detected")
-    _s4_head = [
-        Paragraph("Section 4 — Content Credentials (C2PA) Analysis", styles["h2"]),
-        Paragraph(f"<b>Result: {state_label}</b>", styles["body"]),
-    ]
-    if c2pa_has_manifest:
-        for _f in _s4_head:
-            content.append(_f)
-        content.append(section_spacer())
-
-    if c2pa_has_manifest:
-        # 4a — Manifest Summary
-        content.append(Paragraph("<b>4a — Manifest Summary</b>", styles["body"]))
-        manifest_rows = [
-            ("Claim Generator",   c2pa.get("claim_generator") or "—"),
-            ("Generator Version", c2pa.get("claim_generator_version") or "—"),
-            ("Signing Time",      c2pa.get("signature_time") or "—"),
-            ("Signing Issuer",    c2pa.get("signature_issuer") or "—"),
-            ("Total Assertions",  str(c2pa.get("num_assertions", "—"))),
-            ("Ingredients",       str(c2pa.get("num_ingredients", "—"))),
-        ]
-        content.append(build_metadata_table(manifest_rows))
-        content.append(section_spacer())
-
-        # 4b — Trust & Signature Validation
-        content.append(Paragraph("<b>4b — Trust & Signature Validation</b>", styles["body"]))
-        sig_valid = c2pa.get("signature_valid")
-        trust_rows = [
-            ("Signature Valid",   "Yes" if sig_valid is True else "No" if sig_valid is False else "Unknown"),
-            ("Trust List Status", c2pa.get("trust_list_status") or "—"),
-            ("Revocation Status", c2pa.get("revocation_status") or "—"),
-        ]
-        content.append(build_metadata_table(trust_rows))
-        content.append(section_spacer())
-
-        # 4c — AI & Content Assertions
-        content.append(Paragraph("<b>4c — AI & Content Assertions</b>", styles["body"]))
-        ai_rows = [
-            ("AI Generated",      "YES — See findings below" if c2pa.get("has_ai_generation") else "Not detected"),
-            ("AI Modified",       "YES — See findings below" if c2pa.get("has_ai_modification") else "Not detected"),
-            ("AI Agents Found",   ", ".join(c2pa.get("ai_agents_found", [])) or "None"),
-            ("Training/Mining",   "Present" if c2pa.get("has_training_mining") else "Not present"),
-        ]
-        content.append(build_metadata_table(ai_rows))
-        content.append(section_spacer())
-
-    # 4d — Plain English Findings (always shown)
-    _summary_block = [
-        Paragraph(f"<b>{'4d — ' if c2pa_has_manifest else ''}Expert Summary</b>", styles["body"]),
-        Paragraph(
-            c2pa.get("plain_english", "Content Credentials analysis not available."),
+    content.append(Paragraph("Section 4 — Chain of Custody", styles["h2"]))
+    if chain_verified is True:
+        content.append(Paragraph(
+            "Result: CHAIN INTACT — The Evidentix custody log associated with this file is "
+            "recorded as a cryptographic hash chain, in which each recorded event is bound to the "
+            "one before it. As of certificate generation, that chain was verified and no alteration "
+            "of the recorded custody events was detected. This reflects the integrity of custody "
+            "events recorded within Evidentix and does not address the file's handling before it "
+            "was received by Evidentix.",
             styles["body"]
-        ),
-    ]
-    if c2pa_has_manifest:
-        content.append(KeepTogether(_summary_block))
+        ))
+        content.append(Paragraph(
+            "A complete, event-by-event custody record is available as a separate Evidentix "
+            "Custody Record.",
+            styles["disclaimer"]
+        ))
+    elif chain_verified is False:
+        content.append(Paragraph(
+            "Result: CHAIN DISCREPANCY DETECTED — Verification of the Evidentix custody log "
+            "associated with this file detected a discrepancy in the hash chain, indicating that "
+            "one or more recorded custody events may have been altered after recording. This "
+            "finding should be investigated and disclosed before the custody record is relied "
+            "upon. A complete Evidentix Custody Record should be reviewed.",
+            styles["body"]
+        ))
     else:
-        # Unsigned: keep heading + Result + Expert Summary as one unit
-        content.append(KeepTogether(_s4_head + _summary_block))
-    content.append(section_spacer())
-
-    content.append(Paragraph(
-        "Content Credentials (C2PA) is an open technical standard developed by Adobe, Microsoft, "
-        "the BBC, and others to embed tamper-evident provenance data into digital files. "
-        "Verification confirms the embedded record is cryptographically intact; it does not "
-        "independently confirm the accuracy of the events or content depicted.",
-        styles["disclaimer"]
-    ))
+        content.append(Paragraph(
+            "Result: NOT VERIFIED — Chain integrity was not verified at the time this certificate "
+            "was generated. Evidentix maintains custody events as a cryptographic hash chain; a "
+            "complete Evidentix Custody Record, including chain verification, is available "
+            "separately.",
+            styles["body"]
+        ))
 
     # ── SECTION 5: STRUCTURAL FINGERPRINT ──────
     content.append(hr(styles))
@@ -347,9 +347,9 @@ def generate_integrity_certificate(
         ))
     content.append(section_spacer())
 
-    # ── SECTION 6: METHODOLOGY & LIMITATIONS ──────
+    # ── SECTION 6: METHODOLOGY ──────
     content.append(hr(styles))
-    content.append(Paragraph("Section 6 — Methodology & Limitations", styles["h2"]))
+    content.append(Paragraph("Section 6 — Methodology", styles["h2"]))
     content.append(Paragraph(
         "<b>Methodology.</b> The submitted file was analyzed using a combination of forensic "
         "techniques, including SHA-256 hashing for file integrity verification, perceptual hashing "
@@ -358,10 +358,32 @@ def generate_integrity_certificate(
         styles["body"]
     ))
     content.append(Paragraph(
+        "SHA-256 re-verification is a deterministic, reproducible process: the stored file is "
+        "re-read at the time of certificate generation and its hash recomputed from the raw bytes. "
+        "Re-reading the same bytes always yields the same hash, so a match between the recomputed "
+        "hash and the hash recorded at upload demonstrates the file is unchanged within Evidentix's "
+        "custody. This reproducibility — a process that produces an accurate result — is described "
+        "in Federal Rule of Evidence 901(b)(9). Whether an authentication foundation is established "
+        "in any particular matter is a determination for the court under FRE 104.",
+        styles["body"]
+    ))
+    content.append(section_spacer())
+
+    # ── SECTION 7: LIMITATIONS & DISCLAIMERS ──────
+    content.append(hr(styles))
+    content.append(Paragraph("Section 7 — Limitations & Disclaimers", styles["h2"]))
+    content.append(Paragraph(
         "<b>Limitations.</b> This certificate reflects a tool-assisted forensic analysis of the "
         "submitted file. It does not independently establish authorship, ownership, or legal "
         "infringement. Metadata may be altered or removed during processing or transmission. "
         "Conclusions are limited to the observable characteristics of the file analyzed.",
+        styles["disclaimer"]
+    ))
+    content.append(Paragraph(
+        "This certificate documents technical facts to support an authentication foundation under "
+        "FRE 901; it does not itself determine admissibility, which is the court's role under "
+        "FRE 104. Laying a courtroom foundation may require a witness with personal knowledge or a "
+        "qualified expert, particularly for any probabilistic findings.",
         styles["disclaimer"]
     ))
     content.append(section_spacer())

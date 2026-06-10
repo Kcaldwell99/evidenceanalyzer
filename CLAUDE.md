@@ -64,13 +64,15 @@ Evidentix is a digital-evidence-authentication SaaS operated by **Evidence Analy
 
 **Compliance posture ("Version B").** Marketing presents Evidentix as a **software product, not legal services.** Do not add "practicing litigator / attorney" credibility hooks to user-facing pages; keep the non-legal-services / no-attorney-client disclaimer prominent. This keeps the site out of attorney-advertising rules across MO/KS/TX/CO/NV.
 
+**⚠️ C2PA removed from the Integrity Certificate — MUST be restored, do not let this be silently lost.** When §4 of the cert became **Chain of Custody**, the prior **§4 Content Credentials (C2PA) Analysis** display was removed from `pdf_integrity_certificate.py`. The data is **not** lost: `report['c2pa']` is still built in `app/main.py` and C2PA is still rendered in the **Custody Record** (`pdf_custody_record.py`). But the **Integrity Certificate no longer shows C2PA.** C2PA must be **restored to the cert as part of the §5 Content Analysis redesign** — reframed as **probabilistic** with **FRE 707** (expert-opinion) caveats, not presented as a deterministic verification.
+
 ---
 
 ## Key files
 
 - `app/main.py` — routes, `STRIPE_PRICES`, `PRICING`.
 - `app/analyzer.py` — `analyze_file`, produces the stored S3 `json_report` blob (exif, gps_coords, phash, methodology, limitations).
-- `app/pdf_integrity_certificate.py` — `generate_integrity_certificate(...)`, the $99 deliverable (Platypus/flowable PDF, sections 1-6 gapless).
+- `app/pdf_integrity_certificate.py` — `generate_integrity_certificate(...)`, the $99 deliverable (Platypus/flowable PDF). Sections §1–§7: §1 Identification & Scope, §2 Cryptographic Integrity, §3 Captured Metadata, §4 Chain of Custody, §5 Content Analysis [C2PA restoration pending — see guardrail above], §6 Methodology, §7 Limitations & Disclaimers.
 - `app/utils/image_fingerprint.py` — `generate_phash` (PDF detection by %PDF magic bytes + extension).
 - `app/utils/audit_log.py` — `_compute_chain_hash`, `verify_chain` (hash-chained custody).
 - `app/utils/map_render.py`, `app/utils/geocode.py` — GPS map + reverse-geocode for cert section 3.

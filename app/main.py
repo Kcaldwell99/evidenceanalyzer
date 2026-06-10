@@ -1649,6 +1649,12 @@ async def generate_integrity_certificate_route(
         "plain_english":           item.c2pa_plain_english or "Content Credentials analysis not available.",
     }
 
+    from app.utils.audit_log import verify_chain
+    try:
+        chain_verified, _, _ = verify_chain(case_id)
+    except Exception:
+        chain_verified = None
+
     certificate_id, pdf_bytes = generate_integrity_certificate(
 
         report=report,
@@ -1656,6 +1662,8 @@ async def generate_integrity_certificate_route(
         evidence_id=evidence_id,
         generated_by=current_user.email,
         base_url=base_url,
+        file_key=item.file_key,
+        chain_verified=chain_verified,
     )
 
     # Upload PDF to S3
