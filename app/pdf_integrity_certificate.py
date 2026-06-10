@@ -312,12 +312,23 @@ def generate_integrity_certificate(
             styles["body"]
         ))
 
-    # ── SECTION 5: STRUCTURAL FINGERPRINT ──────
+    # ── SECTION 5: CONTENT ANALYSIS ──────
     content.append(hr(styles))
+    content.append(Paragraph("Section 5 — Content Analysis", styles["h2"]))
+    content.append(Paragraph(
+        "The findings in this section describe content-level characteristics and indicators. "
+        "They differ in kind from the cryptographic and custody findings above: some are reported "
+        "by third-party software embedded in the file rather than determined by Evidentix, and the "
+        "AI-related indicators are not independently verified. Read this section together with the "
+        "limitations noted below.",
+        styles["body"]
+    ))
+
+    # 5a — Structural Fingerprint (pHash): existing content, moved under the 5a label.
     _phash = report.get("phash")
     if _phash:
-        _s5_block = [
-            Paragraph("Section 5 — Structural Fingerprint", styles["h2"]),
+        _s5a_block = [
+            Paragraph("<b>5a — Structural Fingerprint</b>", styles["body"]),
             build_metadata_table([
                 ("Perceptual Hash (pHash)", str(_phash)),
             ]),
@@ -336,15 +347,112 @@ def generate_integrity_certificate(
                 styles["disclaimer"]
             ),
         ]
-        content.append(KeepTogether(_s5_block))
+        content.append(KeepTogether(_s5a_block))
     else:
-        content.append(Paragraph("Section 5 — Structural Fingerprint", styles["h2"]))
+        content.append(Paragraph("<b>5a — Structural Fingerprint</b>", styles["body"]))
         content.append(Paragraph(
             "A perceptual hash could not be derived for this file. This does not indicate "
             "manipulation; perceptual hashing applies to supported image formats and may be "
             "unavailable for other file types.",
             styles["disclaimer"]
         ))
+    content.append(section_spacer())
+
+    # 5b / 5c — Content Credentials (C2PA): only when a manifest is present.
+    _c2pa_state = c2pa.get("state", "ABSENT")
+    _c2pa_has_manifest = _c2pa_state in ("VALID", "INVALID")
+
+    if _c2pa_has_manifest:
+        # 5b — Manifest & Signature (DETERMINISTIC): standard "verified" tables.
+        content.append(Paragraph(
+            "<b>5b — Content Credentials (C2PA): Manifest &amp; Signature</b>", styles["body"]
+        ))
+        content.append(build_metadata_table([
+            ("Claim Generator",   c2pa.get("claim_generator") or "—"),
+            ("Generator Version", c2pa.get("claim_generator_version") or "—"),
+            ("Signing Time",      c2pa.get("signature_time") or "—"),
+            ("Signing Issuer",    c2pa.get("signature_issuer") or "—"),
+            ("Total Assertions",  str(c2pa.get("num_assertions", "—"))),
+            ("Ingredients",       str(c2pa.get("num_ingredients", "—"))),
+        ]))
+        content.append(section_spacer())
+        _sig_valid = c2pa.get("signature_valid")
+        content.append(build_metadata_table([
+            ("Signature Valid",   "Yes" if _sig_valid is True else "No" if _sig_valid is False else "Unknown"),
+            ("Trust List Status", c2pa.get("trust_list_status") or "—"),
+            ("Revocation Status", c2pa.get("revocation_status") or "—"),
+        ]))
+        content.append(Paragraph(
+            "The above reflects validation of the embedded C2PA manifest's cryptographic signature. "
+            "A valid signature indicates the manifest's contents have not been altered since signing "
+            "and were signed by the identified issuer. This is a deterministic cryptographic check.",
+            styles["body"]
+        ))
+        content.append(section_spacer())
+
+        # 5c — AI & Content Assertions (PROBABILISTIC): demarcated PURPLE callout box.
+        # Hand-built table (NOT build_metadata_table) so it is visually distinct from
+        # the verified tables above: solid PURPLE_BG fill + ~1.25pt PURPLE outer box +
+        # a full-width caption row marking the contents as reported, not verified.
+        # Widths [144, 324] == 2.0in / 4.5in, matching build_metadata_table's columns.
+        _ai_rows = [
+            [Paragraph(
+                "<b>Reported by the file's embedded credentials — not verified by Evidentix</b>",
+                styles["body"]
+            ), ""],
+            [Paragraph("AI Generation", styles["body"]),
+             Paragraph("Asserted" if c2pa.get("has_ai_generation") else "Not asserted", styles["body"])],
+            [Paragraph("AI Modification", styles["body"]),
+             Paragraph("Asserted" if c2pa.get("has_ai_modification") else "Not asserted", styles["body"])],
+            [Paragraph("AI Agents Named", styles["body"]),
+             Paragraph(", ".join(c2pa.get("ai_agents_found", [])) or "None", styles["body"])],
+            [Paragraph("Training/Mining", styles["body"]),
+             Paragraph("Asserted" if c2pa.get("has_training_mining") else "Not asserted", styles["body"])],
+        ]
+        _ai_table = Table(_ai_rows, colWidths=[144, 324])
+        _ai_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), PURPLE_BG),
+            ("BOX", (0, 0), (-1, -1), 1.25, PURPLE),
+            ("SPAN", (0, 0), (-1, 0)),
+            ("LINEBELOW", (0, 0), (-1, 0), 0.5, PURPLE),
+            ("INNERGRID", (0, 1), (-1, -1), 0.25, GREY_LINE),
+            ("TEXTCOLOR", (0, 0), (-1, 0), DARK),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ]))
+        content.append(KeepTogether([_ai_table]))
+        content.append(hr(styles))
+        content.append(Paragraph(
+            "These assertions are recorded within the file's embedded data by the software that "
+            "produced it; they are reports contained in the file, not findings made or verified by "
+            "Evidentix. They have no established error rate. Offering them in a proceeding for the "
+            "truth of the matter asserted would likely require expert testimony under Federal Rule of "
+            "Evidence 702/707. Their presence or absence is not, by itself, a determination that the "
+            "file is or is not AI-generated.",
+            styles["disclaimer"]
+        ))
+        content.append(section_spacer())
+
+    # Expert Summary (always shown — VALID/INVALID and ABSENT/UNAVAILABLE).
+    content.append(Paragraph("<b>Expert Summary</b>", styles["body"]))
+    content.append(Paragraph(
+        c2pa.get("plain_english", "Content Credentials analysis not available."),
+        styles["body"]
+    ))
+    content.append(section_spacer())
+
+    # §5 closing disclaimer (always shown).
+    content.append(Paragraph(
+        "Content Credentials (C2PA) is an open technical standard for embedding provenance data into "
+        "digital files. Signature validation confirms the embedded manifest is cryptographically "
+        "intact and unaltered since signing; it does not confirm the accuracy of the events, content, "
+        "or AI-related claims the manifest describes. The integrity of the manifest and the truth of "
+        "its contents are distinct.",
+        styles["disclaimer"]
+    ))
     content.append(section_spacer())
 
     # ── SECTION 6: METHODOLOGY ──────
