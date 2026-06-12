@@ -29,6 +29,28 @@ def _redact_email(email: str) -> str:
     return f"{local[0]}***@{domain}"
 
 
+def _fmt_exposure(value):
+    """Format EXIF ExposureTime as a conventional shutter-speed string."""
+    if not value:
+        return "—"
+    # Already a fraction string like "1/4115" — keep as-is
+    s = str(value).strip()
+    if "/" in s:
+        return f"{s}s"
+    try:
+        x = float(value)
+    except (TypeError, ValueError):
+        return f"{s}s"
+    if x <= 0:
+        return f"{s}s"
+    if x >= 1:
+        # Long exposure: show as seconds, trim trailing zeros
+        return f"{x:.1f}".rstrip("0").rstrip(".") + "s"
+    # Fast shutter: convert to 1/N
+    denom = round(1 / x)
+    return f"1/{denom}s"
+
+
 def _fmt_bytes(size_bytes) -> str:
     try:
         b = int(size_bytes)
@@ -221,7 +243,7 @@ def generate_integrity_certificate(
         if exif.get("FNumber"):
             _lens_bits.append(f"f/{exif['FNumber']}")
         if exif.get("ExposureTime"):
-            _lens_bits.append(f"{exif['ExposureTime']}s")
+            _lens_bits.append(_fmt_exposure(exif["ExposureTime"]))
         if exif.get("ISOSpeedRatings"):
             _lens_bits.append(f"ISO {exif['ISOSpeedRatings']}")
         if exif.get("FocalLength"):
