@@ -1,0 +1,26 @@
+C2PA Trust List — pinned copy provenance
+==========================================
+
+These PEM files are PINNED, committed copies of the official C2PA conformance
+trust lists. They are NOT fetched at runtime. Update them deliberately and
+re-record the as-of date below when you do.
+
+Retrieved (UTC): 2026-06-12
+
+Sources:
+  C2PA-TRUST-LIST.pem
+    https://raw.githubusercontent.com/c2pa-org/conformance-public/refs/heads/main/trust-list/C2PA-TRUST-LIST.pem
+  C2PA-TSA-TRUST-LIST.pem
+    https://raw.githubusercontent.com/c2pa-org/conformance-public/refs/heads/main/trust-list/C2PA-TSA-TRUST-LIST.pem
+
+Branch pinned from: c2pa-org/conformance-public @ main
+
+Certificate counts at retrieval (grep -c "BEGIN CERTIFICATE"):
+  C2PA-TRUST-LIST.pem      22
+  C2PA-TSA-TRUST-LIST.pem  15
+
+Notes:
+  - Legacy 1.x C2PA test files predate the current 2.x trust list and may still
+    evaluate as signingCredential.untrusted against this list. That is expected.
+  - To refresh: re-download from the URLs above, update the date and counts here,
+    and commit as a single reviewed change.

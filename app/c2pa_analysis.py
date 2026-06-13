@@ -15,6 +15,7 @@ Three-state model:
   ABSENT  — no manifest embedded in file
 """
 
+import os
 import json
 import datetime
 from dataclasses import dataclass, field
@@ -29,6 +30,36 @@ try:
     C2PA_AVAILABLE = True
 except ImportError:
     C2PA_AVAILABLE = False
+
+
+# ---------------------------------------------------------------------------
+# Pinned C2PA trust list
+# ---------------------------------------------------------------------------
+# Without trust anchors the Reader marks every signing cert "untrusted" (empty
+# trust set). We load the committed official C2PA trust list so the Reader
+# performs real trust verification. PEM is pinned, not runtime-fetched — see
+# app/trust/TRUST-LIST-VERSION.txt for source URLs and as-of date.
+_TRUST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trust")
+
+
+def _load_trust_settings():
+    """Build the c2pa settings dict pinning trust verification to the committed
+    C2PA trust list. Returns None (caller falls back to a no-context Reader) if
+    the PEM is missing or this c2pa build lacks the Context settings API."""
+    if not (C2PA_AVAILABLE and hasattr(c2pa, "Context")):
+        return None
+    try:
+        with open(os.path.join(_TRUST_DIR, "C2PA-TRUST-LIST.pem"), "r", encoding="utf-8") as f:
+            anchors = f.read()
+    except OSError:
+        return None
+    return {
+        "trust": {"trust_anchors": anchors, "verify_trust_list": True},
+        "verify": {"verify_trust": True},
+    }
+
+
+_TRUST_SETTINGS = _load_trust_settings()
 
 
 # ---------------------------------------------------------------------------
@@ -156,8 +187,17 @@ def analyze_file(file_path: str) -> C2PAResult:
         ext = str(file_path).lower().rsplit(".", 1)[-1]
         mime = {"jpg":"image/jpeg","jpeg":"image/jpeg","png":"image/png","webp":"image/webp","mp4":"video/mp4","mov":"video/quicktime","pdf":"application/pdf"}.get(ext, "application/octet-stream")
         with open(file_path, "rb") as f:
-            with c2pa.Reader(mime, f) as reader:
-                raw_json = reader.json()
+            if _TRUST_SETTINGS is not None:
+                # Verify signature trust against the pinned C2PA trust list.
+                ctx = c2pa.Context.from_dict(_TRUST_SETTINGS)
+                try:
+                    with c2pa.Reader(mime, f, context=ctx) as reader:
+                        raw_json = reader.json()
+                finally:
+                    ctx.close()
+            else:
+                with c2pa.Reader(mime, f) as reader:
+                    raw_json = reader.json()
         manifest_data = json.loads(raw_json)
     except Exception as e:
         err = str(e).lower()
