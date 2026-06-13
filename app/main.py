@@ -1618,9 +1618,12 @@ async def generate_integrity_certificate_route(
     # Reconstruct c2pa dict from stored EvidenceItem columns (populated at upload).
     # This ensures the certificate reports the C2PA findings captured at the time
     # of analysis, not a re-analysis at certificate-generation time.
+    # NOTE: stale DUPLICATE of c2pa_analysis._state_label \u2014 kept in sync by hand
+    # for now; should be deduplicated by importing the canonical _state_label.
     _state_labels = {
         "VALID":       "Content Credentials Present and Verified",
         "INVALID":     "Content Credentials Present \u2014 Verification Failed",
+        "SIGNED_UNRECOGNIZED_ISSUER": "Content Credentials Present \u2014 Valid Signature, Unrecognized Issuer",
         "ABSENT":      "No Content Credentials Detected",
         "UNAVAILABLE": "C2PA Analysis Unavailable",
     }

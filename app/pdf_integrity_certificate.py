@@ -382,7 +382,11 @@ def generate_integrity_certificate(
 
     # 5b / 5c — Content Credentials (C2PA): only when a manifest is present.
     _c2pa_state = c2pa.get("state", "ABSENT")
-    _c2pa_has_manifest = _c2pa_state in ("VALID", "INVALID")
+    # Manifest-bearing = any state except the no-manifest ones. Complement form
+    # (not an explicit allow-list) so new manifest-present states — e.g.
+    # SIGNED_UNRECOGNIZED_ISSUER — render §5b/§5c instead of falling through to
+    # the no-manifest path.
+    _c2pa_has_manifest = _c2pa_state not in ("ABSENT", "UNAVAILABLE")
 
     if _c2pa_has_manifest:
         # 5b — Manifest & Signature (DETERMINISTIC): standard "verified" tables.

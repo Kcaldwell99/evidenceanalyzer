@@ -327,7 +327,7 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
         y = _draw_wrapped_lines(c, ["WARNING: AI-generated content indicators detected in manifest."], 60, y)
     if c2pa_state == "INVALID":
         y = _draw_wrapped_lines(c, ["WARNING: Content Credentials present but signature validation failed."], 60, y)
-    if c2pa_state not in ("VALID", "INVALID"):
+    if c2pa_state in ("ABSENT", "UNAVAILABLE"):
         y = _draw_wrapped_lines(c, ["NOTE: No Content Credentials found. File provenance cannot be verified."], 60, y)
 
     y -= 8
