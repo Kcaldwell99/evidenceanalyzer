@@ -55,7 +55,7 @@ class EvidenceItem(Base):
     web_detection_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
 
     # C2PA Content Credentials (populated from c2pa_analysis.summarize_for_certificate)
-    c2pa_state = Column(String(20), nullable=True)
+    c2pa_state = Column(String(64), nullable=True)
     c2pa_has_ai_generation = Column(Boolean, nullable=True)
     c2pa_has_ai_modification = Column(Boolean, nullable=True)
     c2pa_signature_valid = Column(Boolean, nullable=True)
