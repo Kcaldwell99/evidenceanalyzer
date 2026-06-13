@@ -69,6 +69,10 @@ _TRUST_SETTINGS = _load_trust_settings()
 class C2PAState(str, Enum):
     VALID   = "VALID"
     INVALID = "INVALID"
+    # Valid signature, content unaltered, but the signing cert does not trace to
+    # the C2PA Trust List — a verification limitation, NOT a sign of tampering.
+    # Distinct from INVALID, which is reserved for genuinely broken credentials.
+    SIGNED_UNRECOGNIZED_ISSUER = "SIGNED_UNRECOGNIZED_ISSUER"
     ABSENT  = "ABSENT"
     UNAVAILABLE = "UNAVAILABLE"   # library not installed
 
@@ -364,9 +368,10 @@ def _parse_ingredients(result: C2PAResult, ingredients: list):
 def _determine_state(result: C2PAResult) -> C2PAState:
     """
     Final state decision tree.
-    VALID   = has manifest AND (signature valid or unknown) AND not revoked
-    INVALID = has manifest AND (signature invalid OR revoked OR untrusted)
-    ABSENT  = no manifest
+    VALID                      = has manifest AND signature valid/unknown AND not revoked AND issuer traces to trust list
+    SIGNED_UNRECOGNIZED_ISSUER = has manifest AND signature valid AND not revoked, but issuer not on the trust list
+    INVALID                    = has manifest AND genuinely broken (signature invalid OR revoked)
+    ABSENT                     = no manifest
     """
     if result.num_manifests == 0:
         return C2PAState.ABSENT
@@ -377,8 +382,12 @@ def _determine_state(result: C2PAResult) -> C2PAState:
     if result.signature_valid is False:
         return C2PAState.INVALID
 
-    if result.trust_list_status == "untrusted":
-        return C2PAState.INVALID
+    # Valid signature + not revoked, but the issuer isn't on the trust list:
+    # a verification limitation, not broken credentials. Distinct from INVALID.
+    if (result.trust_list_status == "untrusted"
+            and result.signature_valid is True
+            and result.revocation_status != "revoked"):
+        return C2PAState.SIGNED_UNRECOGNIZED_ISSUER
 
     return C2PAState.VALID
 
@@ -420,6 +429,7 @@ def _state_label(state: C2PAState) -> str:
     return {
         C2PAState.VALID:       "Content Credentials Present and Verified",
         C2PAState.INVALID:     "Content Credentials Present — Verification Failed",
+        C2PAState.SIGNED_UNRECOGNIZED_ISSUER: "Content Credentials Present — Valid Signature, Unrecognized Issuer",
         C2PAState.ABSENT:      "No Content Credentials Detected",
         C2PAState.UNAVAILABLE: "C2PA Analysis Unavailable",
     }[state]
@@ -450,15 +460,30 @@ def plain_english_findings(result: C2PAResult) -> str:
             "history cannot be independently verified through the Content Credentials standard."
         )
 
-    # Build narrative for VALID or INVALID
+    # Build narrative for VALID / SIGNED_UNRECOGNIZED_ISSUER / INVALID.
+    # The opening lead differs by state; the per-flag content sentences below
+    # (claim generator, AI, training/mining, creative actions, ingredients) are
+    # shared across all three so a valid / unrecognized-issuer file still states
+    # its AI and other assertions, not just the trust paragraph.
     lines = []
 
-    # Opening: state
-    if result.state == C2PAState.VALID:
+    # Opening lead.
+    if result.state == C2PAState.SIGNED_UNRECOGNIZED_ISSUER:
         lines.append(
-            "This file contains embedded Content Credentials (C2PA provenance data) that passed "
-            "cryptographic verification. The digital signature attached to these credentials was "
-            "confirmed as intact and unmodified."
+            "This file contains embedded Content Credentials (C2PA provenance data). "
+            "The manifest's cryptographic signature is valid and the content has not been "
+            "altered since signing. However, the signing certificate does not trace to the "
+            "C2PA Trust List (retrieved 2026-06-12), so the signer's identity could not be "
+            "confirmed against that recognized list. This is a limitation of verification, "
+            "not an indication that the file was altered or fabricated."
+        )
+    elif result.state == C2PAState.VALID:
+        lines.append(
+            "This file contains embedded Content Credentials (C2PA provenance data) with a "
+            "valid cryptographic signature. The signing certificate traces to the C2PA Trust "
+            "List (retrieved 2026-06-12), confirming the signer is a recognized member of that "
+            "list as of that date. Trust-list membership establishes the signer's listing, not "
+            "the truth or accuracy of the content depicted."
         )
     else:
         lines.append(
@@ -473,49 +498,54 @@ def plain_english_findings(result: C2PAResult) -> str:
             f"The credentials were created by {result.claim_generator}{ver}."
         )
 
-    # Signature time
-    if result.signature_time:
-        lines.append(
-            f"The manifest was digitally signed on {result.signature_time}."
-        )
+    # Signature / trust / revocation narration. Subsumed by the trust-paragraph
+    # lead for VALID / SIGNED_UNRECOGNIZED_ISSUER, so only narrated for INVALID
+    # (where it explains WHY verification failed). Keeping it INVALID-only avoids
+    # redundant or contradictory sentences after the trust lead.
+    if result.state == C2PAState.INVALID:
+        # Signature time
+        if result.signature_time:
+            lines.append(
+                f"The manifest was digitally signed on {result.signature_time}."
+            )
 
-    # Issuer
-    if result.signature_issuer:
-        lines.append(
-            f"The signing certificate was issued by: {result.signature_issuer}."
-        )
+        # Issuer
+        if result.signature_issuer:
+            lines.append(
+                f"The signing certificate was issued by: {result.signature_issuer}."
+            )
 
-    # Trust list
-    if result.trust_list_status == "trusted":
-        lines.append(
-            "The signing certificate belongs to a recognized Content Credentials issuer."
-        )
-    elif result.trust_list_status == "untrusted":
-        lines.append(
-            "WARNING: The signing certificate was not found on the recognized Content Credentials "
-            "Trust List. This means the identity of the party that signed these credentials "
-            "cannot be independently confirmed."
-        )
+        # Trust list
+        if result.trust_list_status == "trusted":
+            lines.append(
+                "The signing certificate belongs to a recognized Content Credentials issuer."
+            )
+        elif result.trust_list_status == "untrusted":
+            lines.append(
+                "WARNING: The signing certificate was not found on the recognized Content Credentials "
+                "Trust List. This means the identity of the party that signed these credentials "
+                "cannot be independently confirmed."
+            )
 
-    # Revocation
-    if result.revocation_status == "revoked":
-        lines.append(
-            "WARNING: The signing certificate has been revoked. A revoked certificate indicates "
-            "that the issuing authority has withdrawn trust from the signer. Content Credentials "
-            "signed with a revoked certificate cannot be considered reliable."
-        )
-    elif result.revocation_status == "not_revoked":
-        lines.append(
-            "The signing certificate has not been revoked."
-        )
+        # Revocation
+        if result.revocation_status == "revoked":
+            lines.append(
+                "WARNING: The signing certificate has been revoked. A revoked certificate indicates "
+                "that the issuing authority has withdrawn trust from the signer. Content Credentials "
+                "signed with a revoked certificate cannot be considered reliable."
+            )
+        elif result.revocation_status == "not_revoked":
+            lines.append(
+                "The signing certificate has not been revoked."
+            )
 
-    # Signature validity (only surface if failed)
-    if result.signature_valid is False:
-        lines.append(
-            "WARNING: The cryptographic signature did not validate. This means the file's "
-            "Content Credentials may have been altered after they were originally embedded, "
-            "or the file itself may have been modified."
-        )
+        # Signature validity (only surface if failed)
+        if result.signature_valid is False:
+            lines.append(
+                "WARNING: The cryptographic signature did not validate. This means the file's "
+                "Content Credentials may have been altered after they were originally embedded, "
+                "or the file itself may have been modified."
+            )
 
     # AI findings
     if result.has_ai_generation:
@@ -572,14 +602,9 @@ def plain_english_findings(result: C2PAResult) -> str:
             f"this file was derived, indicating it was assembled or converted from prior material."
         )
 
-    # Closing caveat
-    if result.state == C2PAState.VALID:
-        lines.append(
-            "Content Credentials verification confirms the provenance record embedded in this file "
-            "is authentic and has not been tampered with. It does not independently confirm the "
-            "accuracy of the events or content depicted."
-        )
-    else:
+    # Closing caveat — INVALID only. The trust-paragraph lead already closes the
+    # thought for VALID / SIGNED_UNRECOGNIZED_ISSUER.
+    if result.state == C2PAState.INVALID:
         lines.append(
             "Because one or more verification checks failed, the Content Credentials embedded in "
             "this file should not be relied upon as evidence of authentic provenance without "
