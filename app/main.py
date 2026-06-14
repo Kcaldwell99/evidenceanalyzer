@@ -1920,6 +1920,21 @@ async def download_bundle(
             url = generate_presigned_url(item.pdf_report)
             r = requests.get(url)
             zipf.writestr("analysis_report.pdf", r.content)
+
+        cert_row = (
+            db.query(Certificate)
+            .filter(
+                Certificate.type == "integrity",
+                Certificate.case_id == case_id,
+                Certificate.evidence_id == evidence_id,
+            )
+            .order_by(Certificate.created_at.desc())
+            .first()
+        )
+        if cert_row and cert_row.pdf_key:
+            url = generate_presigned_url(cert_row.pdf_key)
+            r = requests.get(url)
+            zipf.writestr("integrity_certificate.pdf", r.content)
     log_audit_event(
         event_type="file_downloaded",
         case_id=case_id,
