@@ -107,7 +107,7 @@ def generate_integrity_certificate(
 
     # ── SECTION 1: HEADER ─────────────────────────────────
     content.append(Paragraph("Evidentix\u2122 Integrity Certificate", styles["title"]))
-    content.append(Paragraph("Cryptographic Verification of File Integrity", styles["subtitle"]))
+    content.append(Paragraph("Forensic Analysis of File Integrity, Metadata &amp; Provenance", styles["subtitle"]))
     content.append(hr(styles))
 
     header_rows = [
