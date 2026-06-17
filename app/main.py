@@ -746,7 +746,6 @@ async def analyze_file_route(
         file_name=file.filename,
         file_key=file_key,
         json_report=json_path,
-        pdf_report=pdf_path,
         sha256=report.get("sha256"),
         analysis_date=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         web_detection_enabled=web_detection_enabled,
@@ -796,7 +795,6 @@ async def analyze_file_route(
         evidence_id=evidence_id,
         file_name=file.filename,
         phash=report.get("phash"),
-        pdf_report=pdf_path,
         json_report=json_path,
     )
 
@@ -1916,11 +1914,6 @@ async def download_bundle(
             r = requests.get(url)
             zipf.writestr("analysis_report.json", r.content)
 
-        if item.pdf_report:
-            url = generate_presigned_url(item.pdf_report)
-            r = requests.get(url)
-            zipf.writestr("analysis_report.pdf", r.content)
-
         cert_row = (
             db.query(Certificate)
             .filter(
@@ -2327,9 +2320,6 @@ async def report_file_redirect(
     if report_type == "json" and item.json_report:
         url = generate_presigned_url(item.json_report)
         return RedirectResponse(url=url, status_code=302)
-    elif report_type == "pdf" and item.pdf_report:
-        url = generate_presigned_url(item.pdf_report)
-        return RedirectResponse(url=url, status_code=302)
     else:
         raise HTTPException(status_code=404, detail="Report not found.")
 
@@ -2432,7 +2422,6 @@ async def analyze_video_route(
         file_name=file.filename,
         file_key=file_key,
         json_report=json_path,
-        pdf_report=pdf_path,
         sha256=result.get("sha256"),
         analysis_date=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         # C2PA Content Credentials (16 columns - matches image analyze path)

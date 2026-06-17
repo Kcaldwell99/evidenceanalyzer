@@ -252,8 +252,6 @@
                 <th>SHA-256</th>
                 <th>Analysis Date</th>
                 <th>Original File</th>
-                <th>JSON Report</th>
-                <th>PDF Report</th>
                 <th>Bundle</th>
                 <th>Actions</th>
             </tr>
@@ -272,16 +270,6 @@
                     {% else %}
                         -
                     {% endif %}
-                </td>
-                <td>
-                    {% if m.json_report and current_user.is_admin %}
-                        <a href="/report-file/{{ case.case_id }}/{{ m.evidence_id }}/json" target="_blank">Open JSON</a>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                <td>
-                    -
                 </td>
                 <td>
                     <a href="/download-bundle/{{ case.case_id }}/{{ m.evidence_id }}">Download Bundle</a>
