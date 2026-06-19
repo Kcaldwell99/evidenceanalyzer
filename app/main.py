@@ -1306,6 +1306,130 @@ async def admin_usage(
     )
 
 
+# ── Free image screen: authenticated, images-only, ephemeral, quota-limited ──
+# Reuses the verification primitives DIRECTLY (sha256_file, c2pa_analysis,
+# extract_exif) — never the cert/PDF path. Persists ONLY a FreeScreenLog audit
+# row (c2pa_state + sha256); no EvidenceItem, no S3 object, no FingerprintIndex
+# write, no custody-log event, no PDF. search_similar is intentionally NOT
+# called (it reads the shared cross-customer index). The SHOW/WITHHOLD contract
+# is enforced by the response dict below: present/missing metadata only (no EXIF
+# dump, no GPS, no map), C2PA ingredients only for the derivative signal.
+FREE_SCREEN_MONTHLY_QUOTA = 10
+_FREE_SCREEN_IMAGE_EXTS = {"jpg", "jpeg", "png", "webp"}
+_FREE_SCREEN_DISCLAIMER = (
+    "Informational screen — not the Integrity Certificate, not exhibit-ready."
+)
+
+
+@app.post("/screen")
+async def free_screen(
+    file: UploadFile = File(...),
+    current_user: User = Depends(require_verified_email),
+    db: Session = Depends(get_db),
+):
+    from app.models import FreeScreenLog
+    from app.utils.hash_utils import sha256_file
+    from app.utils.metadata_utils import extract_exif
+    from app.c2pa_analysis import (
+        analyze_file as c2pa_analyze_file,
+        summarize_for_certificate,
+    )
+
+    # Images only — rejects PDF, video, and anything else.
+    filename = file.filename or ""
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext not in _FREE_SCREEN_IMAGE_EXTS:
+        raise HTTPException(
+            status_code=400,
+            detail="The free screen accepts image files only (jpg, jpeg, png, webp).",
+        )
+
+    # Per-account monthly quota, counted in the business-timezone month window.
+    now = datetime.now(_USAGE_TZ)
+    start = datetime(now.year, now.month, 1, tzinfo=_USAGE_TZ)
+    end = datetime(now.year + (now.month // 12), (now.month % 12) + 1, 1, tzinfo=_USAGE_TZ)
+    resets = end.date().isoformat()
+    used_before = (
+        db.query(FreeScreenLog)
+        .filter(
+            FreeScreenLog.user_id == current_user.id,
+            FreeScreenLog.created_at >= start,
+            FreeScreenLog.created_at < end,
+        )
+        .count()
+    )
+    if used_before >= FREE_SCREEN_MONTHLY_QUOTA:
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Monthly free-screen limit ({FREE_SCREEN_MONTHLY_QUOTA}) reached. "
+                f"Resets {resets}."
+            ),
+        )
+
+    # Ephemeral temp file, deleted in finally. Nothing is uploaded or retained.
+    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}") as tmp:
+        shutil.copyfileobj(file.file, tmp)
+        tmp_path = tmp.name
+    try:
+        sha256 = sha256_file(tmp_path)
+        result = c2pa_analyze_file(tmp_path)
+        c2pa_summary = summarize_for_certificate(result)
+        exif = extract_exif(tmp_path)
+    finally:
+        os.unlink(tmp_path)
+
+    # Metadata: present/missing only (mirrors analyzer.metadata_status). No EXIF
+    # field dump, no GPS coordinates, no map — those are the paid certificate.
+    exif_present = bool(exif) and "error" not in exif and exif != {}
+
+    # Derivative signal: C2PA-declared parent files only (title, relationship,
+    # has_manifest). NOT search_similar / perceptual-hash cross-file matching.
+    ingredients = [
+        {
+            "title": ing.get("title"),
+            "relationship": ing.get("relationship"),
+            "has_manifest": ing.get("has_manifest"),
+        }
+        for ing in result.ingredients
+    ]
+
+    # Persist the minimal audit row only — state + hash, no filename/media.
+    db.add(FreeScreenLog(
+        user_id=current_user.id,
+        c2pa_state=c2pa_summary["state"],
+        sha256=sha256,
+    ))
+    db.commit()
+
+    return {
+        "sha256": sha256,
+        "c2pa": {
+            "state": c2pa_summary["state"],
+            "label": c2pa_summary["state_label"],
+            "ai_flags": {
+                "generation": c2pa_summary["has_ai_generation"],
+                "modification": c2pa_summary["has_ai_modification"],
+                "training_mining": c2pa_summary["has_training_mining"],
+            },
+        },
+        "metadata": {
+            "status": "present" if exif_present else "missing",
+            "exif_present": exif_present,
+        },
+        "derivative": {
+            "flag": bool(ingredients),
+            "ingredients": ingredients,
+        },
+        "quota": {
+            "used": used_before + 1,
+            "limit": FREE_SCREEN_MONTHLY_QUOTA,
+            "resets": resets,
+        },
+        "disclaimer": _FREE_SCREEN_DISCLAIMER,
+    }
+
+
 @app.post("/webhook/stripe")
 async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     from app.models import Subscription

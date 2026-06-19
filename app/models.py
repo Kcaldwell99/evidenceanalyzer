@@ -144,3 +144,20 @@ class Certificate(Base):
     chain_verified_at_generation = Column(Boolean, nullable=True)
     file_hash_at_generation = Column(String(128), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class FreeScreenLog(Base):
+    """Per-account ledger of free-screen (/screen) checks, used to enforce the
+    monthly quota (FREE_SCREEN_MONTHLY_QUOTA). The free screen is ephemeral and
+    images-only: it persists NO file, filename, or media — only the minimal
+    audit fields below. c2pa_state is sized to match evidence_items.c2pa_state
+    (64) so it can hold SIGNED_UNRECOGNIZED_ISSUER; sha256 is the 64-char hex
+    digest computed at screen time.
+    """
+    __tablename__ = "free_screen_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
+    c2pa_state = Column(String(64), nullable=True)
+    sha256 = Column(String(64), nullable=True)
