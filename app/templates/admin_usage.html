@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Certificate Usage</title>
+</head>
+<body style="font-family:sans-serif;background:#0f1117;color:#e2e8f0;padding:2rem">
+<div style="max-width:1100px;margin:0 auto">
+<a href="/dashboard" style="color:#7c8cf8">Back to Dashboard</a>
+
+{% if account_id %}
+<h1 style="color:#7c8cf8;margin:1rem 0">Certificate Usage &mdash; {{ account_id }} &mdash; {{ month }}</h1>
+<p><a href="/admin/usage?month={{ month }}" style="color:#7c8cf8">&larr; Back to summary</a>
+ &nbsp;|&nbsp;
+ <a href="/admin/usage?month={{ month }}&account_id={{ account_id|urlencode }}&fmt=csv" style="color:#7c8cf8">Download CSV</a></p>
+<table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+<thead>
+<tr style="border-bottom:1px solid #2d3148">
+<th style="padding:0.6rem;text-align:left;color:#64748b">Certificate ID</th>
+<th style="padding:0.6rem;text-align:left;color:#64748b">Case ID</th>
+<th style="padding:0.6rem;text-align:left;color:#64748b">Created At ({{ tz_label }})</th>
+</tr>
+</thead>
+<tbody>
+{% for r in records %}
+<tr style="border-bottom:1px solid #1a1d27">
+<td style="padding:0.65rem">{{ r.certificate_id }}</td>
+<td style="padding:0.65rem">{{ r.case_id }}</td>
+<td style="padding:0.65rem">{{ r.created_at }}</td>
+</tr>
+{% else %}
+<tr><td colspan="3" style="padding:0.65rem;color:#64748b">No billable certificates in this month.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+<p style="margin-top:0.8rem;color:#e2e8f0">Billable certificates: <strong>{{ records|length }}</strong></p>
+
+{% else %}
+<h1 style="color:#7c8cf8;margin:1rem 0">Certificate Usage &mdash; {{ month }}</h1>
+{% if not partners_configured %}
+<p style="margin-top:1rem;padding:0.8rem;border:1px solid #2d3148;border-radius:6px;color:#94a3b8;font-size:0.85rem">
+No partner accounts are configured. Add partner email(s) to <code>PARTNER_EMAILS</code> to enable per-partner billing reports.
+</p>
+{% else %}
+<p><a href="/admin/usage?month={{ month }}&fmt=csv" style="color:#7c8cf8">Download CSV</a></p>
+<table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+<thead>
+<tr style="border-bottom:1px solid #2d3148">
+<th style="padding:0.6rem;text-align:left;color:#64748b">Partner Account</th>
+<th style="padding:0.6rem;text-align:left;color:#64748b">Billable Certificates</th>
+</tr>
+</thead>
+<tbody>
+{% for s in summary %}
+<tr style="border-bottom:1px solid #1a1d27">
+<td style="padding:0.65rem"><a href="/admin/usage?month={{ month }}&account_id={{ s.account|urlencode }}" style="color:#7c8cf8">{{ s.account }}</a></td>
+<td style="padding:0.65rem">{{ s.billable_certs }}</td>
+</tr>
+{% else %}
+<tr><td colspan="2" style="padding:0.65rem;color:#64748b">No partner accounts with billable certificates this month.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
+{% endif %}
+
+<p style="margin-top:1.5rem;padding:0.8rem;border:1px solid #2d3148;border-radius:6px;color:#94a3b8;font-size:0.8rem">
+<strong style="color:#cbd5e1">Note:</strong> Counts successful Integrity Certificate generations only
+(one per distinct certificate; re-downloads are not counted). Admin accounts are excluded.
+Comped/promo certificates (e.g. EVIDENTIX100) cannot be distinguished from paid ones in this view
+&mdash; they are included in the count above.
+</p>
+</div>
+</body>
+</html>

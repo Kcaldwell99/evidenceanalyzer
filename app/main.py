@@ -6,12 +6,14 @@ import io
 import tempfile
 import zipfile
 import secrets
+import csv
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from typing import List, Optional
 
 import requests
-from sqlalchemy import Index, event
+from sqlalchemy import Index, event, func
 import stripe
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Depends, Response
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
@@ -1165,6 +1167,145 @@ async def admin_users(
             "users": users,
         },
     )
+
+
+# ── Channel-billing pilot: read-only per-partner Integrity Certificate usage ──
+# Partner accounts are hardcoded for the pilot (promote to a users.is_partner
+# column later). Matched case-insensitively against Certificate.generated_by.
+PARTNER_EMAILS = {
+    "intake@evidenceanalyzer.com",
+}
+_USAGE_TZ = ZoneInfo("America/Chicago")
+_USAGE_TZ_LABEL = "America/Chicago"
+
+
+def _usage_csv(header, rows, filename):
+    """Build an attachment CSV Response from a header row and list-of-rows."""
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(header)
+    writer.writerows(rows)
+    return Response(
+        content=buf.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@app.get("/admin/usage")
+async def admin_usage(
+    request: Request,
+    month: str,
+    account_id: Optional[str] = None,
+    fmt: str = "html",
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required.")
+
+    # Parse YYYY-MM into a half-open [start, end) window in the business timezone.
+    try:
+        year, mon = (int(p) for p in month.split("-"))
+        start = datetime(year, mon, 1, tzinfo=_USAGE_TZ)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="month must be in YYYY-MM format.")
+    end = datetime(year + (mon // 12), (mon % 12) + 1, 1, tzinfo=_USAGE_TZ)
+
+    # Exclude admin/internal accounts (matched case-insensitively on email).
+    admin_emails = [
+        e.lower()
+        for (e,) in db.query(User.email).filter(User.is_admin == True).all()
+        if e
+    ]
+
+    # Base filter: successful Integrity Certificate generations in the window.
+    # A certificates row is written only after successful generation + S3 upload
+    # + commit, so row existence == success; re-downloads create no new row.
+    base = db.query(Certificate).filter(
+        Certificate.type == "integrity",
+        Certificate.created_at >= start,
+        Certificate.created_at < end,
+    )
+    if admin_emails:
+        base = base.filter(func.lower(Certificate.generated_by).notin_(admin_emails))
+
+    # Drill-down: one row per certificate for the named account.
+    if account_id:
+        rows = (
+            base.filter(func.lower(Certificate.generated_by) == account_id.lower())
+            .order_by(Certificate.created_at.asc())
+            .all()
+        )
+        records = [
+            {
+                "certificate_id": c.certificate_id,
+                "case_id": c.case_id,
+                "created_at": (
+                    c.created_at.astimezone(_USAGE_TZ).strftime("%Y-%m-%d %H:%M:%S")
+                    if c.created_at else ""
+                ),
+            }
+            for c in rows
+        ]
+        if fmt == "csv":
+            return _usage_csv(
+                ["certificate_id", "case_id", f"created_at ({_USAGE_TZ_LABEL})"],
+                [[r["certificate_id"], r["case_id"], r["created_at"]] for r in records],
+                f"usage_{month}_{account_id}.csv",
+            )
+        return templates.TemplateResponse(
+            request,
+            "admin_usage.html",
+            {
+                "current_user": current_user,
+                "month": month,
+                "tz_label": _USAGE_TZ_LABEL,
+                "account_id": account_id,
+                "records": records,
+                "summary": None,
+            },
+        )
+
+    # Summary: billable Integrity Certificate count per partner account.
+    # With no partners configured, show a notice rather than every account.
+    partners_configured = bool(PARTNER_EMAILS)
+    summary = []
+    if partners_configured:
+        summary_q = (
+            base.with_entities(
+                Certificate.generated_by.label("account"),
+                func.count(func.distinct(Certificate.certificate_id)).label("billable_certs"),
+            )
+            .filter(func.lower(Certificate.generated_by).in_(PARTNER_EMAILS))
+            .group_by(Certificate.generated_by)
+        )
+        summary = [
+            {"account": account, "billable_certs": n}
+            for (account, n) in summary_q.all()
+        ]
+
+    if fmt == "csv":
+        return _usage_csv(
+            ["account_email", "billable_certs"],
+            [[s["account"], s["billable_certs"]] for s in summary],
+            f"usage_{month}.csv",
+        )
+    return templates.TemplateResponse(
+        request,
+        "admin_usage.html",
+        {
+            "current_user": current_user,
+            "month": month,
+            "tz_label": _USAGE_TZ_LABEL,
+            "account_id": None,
+            "records": None,
+            "summary": summary,
+            "partners_configured": partners_configured,
+        },
+    )
+
+
 @app.post("/webhook/stripe")
 async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     from app.models import Subscription
