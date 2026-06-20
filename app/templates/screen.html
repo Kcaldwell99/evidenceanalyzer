@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Screen &mdash; Evidentix&trade;</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 0; color: #1f2937; }
+        .container { max-width: 820px; margin: 30px auto; padding: 20px; }
+        .header { background: #111827; color: white; padding: 24px 30px; border-radius: 10px; margin-bottom: 24px; }
+        .header h1 { margin: 0 0 8px 0; font-size: 28px; }
+        .header p { margin: 0; color: #d1d5db; font-size: 15px; }
+        .header .account { text-align: right; margin-top: 6px; font-size: 0.85rem; color: #9ca3af; }
+        .header .account a { color: #c4b5fd; text-decoration: none; margin-left: 1rem; }
+        .card { background: white; border-radius: 10px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        .card h2 { margin-top: 0; margin-bottom: 14px; font-size: 22px; color: #111827; }
+        .note { font-size: 14px; color: #6b7280; margin-top: 8px; }
+        .button { display: inline-block; margin-top: 10px; background: #2563eb; color: white; padding: 11px 18px; border-radius: 6px; text-decoration: none; font-size: 15px; border: none; cursor: pointer; }
+        .button:hover { background: #1d4ed8; }
+
+        .quota { font-size: 15px; color: #374151; margin-bottom: 14px; }
+        .quota strong { color: #111827; }
+        .quota.exhausted { color: #6b7280; }
+
+        /* Neutral dropzone — intentionally calm, no alarm colors. */
+        .dropzone { border: 2px dashed #c4b5fd; border-radius: 10px; padding: 40px 20px; text-align: center; color: #4b5563; background: #faf9ff; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+        .dropzone:hover, .dropzone.dragover { background: #f3f0ff; border-color: #8b5cf6; }
+        .dropzone.disabled { cursor: not-allowed; opacity: 0.6; border-color: #d1d5db; background: #f3f4f6; }
+        .dropzone .dz-big { font-size: 16px; font-weight: 600; color: #3b0764; margin-bottom: 6px; }
+        .dropzone .dz-small { font-size: 13px; color: #6b7280; }
+
+        .verify-banner { background: #fef3c7; color: #78350f; border: 1px solid #fcd34d; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; }
+        .verify-banner strong { display: block; margin-bottom: 4px; }
+        .verify-banner .verify-email { font-family: monospace; font-size: 0.9em; background: rgba(255,255,255,0.5); padding: 1px 6px; border-radius: 3px; }
+        .verify-banner form { margin: 10px 0 0 0; }
+        .verify-banner button { background: #92400e; color: white; border: none; padding: 9px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em; }
+        .verify-banner button:hover { background: #78350f; }
+
+        /* Status pill — neutral by design. We never color results as good/bad. */
+        .notice { padding: 12px 16px; border-radius: 6px; margin-top: 14px; font-size: 14px; }
+        .notice.info { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        .notice.soft { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+
+        .verdict { margin-top: 18px; }
+        .verdict .v-sentence { font-size: 16px; color: #111827; margin: 0 0 16px 0; line-height: 1.5; }
+        .verdict table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .verdict th, .verdict td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #eef0f3; vertical-align: top; }
+        .verdict th { color: #6b7280; font-weight: 600; width: 38%; }
+        .verdict td { color: #111827; }
+        .verdict .hash { font-family: monospace; font-size: 12px; word-break: break-all; color: #374151; }
+        .verdict ul { margin: 4px 0 0 0; padding-left: 18px; }
+
+        .disclaimer { font-size: 13px; color: #6b7280; font-style: italic; margin-top: 16px; }
+
+        /* Upgrade panel — informative, not pushy; no fear framing. */
+        .upgrade { background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 10px; padding: 22px; }
+        .upgrade h2 { margin-top: 0; color: #3b0764; }
+        .upgrade .position { color: #4c1d95; font-size: 15px; margin: 4px 0 14px 0; }
+        .upgrade ul { margin: 0 0 16px 0; padding-left: 18px; color: #4b5563; font-size: 14px; }
+        .upgrade ul li { padding: 2px 0; }
+        .upgrade .button { background: #6d28d9; }
+        .upgrade .button:hover { background: #5b21b6; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Free Image Screen</h1>
+        <p>A quick, private look at an image&rsquo;s technical signals. For your eyes &mdash; not a deliverable.</p>
+        <div class="account">
+            <span>{{ current_user.email }}</span>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/logout">Sign out</a>
+        </div>
+    </div>
+
+    {% if not current_user.email_verified %}
+    <!-- Unverified: friendly prompt, NO submittable dropzone. The screen is
+         enforced server-side by POST /screen (require_verified_email) too. -->
+    <div class="verify-banner">
+        <strong>Verify your email to run a free screen.</strong>
+        We sent a verification link to <span class="verify-email">{{ current_user.email }}</span>.
+        Once verified, you can screen images here ({{ limit }} per month).
+        <form action="/resend-verification" method="post">
+            <button type="submit">Resend verification email</button>
+        </form>
+    </div>
+    <div class="card">
+        <div class="dropzone disabled">
+            <div class="dz-big">Image screening is locked</div>
+            <div class="dz-small">Verify your email above to unlock {{ limit }} free screens per month.</div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Verified: working uploader. -->
+    <div class="card">
+        <h2>Screen an image</h2>
+        {% if used >= limit %}
+        <div class="quota exhausted" id="quota-line">
+            You&rsquo;ve used <strong>{{ used }} of {{ limit }}</strong> free screens this month. Resets {{ resets }}.
+        </div>
+        <div class="dropzone disabled" id="dropzone">
+            <div class="dz-big">Monthly limit reached</div>
+            <div class="dz-small">Your {{ limit }} free screens reset on {{ resets }}.</div>
+        </div>
+        {% else %}
+        <div class="quota" id="quota-line">
+            Free screen &mdash; <strong>{{ used }} of {{ limit }}</strong> this month. Resets {{ resets }}.
+        </div>
+        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload an image to screen">
+            <div class="dz-big">Drop an image here, or click to choose</div>
+            <div class="dz-small">JPG, PNG, or WEBP</div>
+        </div>
+        <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" class="hidden">
+        {% endif %}
+
+        <div class="note" id="status-note"></div>
+        <div class="verdict hidden" id="verdict"></div>
+        <div class="disclaimer" id="disclaimer"></div>
+    </div>
+    {% endif %}
+
+    <!-- Static upgrade panel (always shown). v1: button links to the existing
+         cert checkout. Wiring the screened file into that flow with no
+         re-upload is a later pass (ephemeral-file handoff). -->
+    <div class="upgrade">
+        <h2>Get the Integrity Certificate &mdash; $99</h2>
+        <p class="position">The screen is for your eyes; the certificate is the proof you can hand to a court or adjuster.</p>
+        <p style="color:#4b5563; font-size:14px; margin:0 0 8px 0;">The certificate adds:</p>
+        <ul>
+            <li>A court-ready PDF certificate documenting the technical findings</li>
+            <li>A hash-chained chain-of-custody record</li>
+            <li>Full captured metadata, including any embedded location</li>
+            <li>Web-match detection for the image</li>
+            <li>The methodology behind every finding</li>
+        </ul>
+        <a class="button" href="/checkout/integrity_certificate">Get the Integrity Certificate</a>
+    </div>
+</div>
+
+{% if current_user.email_verified and used < limit %}
+<script>
+(function () {
+    var dropzone = document.getElementById('dropzone');
+    var fileInput = document.getElementById('file-input');
+    var statusNote = document.getElementById('status-note');
+    var verdictEl = document.getElementById('verdict');
+    var disclaimerEl = document.getElementById('disclaimer');
+    var quotaLine = document.getElementById('quota-line');
+    if (!dropzone || !fileInput) return;
+
+    var ALLOWED = ['jpg', 'jpeg', 'png', 'webp'];
+    var busy = false;
+
+    // Plain-language C2PA state sentences. ABSENT is explicitly normal, not a
+    // warning. No state is framed as authentic / fake.
+    var STATE_SENTENCE = {
+        VALID: "This image carries Content Credentials (C2PA), and they verified against the recognized issuer list.",
+        SIGNED_UNRECOGNIZED_ISSUER: "This image carries Content Credentials with a valid signature, but the issuer isn’t on the recognized trust list. That’s common for many cameras and tools and is not, by itself, a sign of editing.",
+        INVALID: "This image carries Content Credentials, but they could not be verified — the signature didn’t validate or was marked revoked.",
+        ABSENT: "No Content Credentials (C2PA) are embedded in this image. This is normal — most images don’t carry them.",
+        UNAVAILABLE: "Content Credential analysis wasn’t available for this file."
+    };
+
+    // null => "not determinable" (we genuinely cannot tell), never "no AI".
+    function aiFlag(v) {
+        if (v === true) return "Declared in the credential";
+        if (v === false) return "Not declared in the credential";
+        return "Not determinable";
+    }
+
+    function setNote(msg, kind) {
+        statusNote.textContent = msg || '';
+        statusNote.className = msg ? ('notice ' + (kind || 'soft')) : 'note';
+    }
+
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    function renderVerdict(v) {
+        var c2pa = v.c2pa || {};
+        var meta = v.metadata || {};
+        var deriv = v.derivative || {};
+        var ai = c2pa.ai_flags || {};
+
+        var rows = '';
+        rows += '<tr><th>Content Credentials (C2PA)</th><td>' + escapeHtml(c2pa.label || c2pa.state || '—') + '</td></tr>';
+        rows += '<tr><th>AI generation declared</th><td>' + aiFlag(ai.generation) + '</td></tr>';
+        rows += '<tr><th>AI editing declared</th><td>' + aiFlag(ai.modification) + '</td></tr>';
+        rows += '<tr><th>Training/mining declared</th><td>' + aiFlag(ai.training_mining) + '</td></tr>';
+        rows += '<tr><th>Embedded image metadata</th><td>' + (meta.status === 'present' ? 'Present' : 'Not present') + '</td></tr>';
+
+        var derivText;
+        if (deriv.flag && deriv.ingredients && deriv.ingredients.length) {
+            derivText = 'Declares ' + deriv.ingredients.length + ' source/parent file(s):<ul>';
+            deriv.ingredients.forEach(function (ing) {
+                var rel = ing.relationship ? ' (' + escapeHtml(ing.relationship) + ')' : '';
+                derivText += '<li>' + escapeHtml(ing.title || 'Untitled') + rel + '</li>';
+            });
+            derivText += '</ul>';
+        } else {
+            derivText = 'No source/parent files declared';
+        }
+        rows += '<tr><th>Declared derivation</th><td>' + derivText + '</td></tr>';
+        rows += '<tr><th>SHA-256</th><td class="hash">' + escapeHtml(v.sha256 || '—') + '</td></tr>';
+
+        var sentence = STATE_SENTENCE[c2pa.state] || '';
+        verdictEl.innerHTML =
+            (sentence ? '<p class="v-sentence">' + escapeHtml(sentence) + '</p>' : '') +
+            '<table>' + rows + '</table>';
+        verdictEl.classList.remove('hidden');
+
+        disclaimerEl.textContent = v.disclaimer || '';
+
+        if (v.quota && quotaLine) {
+            quotaLine.innerHTML = 'Free screen &mdash; <strong>' + v.quota.used + ' of ' + v.quota.limit +
+                '</strong> this month. Resets ' + escapeHtml(v.quota.resets) + '.';
+        }
+    }
+
+    function submit(file) {
+        if (busy) return;
+        if (!file) return;
+        var ext = (file.name.split('.').pop() || '').toLowerCase();
+        if (ALLOWED.indexOf(ext) === -1) {
+            setNote('Images only — please choose a JPG, PNG, or WEBP file.', 'soft');
+            return;
+        }
+        busy = true;
+        verdictEl.classList.add('hidden');
+        setNote('Screening…', 'info');
+
+        var fd = new FormData();
+        fd.append('file', file);
+        fetch('/screen', { method: 'POST', body: fd, credentials: 'same-origin' })
+            .then(function (resp) {
+                return resp.json().catch(function () { return {}; }).then(function (data) {
+                    return { status: resp.status, data: data };
+                });
+            })
+            .then(function (r) {
+                busy = false;
+                if (r.status === 200) {
+                    setNote('', 'soft');
+                    renderVerdict(r.data);
+                } else if (r.status === 400) {
+                    setNote('Images only — please choose a JPG, PNG, or WEBP file.', 'soft');
+                } else if (r.status === 403) {
+                    setNote('Please verify your email to run a screen.', 'soft');
+                } else if (r.status === 429) {
+                    setNote((r.data && r.data.detail) || 'You’ve reached your monthly free-screen limit.', 'soft');
+                } else {
+                    setNote('Something went wrong running the screen. Please try again.', 'soft');
+                }
+            })
+            .catch(function () {
+                busy = false;
+                setNote('Network error — please try again.', 'soft');
+            });
+    }
+
+    dropzone.addEventListener('click', function () { fileInput.click(); });
+    dropzone.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+    });
+    fileInput.addEventListener('change', function () {
+        if (fileInput.files && fileInput.files[0]) submit(fileInput.files[0]);
+    });
+    ['dragenter', 'dragover'].forEach(function (ev) {
+        dropzone.addEventListener(ev, function (e) { e.preventDefault(); dropzone.classList.add('dragover'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+        dropzone.addEventListener(ev, function (e) { e.preventDefault(); dropzone.classList.remove('dragover'); });
+    });
+    dropzone.addEventListener('drop', function (e) {
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) submit(e.dataTransfer.files[0]);
+    });
+})();
+</script>
+{% endif %}
+</body>
+</html>

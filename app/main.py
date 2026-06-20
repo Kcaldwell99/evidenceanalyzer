@@ -1325,6 +1325,52 @@ _FREE_SCREEN_DISCLAIMER = (
 )
 
 
+def _free_screen_quota(db, user_id):
+    """Current free-screen usage for an account in this calendar month, counted
+    in the business timezone — same window POST /screen enforces. Returns
+    (used, limit, resets_iso_date). Read-only; a future cleanup could have
+    POST /screen call this too (kept separate for now to avoid endpoint churn).
+    """
+    from app.models import FreeScreenLog
+
+    now = datetime.now(_USAGE_TZ)
+    start = datetime(now.year, now.month, 1, tzinfo=_USAGE_TZ)
+    end = datetime(now.year + (now.month // 12), (now.month % 12) + 1, 1, tzinfo=_USAGE_TZ)
+    used = (
+        db.query(FreeScreenLog)
+        .filter(
+            FreeScreenLog.user_id == user_id,
+            FreeScreenLog.created_at >= start,
+            FreeScreenLog.created_at < end,
+        )
+        .count()
+    )
+    return used, FREE_SCREEN_MONTHLY_QUOTA, end.date().isoformat()
+
+
+@app.get("/screen", response_class=HTMLResponse)
+async def screen_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Page is verified-gated at the UI level: only verified users see a working
+    # uploader; unverified users get a friendly prompt and NO submittable
+    # dropzone. The actual screen is enforced server-side by POST /screen
+    # (require_verified_email), so the gate cannot be bypassed from the client.
+    used, limit, resets = _free_screen_quota(db, current_user.id)
+    return templates.TemplateResponse(
+        request,
+        "screen.html",
+        {
+            "current_user": current_user,
+            "used": used,
+            "limit": limit,
+            "resets": resets,
+        },
+    )
+
+
 @app.post("/screen")
 async def free_screen(
     file: UploadFile = File(...),
