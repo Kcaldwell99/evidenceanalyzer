@@ -15,6 +15,10 @@ There is **no local database.** The `DATABASE_URL` in `.env` connects to the liv
 
 This is the single most damaging thing to forget.
 
+**`create_all` is gated behind `DB_CREATE_ALL` (default OFF).** As of 2026-06-20, `app/main.py` runs `Base.metadata.create_all` **only** when the env var `DB_CREATE_ALL` is truthy (`1/true/yes/on`). It is unset in production, so **importing `app.main` no longer creates tables in prod** — schema there is owned by Alembic. Set `DB_CREATE_ALL=1` only against a non-prod DB. (History: an earlier import of `app.main` against the prod-pointing `.env` silently auto-created the `free_screen_logs` table; this gate prevents recurrence.)
+
+**Fresh environments now depend on migrations being run manually.** Because `create_all` no longer backstops schema creation, a brand-new/empty database will **not** self-create tables on app import — `alembic upgrade head` must be run against it explicitly. (It is not confirmed whether Render runs `alembic upgrade head` automatically on deploy; verify the service's build/start command in the Render dashboard before relying on auto-migration for a new environment.)
+
 ---
 
 ## Project overview

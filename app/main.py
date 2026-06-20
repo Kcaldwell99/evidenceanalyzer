@@ -72,7 +72,11 @@ CASES_DIR.mkdir(exist_ok=True)
 REPORTS_DIR.mkdir(exist_ok=True)
 UPLOADS_DIR.mkdir(exist_ok=True)
 
-Base.metadata.create_all(bind=engine)
+# Schema is owned by Alembic in production. create_all runs ONLY when
+# DB_CREATE_ALL is explicitly truthy (local/dev against a NON-prod DB), so that
+# merely importing app.main can never create tables in prod. See CLAUDE.md.
+if os.getenv("DB_CREATE_ALL", "").lower() in ("1", "true", "yes", "on"):
+    Base.metadata.create_all(bind=engine)
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
