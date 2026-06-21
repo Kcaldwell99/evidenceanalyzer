@@ -98,6 +98,11 @@ class Payment(Base):
     product = Column(String(50), nullable=True)
     status = Column(String(50), nullable=False, default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    # Added for file-specific Integrity Certificate entitlement (migration a3f1d9c2b8e4).
+    # Columns already exist on the table; declared here so the ORM knows about them.
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    case_id = Column(String(50), nullable=True, index=True)
+    evidence_id = Column(String(50), nullable=True, index=True)
 
 
 class Subscription(Base):
