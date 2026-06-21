@@ -17,6 +17,7 @@ from sqlalchemy import Index, event, func
 import stripe
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Depends, Response
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
+from urllib.parse import quote
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -334,6 +335,10 @@ async def sample():
 @app.get("/ai-sanctions")
 async def ai_sanctions(request: Request):
     return templates.TemplateResponse(request, "ai_sanctions.html", {})
+
+@app.get("/how-to-certify")
+async def how_to_certify(request: Request):
+    return templates.TemplateResponse(request, "how_to_certify.html", {"pricing": PRICING})
 
 @app.get("/privacy")
 async def privacy(request: Request):
@@ -1508,17 +1513,28 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         customer_details = data_object.get("customer_details") or {}
         metadata = data_object.get("metadata") or {}
 
-        payment = Payment(
-            stripe_session_id=data_object["id"],
-            stripe_event_id=event_id,
-            stripe_customer_email=customer_details.get("email"),
-            stripe_amount_total=data_object.get("amount_total"),
-            stripe_currency=data_object.get("currency"),
-            product=metadata.get("product"),
-            status="paid",
-        )
-        db.add(payment)
-        db.commit()
+        _meta_user_id = metadata.get("user_id")
+        # /success owns the integrity-cert insert (race-safe path). If a row
+        # already exists for this session, skip -- do not double-insert
+        # (stripe_session_id is unique). Other products still insert here.
+        _existing = db.query(Payment).filter(
+            Payment.stripe_session_id == data_object["id"]
+        ).first()
+        if _existing is None:
+            payment = Payment(
+                stripe_session_id=data_object["id"],
+                stripe_event_id=event_id,
+                stripe_customer_email=customer_details.get("email"),
+                stripe_amount_total=data_object.get("amount_total"),
+                stripe_currency=data_object.get("currency"),
+                product=metadata.get("product"),
+                status="paid",
+                user_id=int(_meta_user_id) if _meta_user_id else None,
+                case_id=metadata.get("case_id") or None,
+                evidence_id=metadata.get("evidence_id") or None,
+            )
+            db.add(payment)
+            db.commit()
 
     elif event_type == "invoice.paid":
         subscription_id = data_object.get("subscription")
@@ -1637,6 +1653,8 @@ STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
 async def checkout(
     request: Request,
     product: str,
+    case_id: str = "",
+    evidence_id: str = "",
     current_user: User = Depends(require_verified_email),
 ):
     if product not in STRIPE_PRICES:
@@ -1656,11 +1674,20 @@ async def checkout(
             }
         ],
         mode="subscription" if product in SUBSCRIPTION_PRODUCTS else "payment",
-        success_url=f"{base_url}/success?session_id={{CHECKOUT_SESSION_ID}}&product={product}",
+        success_url=(
+            f"{base_url}/success?session_id={{CHECKOUT_SESSION_ID}}&product={product}"
+            + (f"&case_id={quote(case_id)}&evidence_id={quote(evidence_id)}"
+               if case_id and evidence_id else "")
+        ),
         cancel_url=f"{base_url}/cancel",
         customer_email=current_user.email,
         allow_promotion_codes=True,
-        metadata={"product": product},
+        metadata={
+            "product": product,
+            "user_id": str(current_user.id),
+            "case_id": case_id,
+            "evidence_id": evidence_id,
+        },
     )
 
     return RedirectResponse(url=session.url, status_code=303)
@@ -1671,8 +1698,51 @@ async def checkout_success(
     request: Request,
     session_id: str = "",
     product: str = "",
+    case_id: str = "",
+    evidence_id: str = "",
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
+    if session_id and product == "integrity_certificate":
+        # Path 2 / Option B, race-safe: confirm payment with Stripe directly
+        # (immune to webhook timing), ensure the Payment row exists, THEN
+        # redirect into generate. File ids come from the VERIFIED session
+        # metadata, not the query string (which a user could tamper with).
+        try:
+            session = verify_checkout_session(session_id)
+        except HTTPException:
+            return RedirectResponse(
+                url="/checkout/integrity_certificate"
+                    + (f"?case_id={quote(case_id)}&evidence_id={quote(evidence_id)}"
+                       if case_id and evidence_id else ""),
+                status_code=303,
+            )
+        meta = session.get("metadata") or {}
+        m_user_id = meta.get("user_id")
+        m_case_id = meta.get("case_id") or ""
+        m_evidence_id = meta.get("evidence_id") or ""
+        # Idempotent: /success owns the insert; create only if absent.
+        existing = db.query(Payment).filter(
+            Payment.stripe_session_id == session_id
+        ).first()
+        if existing is None:
+            db.add(Payment(
+                stripe_session_id=session_id,
+                stripe_customer_email=(session.get("customer_details") or {}).get("email"),
+                stripe_amount_total=session.get("amount_total"),
+                stripe_currency=session.get("currency"),
+                product=meta.get("product"),
+                status="paid",
+                user_id=int(m_user_id) if m_user_id else None,
+                case_id=m_case_id or None,
+                evidence_id=m_evidence_id or None,
+            ))
+            db.commit()
+        if m_case_id and m_evidence_id:
+            return RedirectResponse(
+                url=f"/generate/integrity/{quote(m_case_id)}/{quote(m_evidence_id)}",
+                status_code=303,
+            )
     cookie_consent_state = get_consent_state(request, current_user)
     return templates.TemplateResponse(
         request,
@@ -1878,7 +1948,7 @@ async def submit_intake(
 # INTEGRITY CERTIFICATE  (login required)
 # =========================================================
 
-@app.post("/generate/integrity/{case_id}/{evidence_id}")
+@app.api_route("/generate/integrity/{case_id}/{evidence_id}", methods=["GET", "POST"])
 async def generate_integrity_certificate_route(
     case_id: str,
     evidence_id: str,
@@ -1905,6 +1975,19 @@ async def generate_integrity_certificate_route(
     )
     if not item:
         raise HTTPException(status_code=404, detail="Evidence item not found.")
+
+    # 3c: entitlement gate. Unpaid -> redirect into file-aware checkout.
+    from app.entitlements import assert_cert_entitlement
+    try:
+        assert_cert_entitlement(db, current_user, case_id, evidence_id)
+    except HTTPException as e:
+        if e.status_code == 402:
+            return RedirectResponse(
+                url=("/checkout/integrity_certificate"
+                     f"?case_id={quote(case_id)}&evidence_id={quote(evidence_id)}"),
+                status_code=303,
+            )
+        raise
 
     # Load report data
     report = {}

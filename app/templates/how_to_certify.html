@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}How to Get an Integrity Certificate &mdash; Evidentix{% endblock %}
+{% block content %}
+<style>
+    .htc-wrap { max-width: 720px; margin: 0 auto; padding: 48px 24px; }
+    .htc-wrap h1 { font-size: 28px; margin-bottom: 8px; }
+    .htc-price { color: #4b5563; font-size: 16px; margin-bottom: 32px; }
+    .htc-steps { list-style: none; padding: 0; margin: 0 0 36px; counter-reset: step; }
+    .htc-steps li { position: relative; padding: 16px 0 16px 52px; border-bottom: 1px solid #e5e7eb; }
+    .htc-steps li:before {
+        counter-increment: step; content: counter(step);
+        position: absolute; left: 0; top: 14px;
+        width: 32px; height: 32px; border-radius: 50%;
+        background: #111827; color: #fff; text-align: center; line-height: 32px; font-weight: bold;
+    }
+    .htc-cta { display: inline-block; background: #111827; color: #fff; text-decoration: none;
+        padding: 12px 28px; border-radius: 6px; font-weight: bold; }
+    .htc-cta:hover { background: #374151; }
+</style>
+<div class="htc-wrap">
+    <h1>How to get an Integrity Certificate</h1>
+    <p class="htc-price">{{ pricing["integrity_certificate"].price }} {{ pricing["integrity_certificate"].per }}</p>
+
+    <ol class="htc-steps">
+        <li>Create a case and upload the file you want to certify. Evidentix analyzes it automatically.</li>
+        <li>In the case, find the file and click <strong>Generate Integrity Certificate</strong>.</li>
+        <li>Complete the secure {{ pricing["integrity_certificate"].price }} checkout.</li>
+        <li>Your Integrity Certificate is generated and downloads immediately.</li>
+    </ol>
+
+    <a class="htc-cta" href="/dashboard">Go to your cases &rarr;</a>
+</div>
+{% endblock %}

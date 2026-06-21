@@ -475,7 +475,11 @@
               <ul>
                 <li>{{ p.per }}</li>
               </ul>
+              {% if slug == "integrity_certificate" %}
+              <a href="/how-to-certify" class="button">Learn How</a>
+              {% else %}
               <a href="/checkout/{{ slug }}" class="button">Buy Now</a>
+              {% endif %}
             </div>
             {% endfor %}
           </div>
