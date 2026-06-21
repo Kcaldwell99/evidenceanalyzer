@@ -484,7 +484,7 @@
             {% endfor %}
           </div>
 
-          <div class="pricing-section-label subscriptions">Subscriptions</div>
+          {# Monitoring hidden (no subscribers) - restore: add slugs to loop below + uncomment this label #}{#<div class="pricing-section-label subscriptions">Subscriptions</div>#}
           <div class="pricing-grid subscriptions">
             {% for slug in [] %}
             {% set p = pricing[slug] %}
