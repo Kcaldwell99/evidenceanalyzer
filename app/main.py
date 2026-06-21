@@ -1717,7 +1717,8 @@ async def checkout_success(
                        if case_id and evidence_id else ""),
                 status_code=303,
             )
-        meta = session.get("metadata") or {}
+        session = session.to_dict()
+        meta = dict(session.get("metadata") or {})
         m_user_id = meta.get("user_id")
         m_case_id = meta.get("case_id") or ""
         m_evidence_id = meta.get("evidence_id") or ""
