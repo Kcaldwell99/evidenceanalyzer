@@ -467,7 +467,7 @@
 
           <div class="pricing-section-label">One-time purchases</div>
           <div class="pricing-grid">
-            {% for slug in ["single", "integrity_certificate", "custody_record", "video_single", "bundle", "video_image_bundle", "video_bundle"] %}
+            {% for slug in ["integrity_certificate", "custody_record", "video_single", "bundle", "video_image_bundle", "video_bundle"] %}
             {% set p = pricing[slug] %}
             <div class="price-card">
               <h3>{{ p.name }}</h3>
@@ -486,7 +486,7 @@
 
           <div class="pricing-section-label subscriptions">Subscriptions</div>
           <div class="pricing-grid subscriptions">
-            {% for slug in ["monitoring_small", "monitoring_standard", "monitoring_large"] %}
+            {% for slug in [] %}
             {% set p = pricing[slug] %}
             <div class="price-card {% if slug == 'monitoring_standard' %}featured{% endif %}">
               {% if slug == "monitoring_standard" %}<span class="badge">Most Popular</span>{% endif %}

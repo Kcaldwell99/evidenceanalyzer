@@ -1606,7 +1606,6 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 # =========================================================
 STRIPE_PRICES = {
     # Active SKUs
-    "single": "price_1THUZ2HVHQNKUlwkBfHnsoDj",
     "video_single": "price_1TIqApHVHQNKUlwksbqqdsqA",
     "bundle": "price_1THUiNHVHQNKUlwkJG0v91C7",
     "video_image_bundle": "price_1TIqE7HVHQNKUlwk8v4FmJnP",
@@ -1625,7 +1624,6 @@ STRIPE_PRICES = {
     "monitoring_large": "price_1TPmISHVHQNKUlwkcyt08yd4",
 }
 PRICING = {
-    "single":                {"name": "Single Image Analysis",   "price": "$79",       "per": "per image"},
     "integrity_certificate": {"name": "Integrity Certificate",   "price": "$99",       "per": "per file"},
     "custody_record":        {"name": "Custody Record",          "price": "$199",      "per": "per case"},
     "video_single":          {"name": "Single Video Analysis",   "price": "$199",      "per": "per video"},
