@@ -38,6 +38,8 @@ Evidentix is a digital-evidence-authentication SaaS operated by **Evidence Analy
 
 - GitHub: `Kcaldwell99/evidenceanalyzer`. Local: `C:\Users\kcald\c2pa-evidence-mvp\` (Windows).
 - Push pattern: **`git push origin dev`** then **`git push origin dev:main`** (the second triggers the Render deploy).
+  - **WHY two pushes:** Render auto-deploys from `main` ONLY. A push to `dev` alone deploys NOTHING. The `dev:main` push is what ships. Failure signature: code committed and on GitHub, but prod unchanged — because only `dev` advanced.
+  - After deploying, confirm BOTH refs advanced (e.g. `dev -> dev` and `dev -> main`) before assuming the deploy ran.
 - **No `$` in commit messages** (PowerShell escaping breaks them). Match on safe substrings.
 - Use **`git add -f`** for new files when needed.
 - Backend changes have no visible page to verify; confirm via behavior/logs after deploy.
