@@ -549,3 +549,21 @@ html {
         padding: 24px 16px 60px;
     }
 }
+.hero-cta-primary {
+    display: inline-block;
+    background: var(--brand-purple-link);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 12px 22px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-top: 8px;
+    transition: background 0.15s ease;
+}
+.hero-cta-primary:hover {
+    background: var(--brand-purple-dark);
+}
+.hero-secondary {
+    margin-top: 14px;
+}
