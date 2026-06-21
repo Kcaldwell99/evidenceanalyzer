@@ -230,7 +230,7 @@ def verify_checkout_session(session_id: str):
         session = stripe.checkout.Session.retrieve(session_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Unable to verify Stripe session: {e}")
-    if session.get("status") != "complete" or session.get("payment_status") != "paid":
+    if getattr(session, "status", None) != "complete" or getattr(session, "payment_status", None) != "paid":
         raise HTTPException(status_code=403, detail="Stripe payment not completed.")
     return session
 
