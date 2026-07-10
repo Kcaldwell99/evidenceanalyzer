@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18099032758"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18099032758');
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Free Screen &mdash; Evidentix&trade;</title>
@@ -247,6 +255,10 @@
                 if (r.status === 200) {
                     setNote('', 'soft');
                     renderVerdict(r.data);
+                gtag('event', 'conversion', {'send_to': 'AW-18099032758/238vCPrlqc4CfLalp_bZD',
+    'value': 1.0,
+    'currency': 'USD'
+});
                 } else if (r.status === 400) {
                     setNote('Images only — please choose a JPG, PNG, or WEBP file.', 'soft');
                 } else if (r.status === 403) {
