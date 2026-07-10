@@ -389,7 +389,8 @@ async def login_submit(
 
     token = create_access_token(user.id, user.email)
     redirect_to = next if next and next.startswith("/") and not next.startswith("//") else "/"
-    resp = RedirectResponse(url=redirect_to, status_code=303)
+    resp = RedirectResponse(url="/dashboard?registered=1", status_code=303)
+   
     resp.set_cookie(
         key="access_token",
         value=token,
