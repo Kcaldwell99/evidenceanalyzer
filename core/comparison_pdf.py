@@ -1,6 +1,5 @@
 # Evidentix comparison PDF v2 — rebuilt 2026-04-08
 import os
-from PIL import Image as PILImage
 from datetime import datetime
 
 from reportlab.lib.pagesizes import letter
@@ -318,38 +317,11 @@ if (
     and os.path.exists(reference_image_path)
     and os.path.exists(suspect_image_path)
 ):
-    thumbnail_dir = os.path.dirname(output_path) or "."
-    reference_thumb_path = os.path.join(thumbnail_dir, "_reference_preview.jpg")
-    suspect_thumb_path = os.path.join(thumbnail_dir, "_suspect_preview.jpg")
-with PILImage.open(reference_image_path) as img:
-    img = img.convert("RGB")
-    img.thumbnail((700, 700))
-    img.save(reference_thumb_path, "JPEG", quality=82, optimize=True)
-
-with PILImage.open(suspect_image_path) as img:
-    img = img.convert("RGB")
-    img.thumbnail((700, 700))
-    img.save(suspect_thumb_path, "JPEG", quality=82, optimize=True)
-    thumbnail_dir = os.path.dirname(output_path) or "."
-    reference_thumb_path = os.path.join(thumbnail_dir, "_reference_preview.jpg")
-    suspect_thumb_path = os.path.join(thumbnail_dir, "_suspect_preview.jpg")
-with PILImage.open(reference_image_path) as img:
-    img = img.convert("RGB")
-    img.thumbnail((700, 700))
-    img.save(reference_thumb_path, "JPEG", quality=82, optimize=True)
-
-with PILImage.open(suspect_image_path) as img:
-    img = img.convert("RGB")
-    img.thumbnail((700, 700))
-    img.save(suspect_thumb_path, "JPEG", quality=82, optimize=True)
-
-
     preview_width = content_width * 0.42
     preview_height = 2.2 * inch
+
     reference_preview = Image(
-    reference_thumb_path,
-    suspect_preview = Image(
-    suspect_thumb_path,
+        reference_image_path,
         width=preview_width,
         height=preview_height,
         kind="proportional",
