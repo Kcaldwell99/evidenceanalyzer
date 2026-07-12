@@ -395,6 +395,8 @@ def _build_pdf_payload(result):
         "interpretation_text": result.get("interpretation_text"),
         "limitations_text":    result.get("limitations_text"),
         "differences":         _build_pdf_differences(result),
+        "reference_image_path": result.get("original_path"),
+        "suspect_image_path": result.get("suspect_path"),
         "analysis_date":       result.get("generated_at"),
     }
 
