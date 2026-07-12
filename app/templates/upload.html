@@ -1,10 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18099032758"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18099032758');
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evidentix&#8482; Digital Evidence Platform</title>
     <style>
+{% if request.query_params.get('registered') == '1' %}
+<script>
+gtag('event', 'conversion', {
+    'send_to': 'AW-18099032758/w5NPCK_8ss4cELalpbZD',
+    'value': 1.0,
+    'currency': 'USD'
+});
+</script>
+{% endif %}
         body {
             font-family: Arial, sans-serif;
             background: #f4f6f8;
