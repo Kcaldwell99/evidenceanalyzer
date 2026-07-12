@@ -13,15 +13,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evidentix&#8482; Digital Evidence Platform</title>
     <style>
-{% if request.query_params.get('registered') == '1' %}
-<script>
-gtag('event', 'conversion', {
-    'send_to': 'AW-18099032758/w5NPCK_8ss4cELalpbZD',
-    'value': 1.0,
-    'currency': 'USD'
-});
-</script>
-{% endif %}
+
+
         body {
             font-family: Arial, sans-serif;
             background: #f4f6f8;
@@ -531,7 +524,15 @@ gtag('event', 'conversion', {
 <footer style="text-align:center; padding:2rem; font-size:0.8rem; color:#64748b; border-top:1px solid #2d3148; margin-top:2rem;">
   &copy; 2026 Evidence Analyzer, LLC. All rights reserved. Evidentix&trade; is a trademark of Evidence Analyzer, LLC.
 </footer>
-
+{% if request.query_params.get('registered') == '1' %}
+<script>
+gtag('event', 'conversion', {
+    'send_to': 'AW-18099032758/w5NPCK_8ss4cELalpbZD',
+    'value': 1.0,
+    'currency': 'USD'
+});
+</script>
+{% endif %}
 
 
 </body>
