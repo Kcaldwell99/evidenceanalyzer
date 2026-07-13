@@ -426,9 +426,10 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     original_metadata = get_image_metadata(original_path)
     print("DEBUG: finished metadata extraction", flush=True)
     suspect_metadata = get_image_metadata(suspect_path)
-
+    print("DEBUG: starting EXIF extraction", flush=True)
     original_exif = extract_exif(original_path)
     suspect_exif = extract_exif(suspect_path)
+    print("DEBUG: finished EXIF extraction", flush=True)
 
     metadata_differences = _compare_dicts(original_metadata, suspect_metadata)
     exif_differences = _compare_dicts(original_exif, suspect_exif)
