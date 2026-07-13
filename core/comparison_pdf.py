@@ -8,7 +8,6 @@ from reportlab.lib.units import inch
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
     HRFlowable, KeepTogether
-    Image,
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
@@ -272,8 +271,6 @@ def generate_comparison_pdf(comparison_result, output_path):
     # ── Extract payload values ─────────────────────────────────────────────────
     suspect_file    = comparison_result.get("suspect_file") or "Unknown"
     reference_file  = comparison_result.get("reference_file") or "Unknown"
-    suspect_image_path = comparison_result.get("suspect_image_path")
-    reference_image_path = comparison_result.get("reference_image_path")
     suspect_hash    = comparison_result.get("suspect_hash") or "Not Available"
     reference_hash  = comparison_result.get("reference_hash") or "Not Available"
     suspect_phash   = comparison_result.get("suspect_phash") or "Not Available"
@@ -310,56 +307,7 @@ def generate_comparison_pdf(comparison_result, output_path):
     # ── Verdict box ───────────────────────────────────────────────────────────
     story.append(VerdictBox(confidence_level, conclusion_title, content_width))
     story.append(Spacer(1, 16))
-# ── Image previews ───────────────────────────────────────────────────────────
-if (
-    reference_image_path
-    and suspect_image_path
-    and os.path.exists(reference_image_path)
-    and os.path.exists(suspect_image_path)
-):
-    preview_width = content_width * 0.42
-    preview_height = 2.2 * inch
 
-    reference_preview = Image(
-        reference_image_path,
-        width=preview_width,
-        height=preview_height,
-        kind="proportional",
-    )
-
-    suspect_preview = Image(
-        suspect_image_path,
-        width=preview_width,
-        height=preview_height,
-        kind="proportional",
-    )
-
-    preview_table = Table(
-        [
-            ["Reference Image", "Suspect Image"],
-            [reference_preview, suspect_preview],
-        ],
-        colWidths=[content_width * 0.5, content_width * 0.5],
-    )
-
-    preview_table.setStyle(
-        TableStyle(
-            [
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("TEXTCOLOR", (0, 0), (-1, 0), DARK),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
-                ("TOPPADDING", (0, 1), (-1, 1), 6),
-                ("BOTTOMPADDING", (0, 1), (-1, 1), 10),
-                ("BOX", (0, 1), (-1, 1), 0.5, GREY_LINE),
-                ("INNERGRID", (0, 1), (-1, 1), 0.5, GREY_LINE),
-            ]
-        )
-    )
-
-    story.append(preview_table)
-    story.append(Spacer(1, 16))
     # ── Section 1: File Identification ────────────────────────────────────────
     story.append(SectionHeading(1, "File Identification", content_width))
     story.append(Spacer(1, 8))
