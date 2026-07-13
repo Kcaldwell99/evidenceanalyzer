@@ -439,7 +439,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         ssim_score = _compute_ssim(original_path, suspect_path)
     except Exception:
         ssim_score = 0.0
-    print("DEBUG: starting CLIP", flush=True)  
+print("DEBUG: starting CLIP", flush=True)  
    
     clip_score = _compute_clip_similarity(original_path, suspect_path)
 print("DEBUG: finished CLIP", flush=True)
