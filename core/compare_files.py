@@ -241,8 +241,9 @@ def _compute_clip_similarity(path1, path2):
         print("CLIP error: " + str(e), flush=True)
         return None
 
-
+    print("DEBUG: starting SSIM", flush=True)
 def _compute_ssim(original_path, suspect_path):
+    print("DEBUG: finished SSIM", flush=True)
     img1 = _load_image_gray(original_path)
     img2 = _load_image_gray(suspect_path)
 
