@@ -422,8 +422,9 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
             phash_distance = int(imagehash.hex_to_hash(original_phash) - imagehash.hex_to_hash(suspect_phash))
         except Exception:
             phash_distance = 999 if original_phash != suspect_phash else 0
-
+    print("DEBUG: starting metadata extraction", flush=True)
     original_metadata = get_image_metadata(original_path)
+    print("DEBUG: finished metadata extraction", flush=True)
     suspect_metadata = get_image_metadata(suspect_path)
 
     original_exif = extract_exif(original_path)
