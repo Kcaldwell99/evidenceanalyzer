@@ -234,9 +234,9 @@ def _compute_clip_similarity(path1, path2):
     global _clip_model
 
     if _clip_model is None:
-    print("Loading CLIP model...", flush=True)
-    _clip_model = SentenceTransformer("clip-ViT-B-32")
-    print("CLIP model loaded.", flush=True)
+        print("Loading CLIP model...", flush=True)
+        _clip_model = SentenceTransformer("clip-ViT-B-32")
+        print("CLIP model loaded.", flush=True)
     
     try:
         img1 = PILImage.open(path1).convert("RGB")
