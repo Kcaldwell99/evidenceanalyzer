@@ -400,12 +400,14 @@ def _build_pdf_payload(result):
 
 
 def compare_two_files(original_path, suspect_path, case_path=None, original_filename=None, suspect_filename=None):
+    print("DEBUG: compare_two_files entered", flush=True)
     original_path = str(original_path)
     suspect_path = str(suspect_path)
 
     output_dir = _comparison_output_dir(case_path)
-
+    print("DEBUG: starting SHA256", flush=True)
     original_sha256 = sha256_file(original_path)
+    print("DEBUG: finished SHA256", flush=True)
     suspect_sha256 = sha256_file(suspect_path)
     sha_match = original_sha256 == suspect_sha256
 
