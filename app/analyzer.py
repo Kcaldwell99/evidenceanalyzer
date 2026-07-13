@@ -41,7 +41,9 @@ def analyze_file(file_path, case_dir=None, file_key=None, original_filename=None
     image_metadata = get_image_metadata(file_path)
     exif_data = extract_exif(file_path)
     gps_coords = extract_gps(file_path)
+    print("DEBUG: starting C2PA analysis", flush=True)
     c2pa_info = c2pa_analyze_file(file_path)
+    print("DEBUG: finished C2PA analysis", flush=True)
     c2pa_summary = summarize_for_certificate(c2pa_info)
     phash = generate_phash(file_path)
     if web_detection_enabled:
