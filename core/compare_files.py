@@ -14,8 +14,9 @@ except ImportError:
 try:
     from core.image_diff import generate_diff_outputs
 except ImportError:
+    print("DEBUG: starting diff output generation", flush=True)
     generate_diff_outputs = None
-
+    print("DEBUG: finished diff output generation", flush=True)
 try:
     from core.comparison_pdf import generate_comparison_pdf
 except Exception:
@@ -443,7 +444,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
    
     clip_score = _compute_clip_similarity(original_path, suspect_path)
     print("DEBUG: finished CLIP", flush=True)
-    
+
     if phash_distance is None:
         visual_summary = "Perceptual hash unavailable for one or both files; visual comparison not possible."
         match_level = "Could Not Analyze"
