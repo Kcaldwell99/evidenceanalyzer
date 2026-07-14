@@ -458,8 +458,9 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     else:
         visual_summary = _visual_assessment(ssim_score, phash_distance)
         match_level = _match_level(phash_distance, ssim_score)
-
+    print("DEBUG: starting diff output generation", flush=True)
     diff_outputs = {}
+    
     try:
         if generate_diff_outputs:
             generated = generate_diff_outputs(original_path, suspect_path, output_dir)
