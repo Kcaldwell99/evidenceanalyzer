@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw
+from PIL.ImImagePlugin import COMMENT
 
 try:
     from skimage.metrics import structural_similarity as skimage_ssim
@@ -447,9 +448,11 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     except Exception:
         ssim_score = 0.0
     print("DEBUG: starting CLIP", flush=True)  
-   
-    clip_score = _compute_clip_similarity(original_path, suspect_path)
-    print("DEBUG: finished CLIP", flush=True)
+    clip_score = None
+    print("DEBUG: CLIP temporarily disabled for memory testing", flush=True)
+ 
+    #clip_score = _compute_clip_similarity(original_path, suspect_path)
+    #print("DEBUG: finished CLIP", flush=True)
 
     if phash_distance is None:
         visual_summary = "Perceptual hash unavailable for one or both files; visual comparison not possible."
