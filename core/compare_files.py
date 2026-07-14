@@ -42,7 +42,6 @@ REPORT_LIMITATIONS_TEXT = (
     "and the indicators observable from those files."
 )
 
-print("DEBUG: building forensic conclusion", flush=True)
 def build_forensic_conclusion(
     sha256_match,
     phash_distance,
@@ -473,7 +472,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
             print("DEBUG: finished simple diff image", flush=True)
     except Exception:
         diff_outputs = {}
-
+    print("DEBUG: building forensic conclusion", flush=True)
     conclusion = build_forensic_conclusion(
         sha256_match=sha_match,
         phash_distance=phash_distance,
