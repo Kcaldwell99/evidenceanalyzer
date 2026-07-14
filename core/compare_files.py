@@ -42,7 +42,7 @@ REPORT_LIMITATIONS_TEXT = (
     "and the indicators observable from those files."
 )
 
-
+print("DEBUG: building forensic conclusion", flush=True)
 def build_forensic_conclusion(
     sha256_match,
     phash_distance,
