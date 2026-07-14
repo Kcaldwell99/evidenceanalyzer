@@ -460,31 +460,34 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     else:
         visual_summary = _visual_assessment(ssim_score, phash_distance)
         match_level = _match_level(phash_distance, ssim_score)
-    print("DEBUG: starting diff output generation", flush=True)
+    print("DEBUG: diff image generation temporarily disabled", flush=True)
     diff_outputs = {}
+    
+#    try:
+#        if generate_diff_outputs:
+#            print("DEBUG: calling generate_diff_outputs", flush=True)
+#            print("DEBUG: diff image generation temporarily disabled", flush=True)
+#            diff_outputs = {}
 
-    try:
-        if generate_diff_outputs:
-            print("DEBUG: calling generate_diff_outputs", flush=True)
-            
-            generated = generate_diff_outputs(original_path, suspect_path, output_dir)
-            print("DEBUG: generate_diff_outputs returned", flush=True)
-            if isinstance(generated, dict):
-                print(f"DEBUG: generated keys = {list(generated.keys())}", flush=True)
-                diff_outputs = {}
 
-            for k, v in generated.items():
-                print(f"DEBUG: processing key {k}", flush=True)
-                diff_outputs[k] = _safe_relpath(v)
+#            generated = generate_diff_outputs(original_path, suspect_path, output_dir)
+#            print("DEBUG: generate_diff_outputs returned", flush=True)
+#            if isinstance(generated, dict):
+#                print(f"DEBUG: generated keys = {list(generated.keys())}", flush=True)
+#                diff_outputs = {}
+#
+#        for k, v in generated.items():
+#           print(f"DEBUG: processing key {k}", flush=True)
+#            diff_outputs[k] = _safe_relpath(v)
 
-            print("DEBUG: finished copying diff outputs", flush=True)
+#           print("DEBUG: finished copying diff outputs", flush=True)
            
-        if not diff_outputs:
-            print("DEBUG: starting simple diff image", flush=True)
-            diff_outputs = _build_simple_diff_image(original_path, suspect_path, output_dir)
-            print("DEBUG: finished simple diff image", flush=True)
-    except Exception:
-        diff_outputs = {}
+#        if not diff_outputs:
+#             print("DEBUG: starting simple diff image", flush=True)
+#             diff_outputs = _build_simple_diff_image(original_path, suspect_path, output_dir)
+#            print("DEBUG: finished simple diff image", flush=True)
+#    except Exception:
+#        diff_outputs = {}
     print("DEBUG: building forensic conclusion", flush=True)
     conclusion = build_forensic_conclusion(
         sha256_match=sha_match,
@@ -534,17 +537,17 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     comparison_pdf_path = os.path.join(output_dir, "comparison_report.pdf")
     if generate_comparison_pdf:
         
-    try:
-        print("DEBUG: starting PDF generation", flush=True)
-        pdf_payload = _build_pdf_payload(result)
-        generate_comparison_pdf(pdf_payload, comparison_pdf_path)
-        print("DEBUG: finished PDF generation", flush=True)
+        try:
+            print("DEBUG: starting PDF generation", flush=True)
+            pdf_payload = _build_pdf_payload(result)
+            generate_comparison_pdf(pdf_payload, comparison_pdf_path)
+            print("DEBUG: finished PDF generation", flush=True)
 
-    except Exception as e:
-        import traceback
-        print("PDF generation failed:", str(e), flush=True)
-        print(traceback.format_exc(), flush=True)
-        comparison_pdf_path = None
+        except Exception as e:
+            import traceback
+            print("PDF generation failed:", str(e), flush=True)
+            print(traceback.format_exc(), flush=True)
+            comparison_pdf_path = None
                
     result["comparison_json"] = _safe_relpath(comparison_json_path)
 
