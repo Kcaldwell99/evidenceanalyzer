@@ -465,7 +465,15 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
             print("DEBUG: generate_diff_outputs returned", flush=True)
             generated = generate_diff_outputs(original_path, suspect_path, output_dir)
             if isinstance(generated, dict):
-                diff_outputs = {k: _safe_relpath(v) for k, v in generated.items()}
+                print(f"DEBUG: generated keys = {list(generated.keys())}", flush=True)
+                diff_outputs = {}
+
+            for k, v in generated.items():
+                print(f"DEBUG: processing key {k}", flush=True)
+                diff_outputs[k] = _safe_relpath(v)
+
+            print("DEBUG: finished copying diff outputs", flush=True)
+           
         if not diff_outputs:
             print("DEBUG: starting simple diff image", flush=True)
             diff_outputs = _build_simple_diff_image(original_path, suspect_path, output_dir)
