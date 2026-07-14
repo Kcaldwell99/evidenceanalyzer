@@ -465,8 +465,10 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
 
     try:
         if generate_diff_outputs:
-            print("DEBUG: generate_diff_outputs returned", flush=True)
+            print("DEBUG: calling generate_diff_outputs", flush=True)
+            
             generated = generate_diff_outputs(original_path, suspect_path, output_dir)
+            print("DEBUG: generate_diff_outputs returned", flush=True)
             if isinstance(generated, dict):
                 print(f"DEBUG: generated keys = {list(generated.keys())}", flush=True)
                 diff_outputs = {}
@@ -531,19 +533,19 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
 
     comparison_pdf_path = os.path.join(output_dir, "comparison_report.pdf")
     if generate_comparison_pdf:
-        try:
-            print("DEBUG: starting PDF generation", flush=True)
-            pdf_payload = _build_pdf_payload(result)
-            generate_comparison_pdf(pdf_payload, comparison_pdf_path)
-        except Exception as e:
-            print("DEBUG: finished PDF generation", flush=True)
+        
+    try:
+        print("DEBUG: starting PDF generation", flush=True)
+        pdf_payload = _build_pdf_payload(result)
+        generate_comparison_pdf(pdf_payload, comparison_pdf_path)
+        print("DEBUG: finished PDF generation", flush=True)
 
-        except Exception as e:
-            import traceback
-            print("PDF generation failed: " + str(e), flush=True)
-            print(traceback.format_exc(), flush=True)
-            comparison_pdf_path = None
-
+    except Exception as e:
+        import traceback
+        print("PDF generation failed:", str(e), flush=True)
+        print(traceback.format_exc(), flush=True)
+        comparison_pdf_path = None
+               
     result["comparison_json"] = _safe_relpath(comparison_json_path)
 
     if comparison_pdf_path and os.path.exists(comparison_pdf_path):
