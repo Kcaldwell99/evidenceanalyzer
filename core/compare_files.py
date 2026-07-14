@@ -520,7 +520,9 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     if generate_comparison_pdf:
         try:
             pdf_payload = _build_pdf_payload(result)
+            pdf_payload = _build_pdf_payload(result)
             generate_comparison_pdf(pdf_payload, comparison_pdf_path)
+            print("DEBUG: starting PDF generation", flush=True)
         except Exception as e:
             import traceback
             print("PDF generation failed: " + str(e), flush=True)
