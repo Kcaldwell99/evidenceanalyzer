@@ -460,14 +460,17 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         match_level = _match_level(phash_distance, ssim_score)
     print("DEBUG: starting diff output generation", flush=True)
     diff_outputs = {}
-    
+
     try:
         if generate_diff_outputs:
+            print("DEBUG: generate_diff_outputs returned", flush=True)
             generated = generate_diff_outputs(original_path, suspect_path, output_dir)
             if isinstance(generated, dict):
                 diff_outputs = {k: _safe_relpath(v) for k, v in generated.items()}
         if not diff_outputs:
+            print("DEBUG: starting simple diff image", flush=True)
             diff_outputs = _build_simple_diff_image(original_path, suspect_path, output_dir)
+            print("DEBUG: finished simple diff image", flush=True)
     except Exception:
         diff_outputs = {}
 
