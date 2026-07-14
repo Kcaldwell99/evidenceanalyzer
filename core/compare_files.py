@@ -520,13 +520,14 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
         json.dump(result, f, indent=2)
 
     comparison_pdf_path = os.path.join(output_dir, "comparison_report.pdf")
-
     if generate_comparison_pdf:
         try:
-            pdf_payload = _build_pdf_payload(result)
+            print("DEBUG: starting PDF generation", flush=True)
             pdf_payload = _build_pdf_payload(result)
             generate_comparison_pdf(pdf_payload, comparison_pdf_path)
-            print("DEBUG: starting PDF generation", flush=True)
+        except Exception as e:
+            print("DEBUG: finished PDF generation", flush=True)
+
         except Exception as e:
             import traceback
             print("PDF generation failed: " + str(e), flush=True)
