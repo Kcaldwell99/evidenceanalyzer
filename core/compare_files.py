@@ -451,7 +451,7 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     clip_score = None
     print("DEBUG: CLIP temporarily disabled for memory testing", flush=True)
  
-    #clip_score = _compute_clip_similarity(original_path, suspect_path)
+    clip_score = _compute_clip_similarity(original_path, suspect_path)
     #print("DEBUG: finished CLIP", flush=True)
 
     if phash_distance is None:
