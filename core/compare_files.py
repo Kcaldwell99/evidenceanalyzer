@@ -475,9 +475,9 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     except Exception as e:
         print("DEBUG: generate_diff_outputs failed:", e, flush=True)
 #            print("DEBUG: generate_diff_outputs returned", flush=True)
-#            if isinstance(generated, dict):
-#                print(f"DEBUG: generated keys = {list(generated.keys())}", flush=True)
-#                diff_outputs = {}
+        if isinstance(generated, dict):
+            print(f"DEBUG: generated keys = {list(generated.keys())}", flush=True)
+            diff_outputs = {}
 #
 #        for k, v in generated.items():
 #           print(f"DEBUG: processing key {k}", flush=True)
