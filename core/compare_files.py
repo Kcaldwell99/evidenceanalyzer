@@ -465,12 +465,14 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     
     try:
 #        if generate_diff_outputs:
-            print("DEBUG: calling generate_diff_outputs", flush=True)
+        print("DEBUG: calling generate_diff_outputs", flush=True)
 #            print("DEBUG: diff image generation temporarily disabled", flush=True)
 #            diff_outputs = {}
 
 
-            generated = generate_diff_outputs(original_path, suspect_path, output_dir)
+        generated = generate_diff_outputs(original_path, suspect_path, output_dir)
+        print("DEBUG: generate_diff_outputs returned", flush=True)
+
     except Exception as e:
         print("DEBUG: generate_diff_outputs failed:", e, flush=True)
 #            print("DEBUG: generate_diff_outputs returned", flush=True)
