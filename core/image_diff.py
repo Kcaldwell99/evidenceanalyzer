@@ -14,12 +14,36 @@ def generate_diff_outputs(image_path_a, image_path_b, output_dir):
     if img_a is None or img_b is None:
         raise ValueError("Could not load one of the images for comparison")
 
-    # normalize dimensions
+    # Normalize dimensions while limiting memory usage.
+    max_dimension = 1200
+
     h = min(img_a.shape[0], img_b.shape[0])
     w = min(img_a.shape[1], img_b.shape[1])
 
-    img_a = cv2.resize(img_a, (w, h))
-    img_b = cv2.resize(img_b, (w, h))
+    scale = min(1.0, max_dimension / max(h, w))
+
+    target_w = max(1, int(w * scale))
+    target_h = max(1, int(h * scale))
+
+    img_a = cv2.resize(
+    img_a,
+    (target_w, target_h),
+    interpolation=cv2.INTER_AREA,
+)
+
+    img_b = cv2.resize(
+    img_b,
+    (target_w, target_h),
+    interpolation=cv2.INTER_AREA,
+)
+
+    # normalize dimensions
+#    h = min(img_a.shape[0], img_b.shape[0])
+#    w = min(img_a.shape[1], img_b.shape[1])
+
+#    img_a = cv2.resize(img_a, (w, h))
+#    img_b = cv2.resize(img_b, (w, h))
+
 
     gray_a = cv2.cvtColor(img_a, cv2.COLOR_BGR2GRAY)
     gray_b = cv2.cvtColor(img_b, cv2.COLOR_BGR2GRAY)
