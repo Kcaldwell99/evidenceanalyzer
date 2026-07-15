@@ -463,35 +463,33 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     print("DEBUG: diff image generation temporarily disabled", flush=True)
     diff_outputs = {}
     
-    try:
-        if generate_diff_outputs:
-            print("DEBUG: calling generate_diff_outputs", flush=True)
-#           print("DEBUG: diff image generation temporarily disabled"#, flush=True)
- 
-        generated = generate_diff_outputs(original_path, suspect_path, output_dir)
+diff_outputs = {}
+
+try:
+    if generate_diff_outputs:
+        print("DEBUG: calling generate_diff_outputs", flush=True)
+
+        generated = generate_diff_outputs(
+            original_path,
+            suspect_path,
+            output_dir,
+        )
+
         print("DEBUG: generate_diff_outputs returned", flush=True)
 
-    except Exception as e:
-        print("DEBUG: generate_diff_outputs failed:", e, flush=True)
-#            print("DEBUG: generate_diff_outputs returned", flush=True)
         if isinstance(generated, dict):
-            print(f"DEBUG: generated keys = {list(generated.keys())}", flush=True)
-            diff_outputs = {}
-#
-#        for k, v in generated.items():
-#           print(f"DEBUG: processing key {k}", flush=True)
-#            diff_outputs[k] = _safe_relpath(v)
+            print(
+                f"DEBUG: generated keys = {list(generated.keys())}",
+                flush=True,
+            )
 
-#           print("DEBUG: finished copying diff outputs", flush=True)
-           
-#        if not diff_outputs:
-#             print("DEBUG: starting simple diff image", flush=True)
-#             diff_outputs = _build_simple_diff_image(original_path, suspect_path, output_dir)
-#            print("DEBUG: finished simple diff image", flush=True)
-#    except Exception:
-#        diff_outputs = {}
-    print("DEBUG: building forensic conclusion", flush=True)
-    conclusion = build_forensic_conclusion(
+except Exception as e:
+    print("DEBUG: generate_diff_outputs failed:", e, flush=True)
+
+print("DEBUG: building forensic conclusion", flush=True)
+conclusion = build_forensic_conclusion(
+
+
         sha256_match=sha_match,
         phash_distance=phash_distance,
         ssim_score=ssim_score,
