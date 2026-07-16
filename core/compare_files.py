@@ -501,7 +501,7 @@ conclusion = build_forensic_conclusion(
 
 clip_score_pct = (str(round(clip_score, 1)) + "%") if clip_score is not None else "N/A"
 
-    result = {
+result = {
         "generated_at": datetime.utcnow().isoformat(),
         "original_file": original_filename or os.path.basename(original_path),
         "suspect_file": suspect_filename or os.path.basename(suspect_path),
