@@ -530,12 +530,12 @@ result = {
         "limitations_text": REPORT_LIMITATIONS_TEXT,
     }
 
-    comparison_json_path = os.path.join(output_dir, "comparison_result.json")
-    with open(comparison_json_path, "w", encoding="utf-8") as f:
+comparison_json_path = os.path.join(output_dir, "comparison_result.json")
+with open(comparison_json_path, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2)
 
-    comparison_pdf_path = os.path.join(output_dir, "comparison_report.pdf")
-    if generate_comparison_pdf:
+comparison_pdf_path = os.path.join(output_dir, "comparison_report.pdf")
+if generate_comparison_pdf:
         
         try:
             print("DEBUG: starting PDF generation", flush=True)
@@ -551,7 +551,7 @@ result = {
                
     result["comparison_json"] = _safe_relpath(comparison_json_path)
 
-    if comparison_pdf_path and os.path.exists(comparison_pdf_path):
+if comparison_pdf_path and os.path.exists(comparison_pdf_path):
         try:
             from app.storage import s3_client, AWS_S3_BUCKET, AWS_REGION
             s3_key = "comparison_reports/" + os.path.basename(output_dir) + "_" + os.path.basename(comparison_pdf_path)
