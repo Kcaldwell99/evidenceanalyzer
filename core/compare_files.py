@@ -499,7 +499,7 @@ conclusion = build_forensic_conclusion(
         clip_score=clip_score,
     )
 
-    clip_score_pct = (str(round(clip_score, 1)) + "%") if clip_score is not None else "N/A"
+clip_score_pct = (str(round(clip_score, 1)) + "%") if clip_score is not None else "N/A"
 
     result = {
         "generated_at": datetime.utcnow().isoformat(),
