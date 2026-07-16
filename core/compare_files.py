@@ -1,6 +1,8 @@
 import json
 import os
 
+from app.c2pa_analysis import analyze_file as c2pa_analyze_file
+from app.c2pa_analysis import summarize_for_certificate
 from datetime import datetime
 from pathlib import Path
 
@@ -457,6 +459,13 @@ def compare_two_files(
     original_exif = extract_exif(original_path)
     suspect_exif = extract_exif(suspect_path)
 
+    reference_c2pa_result = c2pa_analyze_file(original_path)
+    suspect_c2pa_result = c2pa_analyze_file(suspect_path)
+
+    reference_c2pa = summarize_for_certificate(reference_c2pa_result)
+    suspect_c2pa = summarize_for_certificate(suspect_c2pa_result)
+
+
     metadata_differences = _compare_dicts(original_metadata, suspect_metadata)
     exif_differences = _compare_dicts(original_exif, suspect_exif)
 
@@ -536,6 +545,8 @@ def compare_two_files(
         "visual_assessment": visual_summary,
         "metadata_differences": metadata_differences,
         "exif_differences": exif_differences,
+        "reference_c2pa": reference_c2pa,
+        "suspect_c2pa": suspect_c2pa,
         "diff_outputs": diff_outputs,
         "difference_image": (
             diff_outputs.get("diff_map_path")
