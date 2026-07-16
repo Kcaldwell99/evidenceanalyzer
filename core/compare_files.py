@@ -5,7 +5,6 @@ from datetime import datetime
 from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw
-from PIL.ImImagePlugin import COMMENT
 
 try:
     from skimage.metrics import structural_similarity as skimage_ssim
@@ -15,9 +14,7 @@ except ImportError:
 try:
     from core.image_diff import generate_diff_outputs
 except ImportError:
-    print("DEBUG: starting diff output generation", flush=True)
     generate_diff_outputs = None
-    print("DEBUG: finished diff output generation", flush=True)
 try:
     from core.comparison_pdf import generate_comparison_pdf
 except Exception:
@@ -30,10 +27,12 @@ from app.utils.image_fingerprint import generate_phash
 try:
     from sentence_transformers import SentenceTransformer, util
     from PIL import Image as PILImage
-    _clip_model = None
-   
 except Exception:
-    _clip_model = None
+    SentenceTransformer = None
+    util = None
+    PILImage = None
+
+_clip_model = None
 
 REPORT_LIMITATIONS_TEXT = (
     "This report reflects a tool-assisted forensic comparison of the files submitted for analysis. "
@@ -146,7 +145,7 @@ def build_forensic_conclusion(
 
         }
     if phash_distance <= 16:
-        if clip_score is not None and clip_score >= 0.85:
+        if clip_score is not None and clip_score >= 85.0:
             return {
                 "confidence_level": "Probable Match",
                 "conclusion_title": "Probable Match — High Visual Semantic Similarity",
@@ -230,28 +229,34 @@ def _load_image_gray(path_value, size=(1000, 1000)):
 
 
 def _compute_clip_similarity(path1, path2):
-
     global _clip_model
 
-    if _clip_model is None:
-        print("Loading CLIP model...", flush=True)
-        _clip_model = SentenceTransformer("clip-ViT-B-32")
-        print("CLIP model loaded.", flush=True)
-    
+    if SentenceTransformer is None or util is None or PILImage is None:
+        return None
+
     try:
-        img1 = PILImage.open(path1).convert("RGB")
-        img2 = PILImage.open(path2).convert("RGB")
+        if _clip_model is None:
+            print("Loading CLIP model...", flush=True)
+            _clip_model = SentenceTransformer("clip-ViT-B-32")
+            print("CLIP model loaded.", flush=True)
+
+        with PILImage.open(path1) as source_img:
+            img1 = source_img.convert("RGB")
+
+        with PILImage.open(path2) as source_img:
+            img2 = source_img.convert("RGB")
+
         emb1 = _clip_model.encode(img1, convert_to_tensor=True)
         emb2 = _clip_model.encode(img2, convert_to_tensor=True)
         score = float(util.cos_sim(emb1, emb2)[0][0])
         return round((score + 1) / 2 * 100, 2)
-    except Exception as e:
-        print("CLIP error: " + str(e), flush=True)
+
+    except Exception as exc:
+        print("CLIP error: " + str(exc), flush=True)
         return None
 
-    print("DEBUG: starting SSIM", flush=True)
+
 def _compute_ssim(original_path, suspect_path):
-    print("DEBUG: finished SSIM", flush=True)
     img1 = _load_image_gray(original_path)
     img2 = _load_image_gray(suspect_path)
 
@@ -269,26 +274,32 @@ def _compute_ssim(original_path, suspect_path):
 
     img1_array = __import__("numpy").array(img1)
     img2_array = __import__("numpy").array(img2)
-
     score = skimage_ssim(img1_array, img2_array, data_range=255)
     return float(score)
 
 
 def _build_simple_diff_image(original_path, suspect_path, output_dir):
     original = _load_image_rgb(original_path)
-    suspect = _load_image_rgb(suspect_path).resize(original.size)
+    suspect = _load_image_rgb(suspect_path)
+
+    max_dimension = 1200
+    scale = min(1.0, max_dimension / max(original.size))
+    if scale < 1.0:
+        original = original.resize(
+            (max(1, int(original.width * scale)), max(1, int(original.height * scale))),
+            Image.LANCZOS,
+        )
+
+    suspect = suspect.resize(original.size, Image.LANCZOS)
 
     diff = ImageChops.difference(original, suspect)
     bbox = diff.getbbox()
-
     marked_original = original.copy()
     marked_suspect = suspect.copy()
 
     if bbox:
-        draw_original = ImageDraw.Draw(marked_original)
-        draw_suspect = ImageDraw.Draw(marked_suspect)
-        draw_original.rectangle(bbox, outline="red", width=4)
-        draw_suspect.rectangle(bbox, outline="red", width=4)
+        ImageDraw.Draw(marked_original).rectangle(bbox, outline="red", width=4)
+        ImageDraw.Draw(marked_suspect).rectangle(bbox, outline="red", width=4)
 
     difference_image_path = os.path.join(output_dir, "difference_map.png")
     marked_original_path = os.path.join(output_dir, "marked_original.png")
@@ -299,7 +310,10 @@ def _build_simple_diff_image(original_path, suspect_path, output_dir):
     marked_original.save(marked_original_path)
     marked_suspect.save(marked_suspect_path)
 
-    side_by_side = Image.new("RGB", (original.width + suspect.width, max(original.height, suspect.height)))
+    side_by_side = Image.new(
+        "RGB",
+        (original.width + suspect.width, max(original.height, suspect.height)),
+    )
     side_by_side.paste(original, (0, 0))
     side_by_side.paste(suspect, (original.width, 0))
     side_by_side.save(side_by_side_path)
@@ -408,15 +422,18 @@ def _build_pdf_payload(result):
     }
 
 
-def compare_two_files(original_path, suspect_path, case_path=None, original_filename=None, suspect_filename=None):
-    print("DEBUG: compare_two_files entered", flush=True)
+def compare_two_files(
+    original_path,
+    suspect_path,
+    case_path=None,
+    original_filename=None,
+    suspect_filename=None,
+):
     original_path = str(original_path)
     suspect_path = str(suspect_path)
-
     output_dir = _comparison_output_dir(case_path)
-    print("DEBUG: starting SHA256", flush=True)
+
     original_sha256 = sha256_file(original_path)
-    print("DEBUG: finished SHA256", flush=True)
     suspect_sha256 = sha256_file(suspect_path)
     sha_match = original_sha256 == suspect_sha256
 
@@ -428,68 +445,62 @@ def compare_two_files(original_path, suspect_path, case_path=None, original_file
     else:
         try:
             import imagehash
-            phash_distance = int(imagehash.hex_to_hash(original_phash) - imagehash.hex_to_hash(suspect_phash))
+            phash_distance = int(
+                imagehash.hex_to_hash(original_phash)
+                - imagehash.hex_to_hash(suspect_phash)
+            )
         except Exception:
             phash_distance = 999 if original_phash != suspect_phash else 0
-    print("DEBUG: starting metadata extraction", flush=True)
+
     original_metadata = get_image_metadata(original_path)
-    print("DEBUG: finished metadata extraction", flush=True)
     suspect_metadata = get_image_metadata(suspect_path)
-    print("DEBUG: starting EXIF extraction", flush=True)
     original_exif = extract_exif(original_path)
     suspect_exif = extract_exif(suspect_path)
-    print("DEBUG: finished EXIF extraction", flush=True)
 
     metadata_differences = _compare_dicts(original_metadata, suspect_metadata)
     exif_differences = _compare_dicts(original_exif, suspect_exif)
 
     try:
         ssim_score = _compute_ssim(original_path, suspect_path)
-    except Exception:
+    except Exception as exc:
+        print("SSIM error: " + str(exc), flush=True)
         ssim_score = 0.0
-    print("DEBUG: starting CLIP", flush=True)  
-    clip_score = None
-    print("DEBUG: CLIP temporarily disabled for memory testing", flush=True)
- 
+
     clip_score = _compute_clip_similarity(original_path, suspect_path)
-    #print("DEBUG: finished CLIP", flush=True)
 
     if phash_distance is None:
-        visual_summary = "Perceptual hash unavailable for one or both files; visual comparison not possible."
+        visual_summary = (
+            "Perceptual hash unavailable for one or both files; "
+            "visual comparison not possible."
+        )
         match_level = "Could Not Analyze"
     else:
         visual_summary = _visual_assessment(ssim_score, phash_distance)
         match_level = _match_level(phash_distance, ssim_score)
-    print("DEBUG: diff image generation temporarily disabled", flush=True)
+
     diff_outputs = {}
-    
-diff_outputs = {}
-
-try:
-    if generate_diff_outputs:
-        print("DEBUG: calling generate_diff_outputs", flush=True)
-
-        generated = generate_diff_outputs(
-            original_path,
-            suspect_path,
-            output_dir,
-        )
-
-        print("DEBUG: generate_diff_outputs returned", flush=True)
-
-        if isinstance(generated, dict):
-            print(
-                f"DEBUG: generated keys = {list(generated.keys())}",
-                flush=True,
+    try:
+        if generate_diff_outputs:
+            generated = generate_diff_outputs(
+                original_path,
+                suspect_path,
+                output_dir,
             )
+            if isinstance(generated, dict):
+                for key, value in generated.items():
+                    diff_outputs[key] = _safe_relpath(value)
 
-except Exception as e:
-    print("DEBUG: generate_diff_outputs failed:", e, flush=True)
+        if not diff_outputs:
+            diff_outputs = _build_simple_diff_image(
+                original_path,
+                suspect_path,
+                output_dir,
+            )
+    except Exception as exc:
+        print("Difference-image generation failed: " + str(exc), flush=True)
+        diff_outputs = {}
 
-print("DEBUG: building forensic conclusion", flush=True)
-conclusion = build_forensic_conclusion(
-
-
+    conclusion = build_forensic_conclusion(
         sha256_match=sha_match,
         phash_distance=phash_distance,
         ssim_score=ssim_score,
@@ -499,9 +510,13 @@ conclusion = build_forensic_conclusion(
         clip_score=clip_score,
     )
 
-clip_score_pct = (str(round(clip_score, 1)) + "%") if clip_score is not None else "N/A"
+    clip_score_pct = (
+        str(round(clip_score, 1)) + "%"
+        if clip_score is not None
+        else "N/A"
+    )
 
-result = {
+    result = {
         "generated_at": datetime.utcnow().isoformat(),
         "original_file": original_filename or os.path.basename(original_path),
         "suspect_file": suspect_filename or os.path.basename(suspect_path),
@@ -522,7 +537,10 @@ result = {
         "metadata_differences": metadata_differences,
         "exif_differences": exif_differences,
         "diff_outputs": diff_outputs,
-        "difference_image": diff_outputs.get("difference_image"),
+        "difference_image": (
+            diff_outputs.get("diff_map_path")
+            or diff_outputs.get("difference_image")
+        ),
         "conclusion_title": conclusion["conclusion_title"],
         "confidence_level": conclusion["confidence_level"],
         "conclusion_text": conclusion["conclusion_text"],
@@ -530,41 +548,48 @@ result = {
         "limitations_text": REPORT_LIMITATIONS_TEXT,
     }
 
-comparison_json_path = os.path.join(output_dir, "comparison_result.json")
-with open(comparison_json_path, "w", encoding="utf-8") as f:
-        json.dump(result, f, indent=2)
+    comparison_json_path = os.path.join(output_dir, "comparison_result.json")
+    with open(comparison_json_path, "w", encoding="utf-8") as file_handle:
+        json.dump(result, file_handle, indent=2)
 
-comparison_pdf_path = os.path.join(output_dir, "comparison_report.pdf")
-if generate_comparison_pdf:
-        
+    comparison_pdf_path = os.path.join(output_dir, "comparison_report.pdf")
+    if generate_comparison_pdf:
         try:
-            print("DEBUG: starting PDF generation", flush=True)
             pdf_payload = _build_pdf_payload(result)
             generate_comparison_pdf(pdf_payload, comparison_pdf_path)
-            print("DEBUG: finished PDF generation", flush=True)
-
-        except Exception as e:
+        except Exception as exc:
             import traceback
-            print("PDF generation failed:", str(e), flush=True)
+            print("PDF generation failed: " + str(exc), flush=True)
             print(traceback.format_exc(), flush=True)
             comparison_pdf_path = None
-               
+
     result["comparison_json"] = _safe_relpath(comparison_json_path)
 
-if comparison_pdf_path and os.path.exists(comparison_pdf_path):
+    if comparison_pdf_path and os.path.exists(comparison_pdf_path):
         try:
-            from app.storage import s3_client, AWS_S3_BUCKET, AWS_REGION
-            s3_key = "comparison_reports/" + os.path.basename(output_dir) + "_" + os.path.basename(comparison_pdf_path)
+            from app.storage import s3_client, AWS_S3_BUCKET
+
+            s3_key = (
+                "comparison_reports/"
+                + os.path.basename(output_dir)
+                + "_"
+                + os.path.basename(comparison_pdf_path)
+            )
             with open(comparison_pdf_path, "rb") as pdf_file:
-                s3_client.upload_fileobj(pdf_file, AWS_S3_BUCKET, s3_key, ExtraArgs={"ContentType": "application/pdf"})
-            s3_url = s3_client.generate_presigned_url(
+                s3_client.upload_fileobj(
+                    pdf_file,
+                    AWS_S3_BUCKET,
+                    s3_key,
+                    ExtraArgs={"ContentType": "application/pdf"},
+                )
+
+            result["comparison_pdf"] = s3_client.generate_presigned_url(
                 "get_object",
                 Params={"Bucket": AWS_S3_BUCKET, "Key": s3_key},
                 ExpiresIn=3600,
             )
-            result["comparison_pdf"] = s3_url
-        except Exception as e:
-            print("S3 upload failed: " + str(e), flush=True)
+        except Exception as exc:
+            print("S3 upload failed: " + str(exc), flush=True)
             result["comparison_pdf"] = _safe_relpath(comparison_pdf_path)
     else:
         result["comparison_pdf"] = None
