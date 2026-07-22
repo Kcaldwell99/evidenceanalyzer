@@ -88,8 +88,13 @@
     <h1>Payment Successful</h1>
     <p>Thank you for your purchase. Your order has been received and is being processed.</p>
     <p>A confirmation will be sent to <strong>{{ current_user.email }}</strong>.</p>
+    {% if product == "comparison" %}
+    <p>Your comparison credit is ready. Upload both files to run your analysis.</p>
+    <a href="/compare" class="btn">Run your comparison</a>
+    {% else %}
     <p>If you purchased a report service, our team will be in touch shortly to collect your evidence files.</p>
     <a href="/dashboard" class="btn">Go to Dashboard</a>
+    {% endif %}
     {% if cookie_consent_state == "pending" %}
     <div class="consent-prompt">
       <p>We use analytics cookies to measure conversions from our ads. Your choice doesn't affect your purchase or account.</p>

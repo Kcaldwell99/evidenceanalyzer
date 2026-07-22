@@ -1793,6 +1793,32 @@ async def checkout_success(
                 url=f"/generate/integrity/{quote(m_case_id)}/{quote(m_evidence_id)}",
                 status_code=303,
             )
+    if session_id and product == "comparison":
+        # Race-safe: confirm payment with Stripe directly and ensure the
+        # Payment row (comparison credit) exists before the user returns to
+        # /compare, immune to webhook timing. Idempotent like the cert path.
+        try:
+            _s = verify_checkout_session(session_id)
+        except HTTPException:
+            _s = None
+        if _s is not None:
+            _s = _s.to_dict()
+            _meta = dict(_s.get("metadata") or {})
+            _uid = _meta.get("user_id")
+            _existing = db.query(Payment).filter(
+                Payment.stripe_session_id == session_id
+            ).first()
+            if _existing is None:
+                db.add(Payment(
+                    stripe_session_id=session_id,
+                    stripe_customer_email=(_s.get("customer_details") or {}).get("email"),
+                    stripe_amount_total=_s.get("amount_total"),
+                    stripe_currency=_s.get("currency"),
+                    product=_meta.get("product"),
+                    status="paid",
+                    user_id=int(_uid) if _uid else None,
+                ))
+                db.commit()
     cookie_consent_state = get_consent_state(request, current_user)
     return templates.TemplateResponse(
         request,
