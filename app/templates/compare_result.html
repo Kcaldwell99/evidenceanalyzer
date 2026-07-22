@@ -273,7 +273,7 @@
     {% endif %}
 
     <div class="footer-link">
-      <a class="button" href="/cases/{{ result.case_id if result else '' }}">Back to Case</a>
+      {% if result and result.case_id %}<a class="button" href="/cases/{{ result.case_id }}">Back to Case</a>{% else %}<a class="button" href="/">Back to Dashboard</a>{% endif %}
     </div>
   </div>
 </body>
