@@ -972,6 +972,14 @@ async def compare_against_case_route(
             status_code=400,
         )
 
+    # Comparison credit gate: 402 into checkout when no unconsumed credit.
+    from app.entitlements import assert_compare_entitlement, consume_compare_credit
+    try:
+        _compare_credit = assert_compare_entitlement(db, current_user)
+    except HTTPException as e:
+        if e.status_code == 402:
+            return RedirectResponse(url="/checkout/comparison", status_code=303)
+        raise
     # Ownership check
     case_obj = db.query(Case).filter(Case.case_id == case_id).first()
     if case_obj:
@@ -989,6 +997,7 @@ async def compare_against_case_route(
 
     try:
         result = compare_against_case(str(file_path), case_id)
+        consume_compare_credit(db, _compare_credit)
         log_audit_event(
             event_type="comparison_performed",
             case_id=case_id,
@@ -1023,6 +1032,14 @@ async def compare_case_route(
     if case_obj:
         assert_case_ownership(case_obj, current_user)
 
+    # Comparison credit gate: 402 into checkout when no unconsumed credit.
+    from app.entitlements import assert_compare_entitlement, consume_compare_credit
+    try:
+        _compare_credit = assert_compare_entitlement(db, current_user)
+    except HTTPException as e:
+        if e.status_code == 402:
+            return RedirectResponse(url="/checkout/comparison", status_code=303)
+        raise
     compare_dir = CASES_DIR / case_id / "comparisons"
     compare_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1032,6 +1049,7 @@ async def compare_case_route(
         buffer.write(await suspect_file.read())
 
     result = compare_against_case(str(suspect_path), case_id=case_id)
+    consume_compare_credit(db, _compare_credit)
 
     log_audit_event(
             event_type="case_comparison_completed",
@@ -1068,7 +1086,16 @@ async def compare_global_route(
     request: Request,
     suspect_file: UploadFile = File(...),
     current_user: User = Depends(require_verified_email),
+    db: Session = Depends(get_db),
 ):
+    # Comparison credit gate: 402 into checkout when no unconsumed credit.
+    from app.entitlements import assert_compare_entitlement, consume_compare_credit
+    try:
+        _compare_credit = assert_compare_entitlement(db, current_user)
+    except HTTPException as e:
+        if e.status_code == 402:
+            return RedirectResponse(url="/checkout/comparison", status_code=303)
+        raise
     temp_dir = UPLOADS_DIR / "temp_compare"
     temp_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1084,6 +1111,7 @@ async def compare_global_route(
     print(f"DEBUG direct query case_ids: {_ids}", flush=True)
 
     result = compare_against_all_cases(str(suspect_path), cases_root=str(CASES_DIR))
+    consume_compare_credit(db, _compare_credit)
     log_audit_event(
         event_type="global_comparison_completed",
         case_id="GLOBAL",
@@ -2900,7 +2928,16 @@ async def compare_video_route(
     original_file: UploadFile = File(...),
     suspect_file: UploadFile = File(...),
     current_user: User = Depends(require_verified_email),
+    db: Session = Depends(get_db),
 ):
+    # Comparison credit gate: 402 into checkout when no unconsumed credit.
+    from app.entitlements import assert_compare_entitlement, consume_compare_credit
+    try:
+        _compare_credit = assert_compare_entitlement(db, current_user)
+    except HTTPException as e:
+        if e.status_code == 402:
+            return RedirectResponse(url="/checkout/comparison", status_code=303)
+        raise
     from core.video_analyzer import analyze_video
     from core.video_compare import compare_frame_sets
 
@@ -2922,6 +2959,7 @@ async def compare_video_route(
         original_result["frame_hashes"],
         suspect_result["frame_hashes"],
     )
+    consume_compare_credit(db, _compare_credit)
     unique_matching = len(set(m["frame1"] for m in matches))
     match_pct = round(
     unique_matching / max(len(original_result["frame_hashes"]), 1) * 100, 1
