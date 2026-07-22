@@ -332,6 +332,11 @@ async def sample():
     return RedirectResponse(url="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/Evidentix-Sample-Integrity-Certificate.pdf", status_code=303)
 
 
+@app.get("/sample/comparison")
+async def sample_comparison():
+    return RedirectResponse(url="https://evidentix-files-ken01.s3.us-west-2.amazonaws.com/Evidentix-Sample-Comparison-Report.pdf", status_code=303)
+
+
 @app.get("/compare-images", response_class=HTMLResponse)
 async def compare_images_page(request: Request):
     return templates.TemplateResponse(request, "compare_images.html", {})
