@@ -885,7 +885,16 @@ async def compare_submit(
     original_file: UploadFile = File(...),
     suspected_file: UploadFile = File(...),
     current_user: User = Depends(require_verified_email),
+    db: Session = Depends(get_db),
 ):
+    # Comparison credit gate: 402 into checkout when no unconsumed credit.
+    from app.entitlements import assert_compare_entitlement, consume_compare_credit
+    try:
+        _compare_credit = assert_compare_entitlement(db, current_user)
+    except HTTPException as e:
+        if e.status_code == 402:
+            return RedirectResponse(url="/checkout/comparison", status_code=303)
+        raise
     safe_case_name = safe_slug(case_name)
     case_path = REPORTS_DIR / safe_case_name
     case_path.mkdir(parents=True, exist_ok=True)
@@ -899,6 +908,7 @@ async def compare_submit(
     with suspected_path.open("wb") as f:
         shutil.copyfileobj(suspected_file.file, f)
     comparison_data = compare_two_files(str(original_path), str(suspected_path), str(case_path))
+    consume_compare_credit(db, _compare_credit)
     comparison = {
         "case_id": None,
         "suspect_file": suspected_file.filename,
@@ -1623,10 +1633,12 @@ STRIPE_PRICES = {
     "monitoring_small": "price_1TPmFhHVHQNKUlwkRHoGFIyF",
     "monitoring_standard": "price_1TPmGvHVHQNKUlwkfr5LTk9G",
     "monitoring_large": "price_1TPmISHVHQNKUlwkcyt08yd4",
+    "comparison": "price_1Tw2vpHVHQNKUlwkwr2DzdaQ",
 }
 PRICING = {
     "integrity_certificate": {"name": "Integrity Certificate",   "price": "$99",       "per": "per file"},
     "custody_record":        {"name": "Custody Record",          "price": "$199",      "per": "per case"},
+    "comparison":            {"name": "Comparison Report",       "price": "$149",      "per": "per comparison"},
     "video_single":          {"name": "Single Video Analysis",   "price": "$199",      "per": "per video"},
     "bundle":                {"name": "Case Bundle",             "price": "$299",      "per": "up to 10 images"},
     "video_image_bundle":    {"name": "Video + Image Bundle",    "price": "$399",      "per": "per case"},

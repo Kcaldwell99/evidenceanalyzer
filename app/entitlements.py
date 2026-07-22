@@ -76,3 +76,41 @@ def assert_cert_entitlement(db, current_user, case_id, evidence_id):
         status_code=402,
         detail="Payment required to generate this Integrity Certificate.",
     )
+
+def assert_compare_entitlement(db, current_user):
+    """Gate comparison runs (credit model).
+
+    Admin bypass; otherwise require a paid, unconsumed comparison Payment
+    for this user. Returns the locked Payment row so the caller can consume
+    it after a successful run; returns None for admins.
+    Raises HTTPException(402) when no credit is available.
+    """
+    if getattr(current_user, "is_admin", False):
+        return None
+    credit = (
+        db.query(Payment)
+        .filter(
+            Payment.user_id == current_user.id,
+            Payment.product == "comparison",
+            Payment.status == "paid",
+            Payment.consumed_at.is_(None),
+        )
+        .order_by(Payment.id)
+        .with_for_update()
+        .first()
+    )
+    if credit is None:
+        raise HTTPException(
+            status_code=402,
+            detail="Payment required: purchase a Comparison Report to run this analysis.",
+        )
+    return credit
+
+
+def consume_compare_credit(db, credit):
+    """Stamp a comparison credit as spent. No-op for admin runs (credit=None)."""
+    if credit is None:
+        return
+    from datetime import datetime, timezone
+    credit.consumed_at = datetime.now(timezone.utc)
+    db.commit()

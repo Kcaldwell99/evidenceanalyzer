@@ -103,6 +103,9 @@ class Payment(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     case_id = Column(String(50), nullable=True, index=True)
     evidence_id = Column(String(50), nullable=True, index=True)
+    # Added for comparison-credit entitlement: a paid comparison Payment is one
+    # credit; consumed_at is stamped when the credit is spent on a compare run.
+    consumed_at = Column(DateTime(timezone=True), nullable=True)
 
 
 class Subscription(Base):
