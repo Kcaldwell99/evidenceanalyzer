@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forensic Image Comparison for Litigators — Evidentix™</title>
+    <meta name="description" content="Two versions of the same photo don't agree. Upload both and get an exhibit-ready forensic comparison report — cryptographic hashes, metadata, and manipulation indicators — in minutes. $149 per comparison.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e1320;
+            --panel: #161d2f;
+            --panel-edge: #232c44;
+            --ink: #e8ebf4;
+            --muted: #9aa3b8;
+            --accent: #7c8cf8;
+            --accent-strong: #8b5cf6;
+            --flag: #e0566b;
+            --flag-bg: rgba(224, 86, 107, 0.12);
+            --mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            * { animation: none !important; transition: none !important; }
+        }
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: "Inter", system-ui, -apple-system, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent); }
+        a:focus-visible, button:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+            border-radius: 4px;
+        }
+        .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header */
+        header {
+            border-bottom: 1px solid var(--panel-edge);
+        }
+        .nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 0;
+        }
+        .wordmark {
+            font-family: "Newsreader", Georgia, serif;
+            font-size: 1.35rem; font-weight: 600; letter-spacing: 0.01em;
+            color: var(--ink); text-decoration: none;
+        }
+        .wordmark .tm { font-size: 0.6em; vertical-align: super; color: var(--muted); }
+        .nav-links { display: flex; gap: 22px; align-items: center; }
+        .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.92rem; }
+        .nav-links a:hover { color: var(--ink); }
+        .nav-links a.signin { color: var(--accent); }
+
+        /* Hero */
+        .hero { padding: 72px 0 56px; }
+        .eyebrow {
+            font-family: var(--mono);
+            font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--accent);
+        }
+        h1 {
+            font-family: "Newsreader", Georgia, serif;
+            font-weight: 500;
+            font-size: clamp(2.1rem, 4.6vw, 3.3rem);
+            line-height: 1.12;
+            letter-spacing: -0.01em;
+            margin: 14px 0 18px;
+            max-width: 17ch;
+        }
+        .hero-sub {
+            color: var(--muted); font-size: 1.08rem; max-width: 54ch; margin-bottom: 28px;
+        }
+        .hero-sub strong { color: var(--ink); font-weight: 500; }
+        .cta-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+        .btn {
+            display: inline-block; text-decoration: none; font-weight: 600;
+            font-size: 0.98rem; padding: 13px 26px; border-radius: 8px;
+            transition: transform 120ms ease, filter 120ms ease;
+        }
+        .btn-primary { background: var(--accent); color: #0b0f1c; }
+        .btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .btn-ghost {
+            color: var(--ink); border: 1px solid var(--panel-edge); background: transparent;
+        }
+        .btn-ghost:hover { border-color: var(--accent); }
+        .cta-note { color: var(--muted); font-size: 0.85rem; width: 100%; margin-top: 4px; }
+
+        /* Signature: evidence pair */
+        .exhibit { padding: 8px 0 64px; }
+        .pair {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 18px; align-items: stretch;
+        }
+        .evidence-card {
+            background: var(--panel);
+            border: 1px solid var(--panel-edge);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .evidence-card .label {
+            display: flex; justify-content: space-between; align-items: baseline;
+            padding: 12px 16px;
+            font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--muted);
+            border-bottom: 1px solid var(--panel-edge);
+        }
+        .evidence-card .label b { color: var(--ink); font-weight: 600; }
+        .thumb {
+            height: 150px; position: relative;
+            background:
+                linear-gradient(160deg, #2b3554 0%, #1c2440 55%, #141b30 100%);
+        }
+        .thumb::after {
+            content: ""; position: absolute; inset: 0;
+            background:
+                radial-gradient(140px 90px at 30% 62%, rgba(124, 140, 248, 0.28), transparent 70%),
+                radial-gradient(120px 70px at 72% 38%, rgba(139, 92, 246, 0.20), transparent 70%);
+        }
+        .thumb.altered::before {
+            content: ""; position: absolute; left: 58%; top: 22%;
+            width: 26%; height: 34%;
+            border: 1.5px dashed var(--flag);
+            border-radius: 4px;
+            background: var(--flag-bg);
+            z-index: 1;
+        }
+        .hash {
+            padding: 14px 16px;
+            font-family: var(--mono); font-size: 0.74rem;
+            color: var(--muted); word-break: break-all; line-height: 1.5;
+        }
+        .hash .k { color: var(--accent); }
+        .hash .diff { color: var(--flag); background: var(--flag-bg); border-radius: 3px; padding: 0 2px; }
+        .verdict {
+            align-self: center; text-align: center;
+            display: flex; flex-direction: column; gap: 8px; align-items: center;
+        }
+        .verdict .chip {
+            font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em;
+            color: var(--flag); border: 1px solid var(--flag);
+            background: var(--flag-bg);
+            padding: 7px 12px; border-radius: 999px; white-space: nowrap;
+        }
+        .verdict .vs {
+            font-family: "Newsreader", Georgia, serif; font-style: italic;
+            color: var(--muted); font-size: 0.95rem;
+        }
+        .exhibit-caption {
+            margin-top: 16px; color: var(--muted); font-size: 0.86rem;
+            font-style: italic; text-align: center;
+        }
+
+        /* Sections */
+        section { padding: 56px 0; border-top: 1px solid var(--panel-edge); }
+        h2 {
+            font-family: "Newsreader", Georgia, serif;
+            font-weight: 500; font-size: 1.7rem; margin-bottom: 28px;
+        }
+        .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .step { background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 10px; padding: 22px; }
+        .step .n {
+            font-family: var(--mono); font-size: 0.72rem; color: var(--accent);
+            letter-spacing: 0.1em; display: block; margin-bottom: 10px;
+        }
+        .step h3 { font-size: 1.02rem; font-weight: 600; margin-bottom: 8px; }
+        .step p { color: var(--muted); font-size: 0.92rem; }
+
+        .report-rows { border: 1px solid var(--panel-edge); border-radius: 10px; overflow: hidden; }
+        .report-row {
+            display: grid; grid-template-columns: 240px 1fr; gap: 18px;
+            padding: 18px 22px; background: var(--panel);
+        }
+        .report-row + .report-row { border-top: 1px solid var(--panel-edge); }
+        .report-row .name { font-weight: 600; font-size: 0.95rem; }
+        .report-row .desc { color: var(--muted); font-size: 0.92rem; }
+
+        .uses p { color: var(--muted); max-width: 68ch; }
+        .uses p + p { margin-top: 12px; }
+        .uses b { color: var(--ink); font-weight: 600; }
+
+        /* Price */
+        .price-card {
+            background: var(--panel); border: 1px solid var(--panel-edge);
+            border-radius: 12px; padding: 36px;
+            display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center;
+        }
+        .price-card .amount {
+            font-family: "Newsreader", Georgia, serif; font-weight: 600;
+            font-size: 2.6rem; line-height: 1;
+        }
+        .price-card .amount span { font-size: 1rem; color: var(--muted); font-family: "Inter", sans-serif; font-weight: 400; }
+        .price-card ul { list-style: none; margin-top: 14px; color: var(--muted); font-size: 0.94rem; }
+        .price-card li { padding-left: 20px; position: relative; margin-top: 6px; }
+        .price-card li::before { content: "—"; position: absolute; left: 0; color: var(--accent); }
+
+        footer {
+            border-top: 1px solid var(--panel-edge);
+            padding: 32px 0 40px; color: var(--muted); font-size: 0.84rem;
+        }
+        footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+        @media (max-width: 760px) {
+            .pair { grid-template-columns: 1fr; }
+            .verdict { flex-direction: row; justify-content: center; padding: 4px 0; }
+            .steps { grid-template-columns: 1fr; }
+            .report-row { grid-template-columns: 1fr; gap: 6px; }
+            .price-card { grid-template-columns: 1fr; }
+            .hero { padding-top: 48px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="wrap nav">
+            <a class="wordmark" href="/">Evidentix<span class="tm">™</span></a>
+            <nav class="nav-links">
+                <a href="/sample">Sample report</a>
+                <a class="signin" href="/login">Sign in</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="wrap hero">
+            <span class="eyebrow">Comparison Report — for litigators</span>
+            <h1>Two versions of one photo. Only one is telling the truth.</h1>
+            <p class="hero-sub">
+                Opposing counsel produced a screenshot. Your client says it's been altered.
+                Upload both versions and Evidentix runs a forensic comparison —
+                cryptographic hashes, metadata, pixel-level similarity — and delivers an
+                <strong>exhibit-ready PDF report</strong> in minutes, not weeks.
+            </p>
+            <div class="cta-row">
+                <a class="btn btn-primary" href="/compare">Start a comparison</a>
+                <a class="btn btn-ghost" href="#report">See what's in the report</a>
+                <span class="cta-note">$149 per comparison. No subscription. Runs in a secure Evidentix account — create one at checkout.</span>
+            </div>
+        </div>
+
+        <div class="wrap exhibit" aria-hidden="true">
+            <div class="pair">
+                <div class="evidence-card">
+                    <div class="label"><b>Exhibit A</b><span>Client's original</span></div>
+                    <div class="thumb"></div>
+                    <div class="hash"><span class="k">SHA-256</span> 9f2a41c8b7d3…e6a1<b>90c4</b></div>
+                </div>
+                <div class="verdict">
+                    <span class="vs">versus</span>
+                    <span class="chip">SHA-256 mismatch</span>
+                </div>
+                <div class="evidence-card">
+                    <div class="label"><b>Exhibit B</b><span>Produced version</span></div>
+                    <div class="thumb altered"></div>
+                    <div class="hash"><span class="k">SHA-256</span> 9f2a41c8b7d3…<span class="diff">c2f7d08b</span></div>
+                </div>
+            </div>
+            <p class="exhibit-caption">Illustration. Your report documents the actual files, hashes, and findings.</p>
+        </div>
+
+        <section>
+            <div class="wrap">
+                <h2>How it works</h2>
+                <div class="steps">
+                    <div class="step">
+                        <span class="n">Step 1</span>
+                        <h3>Upload both files</h3>
+                        <p>The version you trust and the version in question. Files are hashed on intake and handled under a documented chain of custody.</p>
+                    </div>
+                    <div class="step">
+                        <span class="n">Step 2</span>
+                        <h3>Forensic analysis</h3>
+                        <p>SHA-256 comparison, EXIF and metadata examination, perceptual similarity scoring, and manipulation indicators — run the same way every time.</p>
+                    </div>
+                    <div class="step">
+                        <span class="n">Step 3</span>
+                        <h3>Exhibit-ready report</h3>
+                        <p>A PDF you can attach to a demand letter, discovery response, or deposition outline — written to be read by judges, adjusters, and opposing counsel.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="report">
+            <div class="wrap">
+                <h2>What the report documents</h2>
+                <div class="report-rows">
+                    <div class="report-row">
+                        <div class="name">Cryptographic hash comparison</div>
+                        <div class="desc">SHA-256 fingerprints of both files. Identical files match to the character; any alteration — a single pixel — produces a different hash.</div>
+                    </div>
+                    <div class="report-row">
+                        <div class="name">Metadata examination</div>
+                        <div class="desc">EXIF capture data, device information, timestamps, and software traces — and what's been stripped or rewritten.</div>
+                    </div>
+                    <div class="report-row">
+                        <div class="name">Perceptual similarity</div>
+                        <div class="desc">Pixel-level and structural scoring of how alike the two images actually are, independent of file format or resizing.</div>
+                    </div>
+                    <div class="report-row">
+                        <div class="name">Manipulation indicators</div>
+                        <div class="desc">Signals consistent with editing, recompression, or re-capture, stated plainly with their limitations.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="uses">
+            <div class="wrap">
+                <h2>Where it earns its keep</h2>
+                <p><b>Family law:</b> message screenshots that don't match between the parties. <b>Personal injury and insurance:</b> claim photos with edited damage or shifted timestamps. <b>Commercial disputes:</b> documents and images "produced" in a version that differs from the one your client kept.</p>
+                <p>Evidentix is a triage and documentation tool: it tells you — in writing — whether a piece of digital evidence is worth fighting over, before you spend five figures on a retained examiner.</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="wrap">
+                <div class="price-card">
+                    <div>
+                        <div class="amount">$149 <span>per comparison</span></div>
+                        <ul>
+                            <li>Both files analyzed, one complete comparison</li>
+                            <li>Exhibit-ready PDF report</li>
+                            <li>No subscription, no minimum</li>
+                        </ul>
+                    </div>
+                    <a class="btn btn-primary" href="/compare">Start a comparison</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="wrap">
+            <span>© 2026 Evidence Analyzer, LLC. Evidentix™ is a trademark of Evidence Analyzer, LLC.</span>
+            <span><a href="mailto:intake@evidenceanalyzer.com">Contact</a></span>
+        </div>
+    </footer>
+</body>
+</html>
