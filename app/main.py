@@ -483,7 +483,7 @@ async def resend_verification(
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse(request, "home.html", {})
+    return templates.TemplateResponse(request, "compare_images.html", {})
 
 
 # =========================================================
