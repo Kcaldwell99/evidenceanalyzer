@@ -882,7 +882,19 @@ async def evidence_file_redirect(
 async def compare_page(
     request: Request,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
+    # Pay-first flow: no unconsumed comparison credit -> straight to checkout
+    # so the user fills the form only once. POST gate remains the backstop.
+    if not getattr(current_user, "is_admin", False):
+        _has_credit = db.query(Payment).filter(
+            Payment.user_id == current_user.id,
+            Payment.product == "comparison",
+            Payment.status == "paid",
+            Payment.consumed_at.is_(None),
+        ).first()
+        if _has_credit is None:
+            return RedirectResponse(url="/checkout/comparison", status_code=303)
     return templates.TemplateResponse(request, "compare.html", {"current_user": current_user})
 
 
