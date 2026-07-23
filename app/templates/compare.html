@@ -82,6 +82,24 @@
     .footer-link { text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: #64748b; }
     .footer-link a { color: #7c8cf8; text-decoration: none; }
     .footer-link a:hover { text-decoration: underline; }
+    .processing-overlay {
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(15, 17, 23, 0.96);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 2rem;
+    }
+    .processing-overlay.active { display: flex; }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid #2d3148; border-top-color: #7c8cf8;
+      border-radius: 50%; animation: spin 0.9s linear infinite;
+      margin-bottom: 1.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .processing-title { color: #e2e8f0; font-weight: 600; font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .processing-status { color: #7c8cf8; font-size: 0.9rem; min-height: 1.4em; }
+    .processing-note { color: #64748b; font-size: 0.8rem; margin-top: 1.25rem; max-width: 34ch; }
   </style>
 </head>
 <body>
@@ -108,5 +126,36 @@
       <a href="/dashboard">Back to Upload</a>
     </div>
   </div>
+  <div class="processing-overlay" id="processingOverlay" role="status" aria-live="polite">
+    <div class="spinner"></div>
+    <div class="processing-title">Running forensic analysis</div>
+    <div class="processing-status" id="processingStatus">Uploading both files&hellip;</div>
+    <div class="processing-note">This typically takes a minute or two. Please keep this tab open.</div>
+  </div>
+  <script>
+    (function () {
+      var form = document.querySelector("form");
+      if (!form) return;
+      var overlay = document.getElementById("processingOverlay");
+      var status = document.getElementById("processingStatus");
+      var steps = [
+        "Computing SHA-256 fingerprints&hellip;",
+        "Extracting and examining metadata&hellip;",
+        "Scoring perceptual similarity&hellip;",
+        "Checking manipulation indicators&hellip;",
+        "Assembling your report&hellip;",
+        "Still working &mdash; larger files take longer&hellip;"
+      ];
+      form.addEventListener("submit", function () {
+        var btn = form.querySelector("button[type=submit]");
+        if (btn) { btn.disabled = true; }
+        overlay.classList.add("active");
+        var i = 0;
+        setInterval(function () {
+          if (i < steps.length) { status.innerHTML = steps[i]; i++; }
+        }, 4000);
+      });
+    })();
+  </script>
 </body>
 </html>
